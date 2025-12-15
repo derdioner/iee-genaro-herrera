@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IEE Genaro Herrera | Excelencia Educativa</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <div class="container header-container">
+            <div class="logo">
+                <img src="images/logo.png" alt="Insignia IEE Genaro Herrera" class="logo-img">
+                <div class="logo-text">
+                    <h1>IEE GENARO HERRERA</h1>
+                    <span>Ciencia, Estudio y Trabajo</span>
+                </div>
+            </div>
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li><a href="index.html" class="active">Inicio</a></li>
+                    <li><a href="quienes-somos.html">Quiénes Somos</a></li>
+                    <li><a href="inicial.html">Inicial</a></li>
+                    <li><a href="primaria.html">Primaria</a></li>
+                    <li><a href="secundaria.html">Secundaria</a></li>
+                    <li><a href="#intranet" class="btn-intranet"><i class="fas fa-user-lock"></i> Intranet</a></li>
+                </ul>
+                <div class="burger">
+                    <div class="line1"></div>
+                    <div class="line2"></div>
+                    <div class="line3"></div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h2 class="animate-up">Bienvenidos al</h2>
+            <h1 class="animate-up delay-1">IEE GENARO HERRERA</h1>
+            <p class="animate-up delay-2">Formando líderes para el futuro con valores y excelencia académica.</p>
+            <div class="hero-buttons animate-up delay-3">
+                <a href="#contact" class="btn btn-primary">Contáctanos</a>
+                <a href="#about" class="btn btn-outline">Saber Más</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Educational Levels -->
+    <section id="about" class="info-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Nuestros Niveles</h2>
+                <div class="underline"></div>
+            </div>
+            <div class="cards-grid">
+                <div class="card fade-in">
+                    <div class="card-icon"><i class="fas fa-shapes"></i></div>
+                    <h3>Inicial</h3>
+                    <p>Estimulación temprana y desarrollo de habilidades sociales en un ambiente seguro y divertido para
+                        los más pequeños.</p>
+                    <br>
+                    <a href="inicial.html" class="btn btn-outline"
+                        style="color: var(--primary-color); border-color: var(--primary-color);">Ver Detalles</a>
+                </div>
+                <div class="card fade-in delay-1">
+                    <div class="card-icon"><i class="fas fa-book-reader"></i></div>
+                    <h3>Primaria</h3>
+                    <p>Formación integral enfocada en valores, creatividad y el dominio de competencias fundamentales.
+                    </p>
+                    <br>
+                    <a href="primaria.html" class="btn btn-outline"
+                        style="color: var(--primary-color); border-color: var(--primary-color);">Ver Detalles</a>
+                </div>
+                <div class="card fade-in delay-2">
+                    <div class="card-icon"><i class="fas fa-atom"></i></div>
+                    <h3>Secundaria</h3>
+                    <p>Preparación académica rigurosa y orientación vocacional para formar líderes listos para la
+                        universidad.</p>
+                    <br>
+                    <a href="secundaria.html" class="btn btn-outline"
+                        style="color: var(--primary-color); border-color: var(--primary-color);">Ver Detalles</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Intranet Section -->
+    <section id="intranet" class="intranet-section">
+        <div class="container intranet-container">
+            <div class="intranet-image">
+                <div class="overlay-blue">
+                    <h3>Acceso a Padres de Familia</h3>
+                    <p>Monitorea el progreso académico y disciplinario de tus hijos desde nuestra plataforma virtual.
+                    </p>
+                </div>
+            </div>
+            <div class="intranet-form-wrapper">
+                <div class="form-header">
+                    <i class="fas fa-user-circle"></i>
+                    <h3>Iniciar Sesión</h3>
+                </div>
+                <form id="loginForm" class="login-form">
+                    <div class="input-group">
+                        <i class="fas fa-id-card"></i>
+                        <input type="text" placeholder="DNI / Usuario" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" placeholder="Contraseña" required>
+                    </div>
+                    <div class="form-options">
+                        <label><input type="checkbox"> Recordarme</label>
+                        <a href="#">¿Olvidaste tu clave?</a>
+                    </div>
+                    <button type="submit" class="btn btn-full">Ingresar</button>
+                    <p class="message" id="loginMessage"></p>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-col">
+                <h3>IEE GENARO HERRERA</h3>
+                <p>Educar es redimir.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> Av. Principal 123, Contamana</li>
+                    <li><i class="fas fa-phone"></i> (065) 123-4567</li>
+                    <li><i class="fas fa-envelope"></i> info@ieegenaro.edu.pe</li>
+                </ul>
+            </div>
+            <div class="footer-col social">
+                <h3>Síguenos</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 IEE Genaro Herrera. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

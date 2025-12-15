@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiénes Somos | IEE Genaro Herrera</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html" style="display: flex; gap: 15px; align-items: center;">
+                    <img src="images/logo.png" alt="Insignia IEE Genaro Herrera" class="logo-img">
+                    <div class="logo-text">
+                        <h1>IEE GENARO HERRERA</h1>
+                        <span>Ciencia, Estudio y Trabajo</span>
+                    </div>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="quienes-somos.html" class="active">Quiénes Somos</a></li>
+                    <li><a href="inicial.html">Inicial</a></li>
+                    <li><a href="primaria.html">Primaria</a></li>
+                    <li><a href="secundaria.html">Secundaria</a></li>
+                    <li><a href="index.html#intranet" class="btn-intranet"><i class="fas fa-user-lock"></i> Intranet</a>
+                    </li>
+                </ul>
+                <div class="burger">
+                    <div class="line1"></div>
+                    <div class="line2"></div>
+                    <div class="line3"></div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Page Hero -->
+    <section class="hero level-hero"
+        style="background-image: url('https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1567&q=80');">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="animate-up">Quiénes Somos</h1>
+            <p class="animate-up delay-1">Conoce nuestra historia, nuestros valores y la estructura que sostiene nuestra
+                excelencia educativa.</p>
+        </div>
+    </section>
+
+    <!-- Mission & Vision -->
+    <section class="info-section">
+        <div class="container">
+            <div class="cards-grid">
+                <div class="card fade-in">
+                    <div class="card-icon"><i class="fas fa-bullseye"></i></div>
+                    <h3>Misión</h3>
+                    <p>Somos una Institución Educativa Emblemática que forma estudiantes competentes, críticos y
+                        reflexivos, con práctica de valores, capaces de enfrentar los retos del mundo actual mediante
+                        una educación científica, humanística y tecnológica.</p>
+                </div>
+                <div class="card fade-in delay-1">
+                    <div class="card-icon"><i class="fas fa-eye"></i></div>
+                    <h3>Visión</h3>
+                    <p>Ser reconocidos para el año 2028 como una institución líder a nivel regional y nacional, que
+                        brinda una educación de calidad, inclusiva y ambiental, fomentando el emprendimiento y la
+                        innovación tecnológica en nuestros estudiantes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Organigrama Section -->
+    <section class="section bg-light" style="padding: 80px 0;">
+        <div class="container">
+            <div class="section-title">
+                <h2>Organigrama Institucional</h2>
+                <div class="underline"></div>
+                <p>Nuestra estructura organizativa para una gestión eficiente.</p>
+            </div>
+
+            <div class="organigrama-container fade-in delay-2"
+                style="background: white; padding: 40px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center;">
+                <!-- Placeholder for Organigrama -->
+                <div class="org-chart-placeholder"
+                    style="display: flex; flex-direction: column; align-items: center; gap: 20px;">
+                    <div class="org-box director"
+                        style="background: var(--primary-dark); color: white; padding: 20px 40px; border-radius: 8px; font-weight: bold; width: 250px;">
+                        Dirección General
+                    </div>
+                    <div class="line" style="height: 30px; width: 2px; background: #ccc;"></div>
+                    <div class="org-row" style="display: flex; gap: 40px; flex-wrap: wrap; justify-content: center;">
+                        <div class="org-group" style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="org-box"
+                                style="background: var(--primary-color); color: white; padding: 15px 30px; border-radius: 8px; font-weight: 600; width: 200px;">
+                                Subdirección Académica
+                            </div>
+                            <div class="line" style="height: 20px; width: 2px; background: #ccc;"></div>
+                            <div class="org-box-small"
+                                style="background: #f0f0f0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-top: 10px; width: 180px;">
+                                Coordinadores Pedagógicos
+                            </div>
+                            <div class="org-box-small"
+                                style="background: #f0f0f0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-top: 5px; width: 180px;">
+                                Docentes
+                            </div>
+                        </div>
+                        <div class="org-group" style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="org-box"
+                                style="background: var(--primary-color); color: white; padding: 15px 30px; border-radius: 8px; font-weight: 600; width: 200px;">
+                                Subdirección Administrativa
+                            </div>
+                            <div class="line" style="height: 20px; width: 2px; background: #ccc;"></div>
+                            <div class="org-box-small"
+                                style="background: #f0f0f0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-top: 10px; width: 180px;">
+                                Personal Administrativo
+                            </div>
+                            <div class="org-box-small"
+                                style="background: #f0f0f0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-top: 5px; width: 180px;">
+                                Mantenimiento
+                            </div>
+                        </div>
+                        <div class="org-group" style="display: flex; flex-direction: column; align-items: center;">
+                            <div class="org-box"
+                                style="background: var(--primary-color); color: white; padding: 15px 30px; border-radius: 8px; font-weight: 600; width: 200px;">
+                                CONEI
+                            </div>
+                            <div class="line" style="height: 20px; width: 2px; background: #ccc;"></div>
+                            <div class="org-box-small"
+                                style="background: #f0f0f0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-top: 10px; width: 180px;">
+                                APAFA
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-col">
+                <h3>IEE GENARO HERRERA</h3>
+                <p>Educar es redimir.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> Av. Principal 123, Contamana</li>
+                    <li><i class="fas fa-phone"></i> (065) 123-4567</li>
+                    <li><i class="fas fa-envelope"></i> info@ieegenaro.edu.pe</li>
+                </ul>
+            </div>
+            <div class="footer-col social">
+                <h3>Síguenos</h3>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 IEE Genaro Herrera. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
