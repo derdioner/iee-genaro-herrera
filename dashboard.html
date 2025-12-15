@@ -193,44 +193,51 @@
         async function fetchQrAttendance(dni) {
             const list = document.getElementById('qrList');
             try {
-                // Try 'registros' collection first
+                // Correct Collection Name from QR Project: 'attendance'
+                // Field Name for DNI in QR Project: 'dni' (lowercase)
+                // Field for timestamp: 'timestamp'
                 const q = query(
-                    collection(qrDb, "registros"),
+                    collection(qrDb, "attendance"),
                     where("dni", "==", dni),
-                    orderBy("fechaHora", "desc"), // Assuming there is a timestamp field
+                    orderBy("timestamp", "desc"),
                     limit(5)
                 );
-
-                // Note: If 'fechaHora' doesn't exist or is different, this query might fail or need index.
-                // Fallback catch will try simpler query.
 
                 const querySnapshot = await getDocs(q);
 
                 if (querySnapshot.empty) {
-                    list.innerHTML = '<li style="padding: 10px; text-align: center;">No se encontraron registros recientes.</li>';
+                    list.innerHTML = '<li style="padding: 10px; text-align: center;">No se encontraron registros de asistencia recientes.</li>';
                     return;
                 }
 
                 list.innerHTML = '';
                 querySnapshot.forEach((doc) => {
                     const r = doc.data();
-                    // Try to format date. Identify date field.
-                    const dateStr = r.fechaHora || r.fecha || r.timestamp || r.date || "Fecha desconocida";
-                    const status = r.estado || r.status || "Asistió";
+                    // QR App Fields: displayDate, displayTime, status
+                    const dateStr = r.displayDate + ' ' + r.displayTime;
+                    const status = r.status || "registrado";
+                    const statusColor = (status === 'Puntual') ? 'green' : (status === 'Tardanza' ? 'red' : '#666');
 
                     const li = document.createElement('li');
                     li.style.padding = '10px';
                     li.style.borderBottom = '1px solid #eee';
                     li.style.display = 'flex';
                     li.style.justifyContent = 'space-between';
-                    li.innerHTML = `<span>📅 ${dateStr}</span> <span>${status}</span>`;
+                    li.innerHTML = `<span>📅 ${dateStr}</span> <span style="color: ${statusColor}; font-weight: bold;">${status}</span>`;
                     list.appendChild(li);
                 });
 
             } catch (error) {
-                console.warn("Error fetching QR data (Attempt 1):", error);
-                // Fallback: Use collection 'asistencia' or remove orderBy
-                list.innerHTML = `<li style="padding: 10px; text-align: center; color: orange;">Error leyendo sistema QR: ${error.message}</li>`;
+                console.warn("Error fetching QR data:", error);
+
+                // If index error, show helpful message
+                if (error.message.includes("requires an index")) {
+                    list.innerHTML = `<li style="padding: 10px; text-align: center; color: orange;">
+                        Requiere Index en Firebase: <a href="#" onclick="alert('Pide al administrador crear el índice para attendance/dni+timestamp')">Ver detalles</a>
+                     </li>`;
+                } else {
+                    list.innerHTML = `<li style="padding: 10px; text-align: center; color: red;">Error: ${error.message}</li>`;
+                }
             }
         }
 

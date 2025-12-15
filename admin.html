@@ -165,49 +165,44 @@
                 // Strategy: Try multiple variations to find the user
                 let foundData = null;
 
-                // 1. Try 'dni' (string)
-                let q = query(collection(qrDb, "registros"), where("dni", "==", dniVal), limit(1));
+                // 1. Try 'attendance' (Correct Collection) - Using 'dni' field
+                // Note: The QR app saves student DATA in 'students' and attendance usage in 'attendance'.
+                // If we want to find STUDENT info (Name, Grade), we should query 'students' collection from the QR DB?
+                // Let's check script.js line 342: db.collection('students').add(studentData) -> yes!
+                // So for AUTO-FILL, we should query 'students'.
+                // For DASHBOARD (Attendance History), we should query 'attendance'.
+
+                // Let's try 'students' first for the Admin Panel Auto-fill
+                let q = query(collection(qrDb, "students"), where("id", "==", dniVal), limit(1));
                 let snap = await getDocs(q);
 
-                // 2. If not found, try 'DNI' (uppercase field)
                 if (snap.empty) {
-                    console.log("No encontrado como 'dni', probando 'DNI'...");
-                    q = query(collection(qrDb, "registros"), where("DNI", "==", dniVal), limit(1));
+                    // Fallback: Check 'attendance' if 'students' fails (maybe they exist in logs but not registry)
+                    console.log("No encontrado en 'students', buscando en 'attendance'...");
+                    q = query(collection(qrDb, "attendance"), where("dni", "==", dniVal), limit(1));
                     snap = await getDocs(q);
-                }
-
-                // 3. If not found, try as Number
-                if (snap.empty && !isNaN(dniVal)) {
-                    console.log("No encontrado como string, probando como número...");
-                    const dniNum = parseInt(dniVal);
-                    q = query(collection(qrDb, "registros"), where("dni", "==", dniNum), limit(1));
-                    snap = await getDocs(q);
-
-                    if (snap.empty) {
-                        q = query(collection(qrDb, "registros"), where("DNI", "==", dniNum), limit(1));
-                        snap = await getDocs(q);
-                    }
                 }
 
                 if (!snap.empty) {
                     foundData = snap.docs[0].data();
                     console.log("¡Datos encontrados!", foundData);
 
-                    // Mapping Logic: Be flexible with field names
-                    const name = foundData.nombre || foundData.Nombre || foundData.studentName || foundData.paragraph || foundData.nombres;
-                    const grade = foundData.grado || foundData.Grado;
-                    const section = foundData.seccion || foundData.Seccion;
+                    // Mapping Logic: QR App uses 'n', 'g', 's', 'id'
+                    const name = foundData.n || foundData.name || foundData.nombre;
+                    const grade = foundData.g || foundData.grade || foundData.grado;
+                    const section = foundData.s || foundData.section || foundData.seccion;
 
                     if (name) {
                         document.getElementById('studentName').value = name;
-                        alert(`¡Encontrado!\nNombre: ${name}\n(Verifica grado/sección)`);
+                        alert(`¡Encontrado en Sistema QR!\nNombre: ${name}\nGrado: ${grade} | Sección: ${section}`);
                     } else {
-                        alert("Se encontró el registro, pero no tiene campo 'nombre' visible. Se llenarán otros datos si existen.");
+                        alert("Registro encontrado, pero faltan datos de nombre.");
                     }
 
                     if (grade) {
                         const g = document.getElementById('grade');
                         for (let i = 0; i < g.options.length; i++) {
+                            // QR app saves grade as number or string? script.js says: data.g
                             if (g.options[i].text.toLowerCase().includes(grade.toString().toLowerCase())) g.selectedIndex = i;
                         }
                     }
@@ -215,7 +210,7 @@
                     if (section) document.getElementById('section').value = section;
 
                 } else {
-                    alert("❌ No se encontró nada.\n\nEl sistema QR no tiene este DNI registrado en la nube.");
+                    alert("❌ No se encontró nada.\n\nEl DNI no está en la colección 'students' ni 'attendance' del QR.");
                 }
             } catch (e) {
                 console.error("Error en búsqueda:", e);
