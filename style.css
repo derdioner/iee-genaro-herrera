@@ -205,8 +205,8 @@ ul {
 
 .hero-inicial {
     background-image: url('images/inicial-bg-new.jpg');
-    height: 30vh;
-    /* Reduced from 40vh */
+    height: 60vh;
+    /* Restored to original size */
 }
 
 .hero-primaria {
@@ -291,6 +291,10 @@ ul {
 /* Slider Styles */
 .slider-container {
     width: 100%;
+    max-width: 80%;
+    /* Reduced size */
+    margin: 0 auto;
+    /* Center the slider */
     position: relative;
     border-radius: 15px;
     box-shadow: var(--shadow);
