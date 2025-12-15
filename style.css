@@ -205,8 +205,8 @@ ul {
 
 .hero-inicial {
     background-image: url('images/inicial-bg-new.jpg');
-    height: 40vh;
-    /* Further reduced from 50vh */
+    height: 30vh;
+    /* Reduced from 40vh */
 }
 
 .hero-primaria {
