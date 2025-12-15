@@ -205,8 +205,8 @@ ul {
 
 .hero-inicial {
     background-image: url('images/inicial-bg-new.jpg');
-    height: 50vh;
-    /* Reduced from 60vh */
+    height: 40vh;
+    /* Further reduced from 50vh */
 }
 
 .hero-primaria {
@@ -280,6 +280,12 @@ ul {
     width: 100%;
     border-radius: 15px;
     box-shadow: var(--shadow);
+    transition: transform 0.5s ease;
+}
+
+.split-content .img-col img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
 .split-content h2 {
