@@ -131,8 +131,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Teacher Carousel ---
     const track = document.querySelector('.carousel-track');
     if (track) {
-        // Dummy data for 30 teachers
-        const teachers = Array.from({ length: 30 }, (_, i) => ({
+        // Determine number of teachers based on page
+        let count = 30; // Default for Primaria & Secundaria
+        if (window.location.pathname.includes('inicial.html')) {
+            count = 20;
+        }
+
+        // Dummy data for teachers
+        const teachers = Array.from({ length: count }, (_, i) => ({
             name: `Docente ${i + 1}`,
             role: i % 3 === 0 ? "Tutor" : "Docente de Aula",
             specialty: ["Matemáticas", "Ciencias", "Comunicación", "Arte", "Inglés"][i % 5],
