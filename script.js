@@ -113,4 +113,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
         });
     }
+
+
+    // --- Image Slider ---
+    const slides = document.querySelectorAll('.slide');
+    if (slides.length > 0) {
+        let currentSlide = 0;
+        const totalSlides = slides.length;
+
+        setInterval(() => {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % totalSlides;
+            slides[currentSlide].classList.add('active');
+        }, 3000);
+    }
 });

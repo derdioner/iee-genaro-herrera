@@ -288,6 +288,42 @@ ul {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
 }
 
+/* Slider Styles */
+.slider-container {
+    width: 100%;
+    position: relative;
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    /* Aspect ratio for the container to prevent jumps. 
+       Adjust padding-bottom based on image aspect ratio (e.g., 66.66% for 3:2) 
+       or use a fixed height if images are consistent. 
+       Here we use a simpler approach with stacking */
+    display: grid;
+    grid-template-areas: "slide";
+}
+
+.slide {
+    grid-area: slide;
+    width: 100%;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    /* Ensure only one occupies space structurally if needed, 
+       but grid overlap handles this well */
+}
+
+.slide.active {
+    opacity: 1;
+    z-index: 1;
+}
+
+.slide img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 15px;
+}
+
 .split-content h2 {
     font-family: 'Playfair Display', serif;
     font-size: 2.5rem;
