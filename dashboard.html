@@ -228,15 +228,53 @@
                 });
 
             } catch (error) {
-                console.warn("Error fetching QR data:", error);
+                console.warn("Error fetching QR data (Attempt 1 - Indexed):", error);
 
-                // If index error, show helpful message
-                if (error.message.includes("requires an index")) {
-                    list.innerHTML = `<li style="padding: 10px; text-align: center; color: orange;">
-                        Requiere Index en Firebase: <a href="#" onclick="alert('Pide al administrador crear el índice para attendance/dni+timestamp')">Ver detalles</a>
-                     </li>`;
-                } else {
-                    list.innerHTML = `<li style="padding: 10px; text-align: center; color: red;">Error: ${error.message}</li>`;
+                // FALLBACK: If Index fails, try simple query (Client-side Sort)
+                // This prevents the "Requires Index" blocker
+                try {
+                    console.log("Intentando Fallback (Sin OrderBy)...");
+                    const qFallback = query(
+                        collection(qrDb, "attendance"),
+                        where("dni", "==", dni),
+                        limit(10)
+                    );
+
+                    const snapFallback = await getDocs(qFallback);
+
+                    if (snapFallback.empty) {
+                        list.innerHTML = '<li style="padding: 10px; text-align: center;">No se encontraron registros reciente (Fallback).</li>';
+                        return;
+                    }
+
+                    // Client-side Sort
+                    const docs = [];
+                    snapFallback.forEach(d => docs.push(d.data()));
+                    docs.sort((a, b) => {
+                        // Sort by timestamp desc (if exists)
+                        const tA = a.timestamp ? a.timestamp.seconds : 0;
+                        const tB = b.timestamp ? b.timestamp.seconds : 0;
+                        return tB - tA;
+                    });
+
+                    list.innerHTML = '';
+                    docs.slice(0, 5).forEach((r) => {
+                        const dateStr = r.displayDate + ' ' + r.displayTime;
+                        const status = r.status || "registrado";
+                        const statusColor = (status === 'Puntual') ? 'green' : (status === 'Tardanza' ? 'red' : '#666');
+
+                        const li = document.createElement('li');
+                        li.style.padding = '10px';
+                        li.style.borderBottom = '1px solid #eee';
+                        li.style.display = 'flex';
+                        li.style.justifyContent = 'space-between';
+                        li.innerHTML = `<span>📅 ${dateStr}</span> <span style="color: ${statusColor}; font-weight: bold;">${status}</span>`;
+                        list.appendChild(li);
+                    });
+
+                } catch (e2) {
+                    console.error("Error Fallback:", e2);
+                    list.innerHTML = `<li style="padding: 10px; text-align: center; color: red;">Error: ${e2.message}</li>`;
                 }
             }
         }
