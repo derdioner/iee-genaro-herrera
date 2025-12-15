@@ -113,11 +113,48 @@
 
             <!-- Real-time QR Attendance -->
             <div class="info-card" style="grid-column: 1 / -1;">
-                <h4><i class="fas fa-clock"></i> Últimas Asistencias (QR)</h4>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <h4 style="margin:0;"><i class="fas fa-clock"></i> Últimas Asistencias (QR)</h4>
+                    <button id="viewHistoryBtn" class="btn btn-secondary"
+                        style="font-size:0.8rem; padding: 5px 10px;">📅 Ver Historial Mensual</button>
+                </div>
                 <ul id="qrList" style="list-style: none; padding: 0;">
                     <li style="padding: 10px; border-bottom: 1px solid #eee; text-align: center; color: #666;">Cargando
                         historial...</li>
                 </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORY MODAL -->
+    <div id="historyModal"
+        style="display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.5); align-items:center; justify-content:center;">
+        <div
+            style="background-color:white; margin:auto; padding:20px; border-radius:10px; width:90%; max-width:500px; max-height:80vh; overflow-y:auto; position:relative;">
+            <span onclick="closeModal()"
+                style="color:#aaa; float:right; font-size:28px; font-weight:bold; cursor:pointer;">&times;</span>
+            <h3 style="color: var(--primary-dark); text-align:center; margin-bottom:20px;">Historial de Asistencia</h3>
+
+            <div style="display:flex; gap:10px; margin-bottom:20px; justify-content:center;">
+                <input type="month" id="historyMonth" style="padding:8px; border-radius:5px; border:1px solid #ddd;">
+                <button id="searchHistoryBtn" class="btn btn-primary" style="padding:8px 15px;">Ver</button>
+            </div>
+
+            <table style="width:100%; border-collapse:collapse; margin-bottom: 20px;">
+                <thead>
+                    <tr style="background:#f4f4f4; text-align:left;">
+                        <th style="padding:10px;">Fecha</th>
+                        <th style="padding:10px;">Hora</th>
+                        <th style="padding:10px;">Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    <!-- Rows will be added here -->
+                </tbody>
+            </table>
+
+            <div id="historySummary" style="border-top:1px solid #ddd; padding-top:10px;">
+                <!-- Summary Stats -->
             </div>
         </div>
     </div>
