@@ -226,11 +226,132 @@
                     console.error("Error getting document:", error);
                 }
 
-            } else {
-                // User is signed out, redirect to index
-                window.location.href = 'index.html';
+            } catch (error) {
+                console.error("Error getting document:", error);
             }
+
+        } else {
+            // User is signed out, redirect to index
+            window.location.href = 'index.html';
+        }
         });
+
+        // --- MONTHLY HISTORY LOGIC ---
+        const modal = document.getElementById('historyModal');
+        const monthInput = document.getElementById('historyMonth');
+        let currentStudentDni = null;
+
+        // Make closeModal global for HTML access
+        window.closeModal = function () {
+            modal.style.display = 'none';
+        }
+
+        // Close on click outside
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                window.closeModal();
+            }
+        }
+
+        // Define open function (scoped)
+        function openHistoryModal(dni) {
+            console.log("Opening history for:", dni);
+            currentStudentDni = dni;
+            modal.style.display = 'flex';
+
+            // Default to current month
+            const now = new Date();
+            const monthStr = now.toISOString().slice(0, 7); // YYYY-MM
+            monthInput.value = monthStr;
+
+            loadMonthlyHistory();
+        }
+
+        document.getElementById('searchHistoryBtn').addEventListener('click', loadMonthlyHistory);
+
+        async function loadMonthlyHistory() {
+            if (!currentStudentDni) return;
+
+            const tbody = document.getElementById('historyTableBody');
+            const summaryDiv = document.getElementById('historySummary');
+            tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Cargando datos...</td></tr>';
+            summaryDiv.innerHTML = '';
+
+            try {
+                // Fetch records (limit 300 to cover full month/year)
+                const q = query(
+                    collection(qrDb, "attendance"),
+                    where("dni", "==", currentStudentDni),
+                    limit(300)
+                );
+
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No hay registros históricos.</td></tr>';
+                    return;
+                }
+
+                // Filter Client-side by Month
+                const selectedMonth = monthInput.value; // YYYY-MM
+                if (!selectedMonth) return;
+
+                const docs = [];
+                snap.forEach(d => docs.push(d.data()));
+
+                const filtered = docs.filter(r => {
+                    if (!r.timestamp) return false;
+                    const date = new Date(r.timestamp.seconds * 1000);
+                    const rMonth = date.toISOString().slice(0, 7);
+                    return rMonth === selectedMonth;
+                });
+
+                // Sort Descending
+                filtered.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+
+                if (filtered.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;">Sin registros en este mes.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                let lateCount = 0;
+                let presentCount = 0;
+
+                filtered.forEach(r => {
+                    const date = new Date(r.timestamp.seconds * 1000);
+                    const day = date.getDate().toString().padStart(2, '0');
+                    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+                    const year = date.getFullYear();
+                    const fullDate = `${day}/${month}/${year}`;
+                    const time = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    const status = r.status || "registrado";
+                    if (status === 'Tardanza') lateCount++; else presentCount++;
+                    const color = (status === 'Puntual') ? 'green' : (status === 'Tardanza' ? 'red' : '#666');
+
+                    const row = `
+                        <tr>
+                            <td>${fullDate}</td>
+                            <td>${time}</td>
+                            <td><span style="color: ${color}; font-weight: bold;">${status}</span></td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+                summaryDiv.innerHTML = `
+                    <div style="display:flex; justify-content:space-around; margin-top:10px; font-size: 0.9em;">
+                        <span style="color:green;">✅ Puntuales: ${presentCount}</span>
+                        <span style="color:red;">🚨 Tardanzas: ${lateCount}</span>
+                    </div>
+                `;
+
+            } catch (e) {
+                console.error("Error history:", e);
+                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:red;">Error: ${e.message}</td></tr>`;
+            }
+        }
 
         async function fetchQrAttendance(dni) {
             const list = document.getElementById('qrList');
