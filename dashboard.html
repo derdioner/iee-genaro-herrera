@@ -83,39 +83,87 @@
 
         <h3 style="margin-bottom: 20px; color: var(--primary-dark);">Información del Estudiante</h3>
 
-        <!-- Placeholder Data -->
+        <!-- Data Display -->
         <div class="student-info">
             <div class="info-card">
                 <h4><i class="fas fa-user-graduate"></i> Estudiante</h4>
-                <p><strong>Juan Pérez (Ejemplo)</strong></p>
-                <p>Grado: 5to Secundaria</p>
-                <p>Sección: A</p>
+                <p><strong id="studentName">Cargando...</strong></p>
+                <p>Grado: <span id="studentGrade">--</span></p>
+                <p>Sección: <span id="studentSection">--</span></p>
             </div>
             <div class="info-card">
                 <h4><i class="fas fa-clipboard-check"></i> Asistencia</h4>
-                <p>Asistencias: <strong>95%</strong></p>
-                <p>Tardanzas: 2</p>
-                <p>Faltas: 0</p>
+                <p>Asistencias: <strong id="studentAttendance">--%</strong></p>
+                <p>Estado: <span id="attendanceStatus">--</span></p>
             </div>
             <div class="info-card">
                 <h4><i class="fas fa-star"></i> Rendimiento</h4>
-                <p>Promedio General: <strong>16.5</strong></p>
-                <p>Puesto en clase: 3ro</p>
+                <p>Promedio General: <strong id="studentAverage">--</strong></p>
+                <p>Puesto en clase: <span id="studentRank">--</span></p>
+            </div>
+
+            <!-- Report Card Button -->
+            <div class="info-card" id="reportCardContainer"
+                style="display: none; grid-column: 1 / -1; text-align: center; border-left: none;">
+                <h4><i class="fas fa-file-pdf"></i> Boleta de Notas</h4>
+                <a href="#" id="reportCardLink" target="_blank" class="btn btn-primary"
+                    style="text-decoration: none; color: white;">Ver / Descargar Boleta</a>
             </div>
         </div>
     </div>
 
     <script type="module">
-        import { auth } from './firebase-config.js';
+        import { auth, db } from './firebase-config.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const userEmailSpan = document.getElementById('userEmail');
         const logoutBtn = document.getElementById('logoutBtn');
 
         // Check Authentication Status
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userEmailSpan.textContent = user.email;
+
+                // Fetch Student Data
+                try {
+                    // Use Parent Email as key
+                    const docRef = doc(db, "students", user.email);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+
+                        document.getElementById('studentName').textContent = data.studentName;
+                        document.getElementById('studentGrade').textContent = data.grade;
+                        document.getElementById('studentSection').textContent = data.section;
+                        document.getElementById('studentAttendance').textContent = data.attendance + '%';
+                        document.getElementById('studentAverage').textContent = data.average;
+                        document.getElementById('studentRank').textContent = data.rank + '°';
+
+                        // Simple logic for status
+                        const att = parseInt(data.attendance);
+                        const statusSpan = document.getElementById('attendanceStatus');
+                        if (att >= 90) { statusSpan.textContent = 'Excelente'; statusSpan.style.color = 'green'; }
+                        else if (att >= 70) { statusSpan.textContent = 'Regular'; statusSpan.style.color = 'orange'; }
+                        else { statusSpan.textContent = 'Crítico'; statusSpan.style.color = 'red'; }
+
+                        // Report Card Logic
+                        if (data.reportCardUrl) {
+                            document.getElementById('reportCardContainer').style.display = 'block';
+                            document.getElementById('reportCardLink').href = data.reportCardUrl;
+                        } else {
+                            document.getElementById('reportCardContainer').style.display = 'none';
+                        }
+
+                    } else {
+                        console.log("No such document!");
+                        document.querySelector('.student-info').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay datos registrados para este estudiante. Comuníquese con administración.</p>';
+                    }
+                } catch (error) {
+                    console.error("Error getting document:", error);
+                }
+
             } else {
                 // User is signed out, redirect to index
                 window.location.href = 'index.html';

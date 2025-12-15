@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | IEE Genaro Herrera</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: #f4f4f4;
+        }
+
+        .admin-container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        h2 {
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .success-msg {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <h2>Panel de Administración de Datos</h2>
+        <div id="successMsg" class="success-msg">¡Datos guardados correctamente!</div>
+
+        <form id="dataForm">
+            <!-- Link to Parent -->
+            <div class="form-group">
+                <label>Correo del Padre (Usuario):</label>
+                <input type="email" id="parentEmail" placeholder="ej: padre@prueba.com" required>
+                <small>Este correo debe ser el mismo que usa el padre para ingresar.</small>
+            </div>
+
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+            <!-- Student Info -->
+            <div class="form-group">
+                <label>Nombre del Estudiante:</label>
+                <input type="text" id="studentName" required>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <label>Grado:</label>
+                    <select id="grade">
+                        <option>1ro Secundaria</option>
+                        <option>2do Secundaria</option>
+                        <option>3ro Secundaria</option>
+                        <option>4to Secundaria</option>
+                        <option>5to Secundaria</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Sección:</label>
+                    <input type="text" id="section" maxlength="1" style="text-transform: uppercase;">
+                </div>
+            </div>
+
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+            <!-- Stats -->
+            <div class="form-group">
+                <label>Promedio General (0-20):</label>
+                <input type="number" id="average" step="0.1" max="20">
+            </div>
+
+            <div class="form-group">
+                <label>Puesto en Clase:</label>
+                <input type="number" id="rank">
+            </div>
+
+            <div class="form-group">
+                <label>% de Asistencia:</label>
+                <input type="number" id="attendance" max="100">
+            </div>
+
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+
+            <!-- Report Card -->
+            <div class="form-group">
+                <label>Boleta de Notas (PDF):</label>
+                <input type="file" id="reportCardFile" accept="application/pdf">
+                <div style="margin-top: 10px; text-align: center; color: #666; font-size: 0.9em;">- O -</div>
+                <label style="margin-top: 10px;">Link Externo (Drive/Dropbox/OneDrive):</label>
+                <input type="url" id="reportCardUrlInput" placeholder="https://...">
+            </div>
+
+            <button type="submit" class="btn btn-full">Guardar Datos</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { db, storage } from './firebase-config.js';
+        import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+        const form = document.getElementById('dataForm');
+        const msg = document.getElementById('successMsg');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const parentEmail = document.getElementById('parentEmail').value.toLowerCase().trim();
+            const studentName = document.getElementById('studentName').value;
+            const grade = document.getElementById('grade').value;
+            const section = document.getElementById('section').value.toUpperCase();
+            const average = document.getElementById('average').value;
+            const rank = document.getElementById('rank').value;
+            const attendance = document.getElementById('attendance').value;
+
+            const fileInput = document.getElementById('reportCardFile');
+            const urlInput = document.getElementById('reportCardUrlInput');
+            let finalDocUrl = urlInput.value.trim();
+
+            const btn = form.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Guardando...';
+            btn.disabled = true;
+
+            try {
+                // Upload File if present (and URL is empty)
+                if (fileInput.files.length > 0 && !finalDocUrl) {
+                    btn.innerText = 'Subiendo Archivo...';
+                    const file = fileInput.files[0];
+                    // Create a unique name
+                    const storageRef = ref(storage, 'boletas/' + parentEmail + '_' + Date.now() + '.pdf');
+
+                    try {
+                        const snapshot = await uploadBytes(storageRef, file);
+                        finalDocUrl = await getDownloadURL(snapshot.ref);
+                    } catch (storageError) {
+                        console.error("Storage Error:", storageError);
+                        const confirmContinue = confirm("Error al subir archivo (probablemente Storage no habilitado). ¿Quieres guardar los datos sin la boleta?");
+                        if (!confirmContinue) throw new Error("Cancelado por usuario");
+                    }
+                }
+
+                // Save to Firestore
+                btn.innerText = 'Guardando en Base de Datos...';
+                await setDoc(doc(db, "students", parentEmail), {
+                    parentEmail: parentEmail,
+                    studentName: studentName,
+                    grade: grade,
+                    section: section,
+                    average: average,
+                    rank: rank,
+                    attendance: attendance,
+                    reportCardUrl: finalDocUrl,
+                    lastUpdated: new Date()
+                });
+
+                msg.style.display = 'block';
+                form.reset();
+                setTimeout(() => msg.style.display = 'none', 3000);
+            } catch (error) {
+                console.error("Error saving document: ", error);
+                if (error.message !== "Cancelado por usuario") {
+                    alert("Error al guardar: " + error.message);
+                }
+            }
+
+            btn.innerText = originalText;
+            btn.disabled = false;
+        });
+    </script>
+</body>
+
+</html>
