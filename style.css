@@ -666,7 +666,6 @@ footer {
         flex-direction: column;
         align-items: center;
         width: 100%;
-        /* Full width mobile menu */
         transform: translateX(100%);
         transition: transform 0.3s ease-in;
         justify-content: center;
@@ -685,19 +684,35 @@ footer {
         font-size: 2.5rem;
     }
 
+    .info-section,
+    .teachers-section,
+    .cta-section,
+    .intranet-section {
+        padding: 50px 0;
+    }
+
+    .section-title {
+        margin-bottom: 30px;
+    }
+
     .intranet-container {
         flex-direction: column;
     }
 
     .intranet-image {
-        min-height: 250px;
+        min-height: 200px;
     }
 
     .intranet-form-wrapper {
-        padding: 40px 20px;
+        padding: 30px 20px;
     }
 
     .split-content {
         flex-direction: column;
+        gap: 30px;
+    }
+
+    .cards-grid {
+        grid-template-columns: 1fr;
     }
 }
