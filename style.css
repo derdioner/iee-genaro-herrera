@@ -499,9 +499,74 @@ ul {
     transition: var(--transition);
 }
 
-.btn-profile:hover {
-    background: var(--primary-color);
+/* Carousel Styles */
+.carousel-wrapper {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    padding: 20px 0;
+}
+
+.carousel-track-container {
+    overflow: hidden;
+    width: 100%;
+}
+
+.carousel-track {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+    gap: 30px;
+}
+
+.carousel-slide {
+    flex: 0 0 calc(33.333% - 20px);
+    /* 3 cards visible minus gap adjustment */
+    max-width: 350px;
+}
+
+.teacher-card {
+    height: 100%;
+    /* Ensure uniform height */
+    width: 100%;
+}
+
+.carousel-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 191, 255, 0.8);
     color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 10;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.carousel-button:hover {
+    background: var(--primary-dark);
+}
+
+.carousel-button--left {
+    left: 0;
+}
+
+.carousel-button--right {
+    right: 0;
+}
+
+/* Mobile Carousel */
+@media (max-width: 768px) {
+    .carousel-slide {
+        flex: 0 0 100%;
+        /* 1 card visible */
+    }
 }
 
 /* CTA Section */

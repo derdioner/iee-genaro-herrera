@@ -127,4 +127,80 @@ document.addEventListener('DOMContentLoaded', () => {
             slides[currentSlide].classList.add('active');
         }, 3000);
     }
+
+    // --- Teacher Carousel ---
+    const track = document.querySelector('.carousel-track');
+    if (track) {
+        // Dummy data for 30 teachers
+        const teachers = Array.from({ length: 30 }, (_, i) => ({
+            name: `Docente ${i + 1}`,
+            role: i % 3 === 0 ? "Tutor" : "Docente de Aula",
+            specialty: ["Matemáticas", "Ciencias", "Comunicación", "Arte", "Inglés"][i % 5],
+            img: "https://via.placeholder.com/150/00BFFF/FFFFFF?text=Docente"
+        }));
+
+        // Render Cards
+        teachers.forEach(teacher => {
+            const slide = document.createElement('li');
+            slide.classList.add('carousel-slide');
+            slide.innerHTML = `
+                <div class="card teacher-card">
+                    <div class="teacher-img">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                    </div>
+                    <h3>${teacher.name}</h3>
+                    <p class="role">${teacher.role}</p>
+                    <p>${teacher.specialty}</p>
+                    <a href="#" class="btn-profile">Ver Perfil</a>
+                </div>
+            `;
+            track.appendChild(slide);
+        });
+
+        const nextButton = document.querySelector('.carousel-button--right');
+        const prevButton = document.querySelector('.carousel-button--left');
+        const slides = Array.from(track.children);
+        let currentIndex = 0;
+
+        const updateCarousel = () => {
+            // Calculate width dynamically
+            const slideWidth = slides[0].getBoundingClientRect().width;
+            // Add gap overlap compensation if needed, but flex gap usually handled by margin logic or gap property. 
+            // With flex gap, we stride by (width + gap).
+            // Let's approximate stride by fetching offsetLeft diff
+            const stride = slides[1].offsetLeft - slides[0].offsetLeft;
+            track.style.transform = `translateX(-${currentIndex * stride}px)`;
+
+            // Hide/Show buttons logic if needed (infinite loop better)
+        }
+
+        const getVisibleCount = () => window.innerWidth < 768 ? 1 : 3;
+
+        nextButton.addEventListener('click', () => {
+            const visibleCount = getVisibleCount();
+            if (currentIndex < slides.length - visibleCount) {
+                currentIndex++;
+                updateCarousel();
+            } else {
+                // Optional: Loop back to start
+                currentIndex = 0;
+                updateCarousel();
+            }
+        });
+
+        prevButton.addEventListener('click', () => {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCarousel();
+            } else {
+                // Loop to end
+                const visibleCount = getVisibleCount();
+                currentIndex = slides.length - visibleCount;
+                updateCarousel();
+            }
+        });
+
+        // Handle Resize
+        window.addEventListener('resize', updateCarousel);
+    }
 });
