@@ -209,8 +209,13 @@
                         // --- FETCH QR ATTENDANCE ---
                         if (data.dni) {
                             fetchQrAttendance(data.dni);
+                            // Attach Listener
+                            const histBtn = document.getElementById('viewHistoryBtn');
+                            if (histBtn) histBtn.onclick = () => openHistoryModal(data.dni);
                         } else {
                             document.getElementById('qrList').innerHTML = '<li style="padding: 10px; text-align: center;">DNI no configurado en el sistema.</li>';
+                            const histBtn = document.getElementById('viewHistoryBtn');
+                            if (histBtn) histBtn.style.display = 'none';
                         }
 
                     } else {
