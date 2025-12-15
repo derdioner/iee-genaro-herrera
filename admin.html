@@ -78,6 +78,17 @@
                 <input type="text" id="studentName" required>
             </div>
 
+            <!-- DNI Field for QR Integration -->
+            <div class="form-group">
+                <label>DNI del Estudiante (Para QR):</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="dni" maxlength="15" placeholder="Ej: 45446130">
+                    <button type="button" id="searchDniBtn"
+                        style="padding: 0 20px; background: #666; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.2rem;">🔍</button>
+                </div>
+                <small style="color: #666;">Haz clic en la lupa para buscar datos en el sistema QR.</small>
+            </div>
+
             <div class="form-group" style="display: flex; gap: 20px;">
                 <div style="flex: 1;">
                     <label>Grado:</label>
@@ -130,17 +141,96 @@
 
     <script type="module">
         import { db, storage } from './firebase-config.js';
+        import { qrDb } from './firebase-qr-config.js';
         import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const form = document.getElementById('dataForm');
         const msg = document.getElementById('successMsg');
+        const searchBtn = document.getElementById('searchDniBtn');
+
+        // Auto-fill Logic with Robust Search
+        searchBtn.addEventListener('click', async () => {
+            const dniVal = document.getElementById('dni').value.trim();
+            if (!dniVal) return alert("Escribe un DNI primero.");
+
+            const originalText = searchBtn.textContent;
+            searchBtn.textContent = '...';
+            searchBtn.disabled = true;
+
+            try {
+                console.log("Buscando DNI:", dniVal);
+
+                // Strategy: Try multiple variations to find the user
+                let foundData = null;
+
+                // 1. Try 'dni' (string)
+                let q = query(collection(qrDb, "registros"), where("dni", "==", dniVal), limit(1));
+                let snap = await getDocs(q);
+
+                // 2. If not found, try 'DNI' (uppercase field)
+                if (snap.empty) {
+                    console.log("No encontrado como 'dni', probando 'DNI'...");
+                    q = query(collection(qrDb, "registros"), where("DNI", "==", dniVal), limit(1));
+                    snap = await getDocs(q);
+                }
+
+                // 3. If not found, try as Number
+                if (snap.empty && !isNaN(dniVal)) {
+                    console.log("No encontrado como string, probando como número...");
+                    const dniNum = parseInt(dniVal);
+                    q = query(collection(qrDb, "registros"), where("dni", "==", dniNum), limit(1));
+                    snap = await getDocs(q);
+
+                    if (snap.empty) {
+                        q = query(collection(qrDb, "registros"), where("DNI", "==", dniNum), limit(1));
+                        snap = await getDocs(q);
+                    }
+                }
+
+                if (!snap.empty) {
+                    foundData = snap.docs[0].data();
+                    console.log("¡Datos encontrados!", foundData);
+
+                    // Mapping Logic: Be flexible with field names
+                    const name = foundData.nombre || foundData.Nombre || foundData.studentName || foundData.paragraph || foundData.nombres;
+                    const grade = foundData.grado || foundData.Grado;
+                    const section = foundData.seccion || foundData.Seccion;
+
+                    if (name) {
+                        document.getElementById('studentName').value = name;
+                        alert(`¡Encontrado!\nNombre: ${name}\n(Verifica grado/sección)`);
+                    } else {
+                        alert("Se encontró el registro, pero no tiene campo 'nombre' visible. Se llenarán otros datos si existen.");
+                    }
+
+                    if (grade) {
+                        const g = document.getElementById('grade');
+                        for (let i = 0; i < g.options.length; i++) {
+                            if (g.options[i].text.toLowerCase().includes(grade.toString().toLowerCase())) g.selectedIndex = i;
+                        }
+                    }
+
+                    if (section) document.getElementById('section').value = section;
+
+                } else {
+                    alert("❌ No se encontró nada.\n\nEl sistema QR no tiene este DNI registrado en la nube.");
+                }
+            } catch (e) {
+                console.error("Error en búsqueda:", e);
+                alert("Error técnico: " + e.message);
+            }
+            searchBtn.textContent = originalText;
+            searchBtn.disabled = false;
+        });
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
 
             const parentEmail = document.getElementById('parentEmail').value.toLowerCase().trim();
             const studentName = document.getElementById('studentName').value;
+            const dni = document.getElementById('dni').value.trim();
             const grade = document.getElementById('grade').value;
             const section = document.getElementById('section').value.toUpperCase();
             const average = document.getElementById('average').value;
@@ -151,7 +241,7 @@
             const urlInput = document.getElementById('reportCardUrlInput');
             let finalDocUrl = urlInput.value.trim();
 
-            const btn = form.querySelector('button');
+            const btn = form.querySelector('button[type="submit"]');
             const originalText = btn.innerText;
             btn.innerText = 'Guardando...';
             btn.disabled = true;
@@ -161,7 +251,6 @@
                 if (fileInput.files.length > 0 && !finalDocUrl) {
                     btn.innerText = 'Subiendo Archivo...';
                     const file = fileInput.files[0];
-                    // Create a unique name
                     const storageRef = ref(storage, 'boletas/' + parentEmail + '_' + Date.now() + '.pdf');
 
                     try {
@@ -169,7 +258,7 @@
                         finalDocUrl = await getDownloadURL(snapshot.ref);
                     } catch (storageError) {
                         console.error("Storage Error:", storageError);
-                        const confirmContinue = confirm("Error al subir archivo (probablemente Storage no habilitado). ¿Quieres guardar los datos sin la boleta?");
+                        const confirmContinue = confirm("Error al subir archivo. ¿Guardar sin boleta?");
                         if (!confirmContinue) throw new Error("Cancelado por usuario");
                     }
                 }
@@ -179,6 +268,7 @@
                 await setDoc(doc(db, "students", parentEmail), {
                     parentEmail: parentEmail,
                     studentName: studentName,
+                    dni: dni,
                     grade: grade,
                     section: section,
                     average: average,

@@ -88,11 +88,12 @@
             <div class="info-card">
                 <h4><i class="fas fa-user-graduate"></i> Estudiante</h4>
                 <p><strong id="studentName">Cargando...</strong></p>
+                <p>DNI: <span id="studentDni">--</span></p>
                 <p>Grado: <span id="studentGrade">--</span></p>
                 <p>Sección: <span id="studentSection">--</span></p>
             </div>
             <div class="info-card">
-                <h4><i class="fas fa-clipboard-check"></i> Asistencia</h4>
+                <h4><i class="fas fa-clipboard-check"></i> Asistencia Anual</h4>
                 <p>Asistencias: <strong id="studentAttendance">--%</strong></p>
                 <p>Estado: <span id="attendanceStatus">--</span></p>
             </div>
@@ -109,13 +110,24 @@
                 <a href="#" id="reportCardLink" target="_blank" class="btn btn-primary"
                     style="text-decoration: none; color: white;">Ver / Descargar Boleta</a>
             </div>
+
+            <!-- Real-time QR Attendance -->
+            <div class="info-card" style="grid-column: 1 / -1;">
+                <h4><i class="fas fa-clock"></i> Últimas Asistencias (QR)</h4>
+                <ul id="qrList" style="list-style: none; padding: 0;">
+                    <li style="padding: 10px; border-bottom: 1px solid #eee; text-align: center; color: #666;">Cargando
+                        historial...</li>
+                </ul>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { auth, db } from './firebase-config.js';
+        import { qrDb } from './firebase-qr-config.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, query, where, getDocs, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const userEmailSpan = document.getElementById('userEmail');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -135,6 +147,7 @@
                         const data = docSnap.data();
 
                         document.getElementById('studentName').textContent = data.studentName;
+                        document.getElementById('studentDni').textContent = data.dni || "No registrado";
                         document.getElementById('studentGrade').textContent = data.grade;
                         document.getElementById('studentSection').textContent = data.section;
                         document.getElementById('studentAttendance').textContent = data.attendance + '%';
@@ -156,6 +169,13 @@
                             document.getElementById('reportCardContainer').style.display = 'none';
                         }
 
+                        // --- FETCH QR ATTENDANCE ---
+                        if (data.dni) {
+                            fetchQrAttendance(data.dni);
+                        } else {
+                            document.getElementById('qrList').innerHTML = '<li style="padding: 10px; text-align: center;">DNI no configurado en el sistema.</li>';
+                        }
+
                     } else {
                         console.log("No such document!");
                         document.querySelector('.student-info').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay datos registrados para este estudiante. Comuníquese con administración.</p>';
@@ -169,6 +189,50 @@
                 window.location.href = 'index.html';
             }
         });
+
+        async function fetchQrAttendance(dni) {
+            const list = document.getElementById('qrList');
+            try {
+                // Try 'registros' collection first
+                const q = query(
+                    collection(qrDb, "registros"),
+                    where("dni", "==", dni),
+                    orderBy("fechaHora", "desc"), // Assuming there is a timestamp field
+                    limit(5)
+                );
+
+                // Note: If 'fechaHora' doesn't exist or is different, this query might fail or need index.
+                // Fallback catch will try simpler query.
+
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    list.innerHTML = '<li style="padding: 10px; text-align: center;">No se encontraron registros recientes.</li>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const r = doc.data();
+                    // Try to format date. Identify date field.
+                    const dateStr = r.fechaHora || r.fecha || r.timestamp || r.date || "Fecha desconocida";
+                    const status = r.estado || r.status || "Asistió";
+
+                    const li = document.createElement('li');
+                    li.style.padding = '10px';
+                    li.style.borderBottom = '1px solid #eee';
+                    li.style.display = 'flex';
+                    li.style.justifyContent = 'space-between';
+                    li.innerHTML = `<span>📅 ${dateStr}</span> <span>${status}</span>`;
+                    list.appendChild(li);
+                });
+
+            } catch (error) {
+                console.warn("Error fetching QR data (Attempt 1):", error);
+                // Fallback: Use collection 'asistencia' or remove orderBy
+                list.innerHTML = `<li style="padding: 10px; text-align: center; color: orange;">Error leyendo sistema QR: ${error.message}</li>`;
+            }
+        }
 
         // Logout Functionality
         logoutBtn.addEventListener('click', () => {
