@@ -226,14 +226,12 @@
                     console.error("Error getting document:", error);
                 }
 
-            } catch (error) {
-                console.error("Error getting document:", error);
-            }
 
-        } else {
-            // User is signed out, redirect to index
-            window.location.href = 'index.html';
-        }
+
+            } else {
+                // User is signed out, redirect to index
+                window.location.href = 'index.html';
+            }
         });
 
         // --- MONTHLY HISTORY LOGIC ---
