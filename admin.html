@@ -59,7 +59,7 @@
 
 <body>
     <div class="admin-container">
-        <h2>Panel de Administración de Datos</h2>
+        <h2>Panel de Administración de Conducta</h2>
         <div id="successMsg" class="success-msg">¡Datos guardados correctamente!</div>
 
         <form id="dataForm">
@@ -70,72 +70,6 @@
                 <small>Este correo debe ser el mismo que usa el padre para ingresar.</small>
             </div>
 
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-
-            <!-- Student Info -->
-            <div class="form-group">
-                <label>Nombre del Estudiante:</label>
-                <input type="text" id="studentName" required>
-            </div>
-
-            <!-- DNI Field for QR Integration -->
-            <div class="form-group">
-                <label>DNI del Estudiante (Para QR):</label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="text" id="dni" maxlength="15" placeholder="Ej: 45446130">
-                    <button type="button" id="searchDniBtn"
-                        style="padding: 0 20px; background: #666; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.2rem;">🔍</button>
-                </div>
-                <small style="color: #666;">Haz clic en la lupa para buscar datos en el sistema QR.</small>
-            </div>
-
-            <div class="form-group" style="display: flex; gap: 20px;">
-                <div style="flex: 1;">
-                    <label>Grado:</label>
-                    <select id="grade">
-                        <option>1ro Secundaria</option>
-                        <option>2do Secundaria</option>
-                        <option>3ro Secundaria</option>
-                        <option>4to Secundaria</option>
-                        <option>5to Secundaria</option>
-                    </select>
-                </div>
-                <div style="flex: 1;">
-                    <label>Sección:</label>
-                    <input type="text" id="section" maxlength="1" style="text-transform: uppercase;">
-                </div>
-            </div>
-
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-
-            <!-- Stats -->
-            <div class="form-group">
-                <label>Promedio General (0-20):</label>
-                <input type="number" id="average" step="0.1" max="20">
-            </div>
-
-            <div class="form-group">
-                <label>Puesto en Clase:</label>
-                <input type="number" id="rank">
-            </div>
-
-            <div class="form-group">
-                <label>% de Asistencia:</label>
-                <input type="number" id="attendance" max="100">
-            </div>
-
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-
-            <!-- Report Card -->
-            <div class="form-group">
-                <label>Boleta de Notas (PDF):</label>
-                <input type="file" id="reportCardFile" accept="application/pdf">
-                <div style="margin-top: 10px; text-align: center; color: #666; font-size: 0.9em;">- O -</div>
-                <label style="margin-top: 10px;">Link Externo (Drive/Dropbox/OneDrive):</label>
-                <input type="url" id="reportCardUrlInput" placeholder="https://...">
-            </div>
-
-            <button type="submit" class="btn btn-full">Guardar Datos</button>
         </form>
         </form>
 
@@ -187,145 +121,9 @@
 
         const form = document.getElementById('dataForm');
         const msg = document.getElementById('successMsg');
-        const searchBtn = document.getElementById('searchDniBtn');
-
-        // Auto-fill Logic with Robust Search
-        searchBtn.addEventListener('click', async () => {
-            const dniVal = document.getElementById('dni').value.trim();
-            if (!dniVal) return alert("Escribe un DNI primero.");
-
-            const originalText = searchBtn.textContent;
-            searchBtn.textContent = '...';
-            searchBtn.disabled = true;
-
-            try {
-                console.log("Buscando DNI:", dniVal);
-
-                // Strategy: Try multiple variations to find the user
-                let foundData = null;
-
-                // 1. Try 'attendance' (Correct Collection) - Using 'dni' field
-                // Note: The QR app saves student DATA in 'students' and attendance usage in 'attendance'.
-                // If we want to find STUDENT info (Name, Grade), we should query 'students' collection from the QR DB?
-                // Let's check script.js line 342: db.collection('students').add(studentData) -> yes!
-                // So for AUTO-FILL, we should query 'students'.
-                // For DASHBOARD (Attendance History), we should query 'attendance'.
-
-                // Let's try 'students' first for the Admin Panel Auto-fill
-                let q = query(collection(qrDb, "students"), where("id", "==", dniVal), limit(1));
-                let snap = await getDocs(q);
-
-                if (snap.empty) {
-                    // Fallback: Check 'attendance' if 'students' fails (maybe they exist in logs but not registry)
-                    console.log("No encontrado en 'students', buscando en 'attendance'...");
-                    q = query(collection(qrDb, "attendance"), where("dni", "==", dniVal), limit(1));
-                    snap = await getDocs(q);
-                }
-
-                if (!snap.empty) {
-                    foundData = snap.docs[0].data();
-                    console.log("¡Datos encontrados!", foundData);
-
-                    // Mapping Logic: QR App uses 'n', 'g', 's', 'id'
-                    const name = foundData.n || foundData.name || foundData.nombre;
-                    const grade = foundData.g || foundData.grade || foundData.grado;
-                    const section = foundData.s || foundData.section || foundData.seccion;
-
-                    if (name) {
-                        document.getElementById('studentName').value = name;
-                        alert(`¡Encontrado en Sistema QR!\nNombre: ${name}\nGrado: ${grade} | Sección: ${section}`);
-                    } else {
-                        alert("Registro encontrado, pero faltan datos de nombre.");
-                    }
-
-                    if (grade) {
-                        const g = document.getElementById('grade');
-                        for (let i = 0; i < g.options.length; i++) {
-                            // QR app saves grade as number or string? script.js says: data.g
-                            if (g.options[i].text.toLowerCase().includes(grade.toString().toLowerCase())) g.selectedIndex = i;
-                        }
-                    }
-
-                    if (section) document.getElementById('section').value = section;
-
-                } else {
-                    alert("❌ No se encontró nada.\n\nEl DNI no está en la colección 'students' ni 'attendance' del QR.");
-                }
-            } catch (e) {
-                console.error("Error en búsqueda:", e);
-                alert("Error técnico: " + e.message);
-            }
-            searchBtn.textContent = originalText;
-            searchBtn.disabled = false;
-        });
-
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const parentEmail = document.getElementById('parentEmail').value.toLowerCase().trim();
-            const studentName = document.getElementById('studentName').value;
-            const dni = document.getElementById('dni').value.trim();
-            const grade = document.getElementById('grade').value;
-            const section = document.getElementById('section').value.toUpperCase();
-            const average = document.getElementById('average').value;
-            const rank = document.getElementById('rank').value;
-            const attendance = document.getElementById('attendance').value;
-
-            const fileInput = document.getElementById('reportCardFile');
-            const urlInput = document.getElementById('reportCardUrlInput');
-            let finalDocUrl = urlInput.value.trim();
-
-            const btn = form.querySelector('button[type="submit"]');
-            const originalText = btn.innerText;
-            btn.innerText = 'Guardando...';
-            btn.disabled = true;
-
-            try {
-                // Upload File if present (and URL is empty)
-                if (fileInput.files.length > 0 && !finalDocUrl) {
-                    btn.innerText = 'Subiendo Archivo...';
-                    const file = fileInput.files[0];
-                    const storageRef = ref(storage, 'boletas/' + parentEmail + '_' + Date.now() + '.pdf');
-
-                    try {
-                        const snapshot = await uploadBytes(storageRef, file);
-                        finalDocUrl = await getDownloadURL(snapshot.ref);
-                    } catch (storageError) {
-                        console.error("Storage Error:", storageError);
-                        const confirmContinue = confirm("Error al subir archivo. ¿Guardar sin boleta?");
-                        if (!confirmContinue) throw new Error("Cancelado por usuario");
-                    }
-                }
-
-                // Save to Firestore
-                btn.innerText = 'Guardando en Base de Datos...';
-                await setDoc(doc(db, "students", parentEmail), {
-                    parentEmail: parentEmail,
-                    studentName: studentName,
-                    dni: dni,
-                    grade: grade,
-                    section: section,
-                    average: average,
-                    rank: rank,
-                    attendance: attendance,
-                    reportCardUrl: finalDocUrl,
-                    lastUpdated: new Date()
-                });
-
-                msg.style.display = 'block';
-                form.reset();
-                setTimeout(() => msg.style.display = 'none', 3000);
-            } catch (error) {
-                console.error("Error saving document: ", error);
-                if (error.message !== "Cancelado por usuario") {
-                    alert("Error al guardar: " + error.message);
-                }
-            }
-
-            btn.innerText = originalText;
-            btn.disabled = false;
-            btn.innerText = originalText;
-            btn.disabled = false;
+        // Form logic removed as per user request to simplify UI
+        form.addEventListener('submit', (e) => e.preventDefault()); btn.innerText = originalText;
+        btn.disabled = false;
         });
 
         // --- Conduct Form Logic ---
