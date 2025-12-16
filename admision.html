@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admisión 2026 | IEE Genaro Herrera</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html" style="display: flex; gap: 15px; align-items: center;">
+                    <img src="images/logo.png" alt="Insignia IEE Genaro Herrera" class="logo-img">
+                    <div class="logo-text">
+                        <h1>IEE GENARO HERRERA</h1>
+                        <span>Honor, Lealtad, Disciplina</span>
+                    </div>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="quienes-somos.html">Nosotros</a></li>
+                    <li><a href="inicial.html">Inicial</a></li>
+                    <li><a href="primaria.html">Primaria</a></li>
+                    <li><a href="secundaria.html">Secundaria</a></li>
+                    <li><a href="admision.html" class="active">Admisión</a></li>
+                    <li><a href="servicios.html">Servicios</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                    <li><a href="index.html#intranet" class="btn-intranet"><i class="fas fa-laptop-house"></i> Aula
+                            Virtual</a></li>
+                </ul>
+                <div class="burger">
+                    <div class="line1"></div>
+                    <div class="line2"></div>
+                    <div class="line3"></div>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero level-hero"
+        style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h2 class="animate-up">Proceso de</h2>
+            <h1 class="animate-up delay-1">Admisión 2026</h1>
+            <p class="animate-up delay-2">Únete a nuestra familia y forma parte de la excelencia académica.</p>
+        </div>
+    </section>
+
+    <!-- Pasos de Matrícula -->
+    <section class="info-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Proceso de Matrícula</h2>
+                <div class="underline"></div>
+            </div>
+            <div class="cards-grid">
+                <div class="card fade-in">
+                    <div class="card-icon">1</div>
+                    <h3>Registro</h3>
+                    <p>Completa el formulario de pre-inscripción online o acércate a secretaría.</p>
+                </div>
+                <div class="card fade-in delay-1">
+                    <div class="card-icon">2</div>
+                    <h3>Entrevista</h3>
+                    <p>Entrevista psicológica y académica (según nivel) para el postulante y padres.</p>
+                </div>
+                <div class="card fade-in delay-2">
+                    <div class="card-icon">3</div>
+                    <h3>Matrícula</h3>
+                    <p>Entrega de documentos y pago de derechos de inscripción.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Requisitos -->
+    <section class="section bg-light" style="padding: 80px 0;">
+        <div class="container">
+            <div class="section-title">
+                <h2>Requisitos</h2>
+                <div class="underline"></div>
+            </div>
+            <div class="split-content">
+                <div class="text-col">
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> Copia de DNI del estudiante y padres.</li>
+                        <li><i class="fas fa-check"></i> Partida de Nacimiento original.</li>
+                        <li><i class="fas fa-check"></i> Certificado de estudios años anteriores.</li>
+                        <li><i class="fas fa-check"></i> Ficha de matrícula SIAGIE (si viene de otro colegio).</li>
+                        <li><i class="fas fa-check"></i> Cartilla de vacunación (Nivel Inicial).</li>
+                        <li><i class="fas fa-check"></i> 4 fotos tamaño carnet.</li>
+                    </ul>
+                </div>
+                <div class="img-col">
+                    <img src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                        alt="Documentación">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulario de Pre-inscripción -->
+    <section class="info-section">
+        <div class="container">
+            <div class="section-title">
+                <h2>Pre-Inscripción</h2>
+                <p>Déjanos tus datos y nos comunicaremos contigo.</p>
+            </div>
+            <div class="intranet-form-wrapper"
+                style="max-width: 600px; margin: 0 auto; background: white; padding: 40px; border-radius: 15px; box-shadow: var(--shadow);">
+                <form>
+                    <div class="input-group">
+                        <i class="fas fa-user"></i>
+                        <input type="text" placeholder="Nombre completo del Apoderado" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-child"></i>
+                        <input type="text" placeholder="Nombre del Postulante" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" placeholder="Teléfono de contacto" required>
+                    </div>
+                    <div class="input-group">
+                        <i class="fas fa-graduation-cap"></i>
+                        <select
+                            style="width: 100%; padding: 15px 15px 15px 45px; border: 2px solid #eee; border-radius: 8px; font-family: inherit; color: #666;">
+                            <option value="">Seleccione Nivel</option>
+                            <option value="inicial">Inicial</option>
+                            <option value="primaria">Primaria</option>
+                            <option value="secundaria">Secundaria</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-full">Enviar Solicitud</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <script type="module" src="script.js"></script>
+
+    <!-- Footer placeholder (Must match index) -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-col">
+                <h3>IEE GENARO HERRERA</h3>
+                <p>Educar es redimir.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> Av. Moisés Rengifo 605, Contamana</li>
+                    <li><i class="fas fa-phone"></i> (065) 123-4567</li>
+                    <li><i class="fas fa-envelope"></i> ieegenaroherreracontamana@gmail.com</li>
+                </ul>
+            </div>
+            <div class="footer-col social">
+                <h3>Síguenos</h3>
+                <div class="social-icons">
+                    <a href="https://www.facebook.com/ieegenaroherrera" target="_blank"><i
+                            class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 IEE Genaro Herrera. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+</body>
+
+</html>
