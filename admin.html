@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | IEE Genaro Herrera</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-    <!-- SheetJS for Excel Processing -->
-    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- SheetJS for Excel Processing (CDNJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         body {
@@ -210,15 +210,24 @@
 
         // 1. Download Template
         document.getElementById('downloadTplBtn').addEventListener('click', () => {
-            const wb = XLSX.utils.book_new();
-            const ws_data = [
-                ["DNI", "TIPO", "DETALLE"], // Header
-                ["12345678", "Mérito", "Participación destacada en clase"], // Example 1
-                ["87654321", "Tardanza", "Llegó 15 minutos tarde"]  // Example 2
-            ];
-            const ws = XLSX.utils.aoa_to_sheet(ws_data);
-            XLSX.utils.book_append_sheet(wb, ws, "Reportes");
-            XLSX.writeFile(wb, "Plantilla_Conducta_GH.xlsx");
+            if (typeof XLSX === 'undefined') {
+                alert("Error: La librería de Excel no se cargó correctamente. Verifique su conexión a internet.");
+                return;
+            }
+            try {
+                const wb = XLSX.utils.book_new();
+                const ws_data = [
+                    ["DNI", "TIPO", "DETALLE"], // Header
+                    ["12345678", "Mérito", "Participación destacada en clase"], // Example 1
+                    ["87654321", "Tardanza", "Llegó 15 minutos tarde"]  // Example 2
+                ];
+                const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                XLSX.utils.book_append_sheet(wb, ws, "Reportes");
+                XLSX.writeFile(wb, "Plantilla_Conducta_GH.xlsx");
+            } catch (e) {
+                console.error("Error creating excel:", e);
+                alert("Error generando la plantilla: " + e.message);
+            }
         });
 
         // 2. Process File
