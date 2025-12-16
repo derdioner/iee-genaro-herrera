@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel | IEE Genaro Herrera</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS for Excel Processing -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="style.css">
     <style>
         body {
@@ -107,6 +109,39 @@
                     Reporte</button>
             </form>
         </div>
+
+        <hr style="margin: 40px 0; border: 0; border-top: 2px dashed #666;">
+
+        <!-- Bulk Upload Section -->
+        <div id="bulkSection"
+            style="background: #e9ecef; padding: 20px; border-radius: 10px; border: 1px solid #ced4da;">
+            <h3 style="color: #495057; margin-bottom: 15px;">📂 Carga Masiva (Excel)</h3>
+            <p style="font-size: 0.9em; margin-bottom: 20px;">Use esta opción para cargar reportes de toda el aula a la
+                vez.</p>
+
+            <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+                <button type="button" id="downloadTplBtn"
+                    style="background: #17a2b8; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">
+                    📥 Descargar Plantilla
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label>Subir Archivo (.xlsx):</label>
+                <input type="file" id="bulkFile" accept=".xlsx, .xls">
+            </div>
+
+            <button type="button" id="processBtn"
+                style="width: 100%; padding: 12px; background: #28a745; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;">
+                🚀 Procesar Excel
+            </button>
+
+            <!-- Console Log -->
+            <div id="consoleLog"
+                style="margin-top: 20px; background: #333; color: #0f0; padding: 15px; border-radius: 5px; font-family: monospace; height: 150px; overflow-y: auto; font-size: 0.85rem; display: none;">
+                > Esperando archivo...
+            </div>
+        </div>
     </div>
 
     <script type="module">
@@ -170,6 +205,111 @@
 
         // Initialize date picker to today
         document.getElementById('cDate').valueAsDate = new Date();
+
+        // --- BULK UPLOAD LOGIC ---
+
+        // 1. Download Template
+        document.getElementById('downloadTplBtn').addEventListener('click', () => {
+            const wb = XLSX.utils.book_new();
+            const ws_data = [
+                ["DNI", "TIPO", "DETALLE"], // Header
+                ["12345678", "Mérito", "Participación destacada en clase"], // Example 1
+                ["87654321", "Tardanza", "Llegó 15 minutos tarde"]  // Example 2
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(ws_data);
+            XLSX.utils.book_append_sheet(wb, ws, "Reportes");
+            XLSX.writeFile(wb, "Plantilla_Conducta_GH.xlsx");
+        });
+
+        // 2. Process File
+        document.getElementById('processBtn').addEventListener('click', async () => {
+            const fileInput = document.getElementById('bulkFile');
+            const logBox = document.getElementById('consoleLog');
+
+            if (fileInput.files.length === 0) return alert("Seleccione un archivo primero.");
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            // UI Reset
+            logBox.style.display = 'block';
+            logBox.innerHTML = '> Iniciando lectura de archivo...<br>';
+            const btn = document.getElementById('processBtn');
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
+
+            reader.onload = async (e) => {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+
+                    logBox.innerHTML += `> Filas encontradas: ${jsonData.length}<br>`;
+                    logBox.innerHTML += `> Procesando... (No cierre la ventana)<br>--------------------------<br>`;
+
+                    let successCount = 0;
+                    let failCount = 0;
+
+                    for (let i = 0; i < jsonData.length; i++) {
+                        const row = jsonData[i];
+                        const dni = row.DNI ? row.DNI.toString().trim() : null;
+                        const type = row.TIPO || "Observación";
+                        const desc = row.DETALLE || "Sin detalles";
+
+                        if (!dni) {
+                            logBox.innerHTML += `<span style="color:orange;">[Fila ${i + 2}] Saltada: Sin DNI</span><br>`;
+                            continue;
+                        }
+
+                        // Reverse Lookup: Find parent email by DNI
+                        try {
+                            const q = query(collection(db, "students"), where("dni", "==", dni), limit(1));
+                            const snap = await getDocs(q);
+
+                            if (snap.empty) {
+                                logBox.innerHTML += `<span style="color:red;">[${dni}] Error: No registrado en Intranet (Sin Tutor)</span><br>`;
+                                failCount++;
+                            } else {
+                                const parentDoc = snap.docs[0];
+                                const parentEmail = parentDoc.id; // Correct ID
+
+                                // Add Conduct Report
+                                await addDoc(collection(db, "students", parentEmail, "conduct"), {
+                                    date: new Date().toISOString().split('T')[0], // Today
+                                    type: type,
+                                    description: desc,
+                                    timestamp: new Date(),
+                                    method: 'bulk_excel'
+                                });
+
+                                logBox.innerHTML += `<span style="color:#0f0;">[${dni}] OK: Registrado a ${parentEmail}</span><br>`;
+                                successCount++;
+                            }
+                        } catch (err) {
+                            logBox.innerHTML += `<span style="color:red;">[${dni}] Error DB: ${err.message}</span><br>`;
+                            failCount++;
+                        }
+
+                        // Scroll to bottom
+                        logBox.scrollTop = logBox.scrollHeight;
+                    }
+
+                    logBox.innerHTML += `--------------------------<br>`;
+                    logBox.innerHTML += `> FINALIZADO. Éxitos: ${successCount} | Fallos: ${failCount}<br>`;
+                    alert(`Proceso completado.\nExitosos: ${successCount}\nFallidos: ${failCount}`);
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Error crítico leyendo el Excel: " + err.message);
+                }
+
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            };
+
+            reader.readAsArrayBuffer(file);
+        });
     </script>
 </body>
 
