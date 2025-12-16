@@ -84,11 +84,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then((userCredential) => {
                     // Signed in 
                     const user = userCredential.user;
+                    const role = document.getElementById('loginRole').value;
+
                     loginMessage.innerText = 'Acceso concedido. Redirigiendo...';
                     loginMessage.style.color = 'green';
 
                     setTimeout(() => {
-                        window.location.href = 'dashboard.html';
+                        if (role === 'staff') {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'dashboard.html';
+                        }
                     }, 1000);
                 })
                 .catch((error) => {
