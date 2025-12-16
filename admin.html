@@ -137,12 +137,51 @@
 
             <button type="submit" class="btn btn-full">Guardar Datos</button>
         </form>
+        </form>
+
+        <hr style="margin: 40px 0; border: 0; border-top: 2px dashed #ccc;">
+
+        <!-- Conduct Control Section -->
+        <div id="conductSection"
+            style="background: #fff3cd; padding: 20px; border-radius: 10px; border: 1px solid #ffeeba;">
+            <h3 style="color: #856404; margin-bottom: 15px;">🚧 Control de Conducta / Auxiliar</h3>
+            <p style="font-size: 0.9em; margin-bottom: 15px;">Aquí puede registrar incidencias, observaciones o méritos
+                para el estudiante actual.</p>
+
+            <form id="conductForm">
+                <div class="form-group">
+                    <label>Fecha:</label>
+                    <input type="date" id="cDate" required>
+                </div>
+                <div class="form-group">
+                    <label>Tipo de Reporte:</label>
+                    <select id="cType">
+                        <option value="Observación">Observación (General)</option>
+                        <option value="Tardanza">Tardanza Reiterada</option>
+                        <option value="Indisciplina">Indisciplina</option>
+                        <option value="Falta de Tareas">Falta de Tareas</option>
+                        <option value="Mérito">Mérito / Felicitación</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Detalle / Descripción:</label>
+                    <textarea id="cDesc" rows="3"
+                        style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;"
+                        placeholder="Describa el incidente o motivo..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-full" style="background: #e0a800; border: none;">Registrar
+                    Reporte</button>
+            </form>
+        </div>
     </div>
 
     <script type="module">
         import { db, storage } from './firebase-config.js';
         import { qrDb } from './firebase-qr-config.js';
         import { doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { qrDb } from './firebase-qr-config.js';
+        import { doc, setDoc, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -285,7 +324,55 @@
 
             btn.innerText = originalText;
             btn.disabled = false;
+            btn.innerText = originalText;
+            btn.disabled = false;
         });
+
+        // --- Conduct Form Logic ---
+        const conductForm = document.getElementById('conductForm');
+        conductForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const parentEmail = document.getElementById('parentEmail').value.toLowerCase().trim();
+            if (!parentEmail) {
+                alert("Por favor, ingrese el Correo del Padre arriba primero.");
+                return;
+            }
+
+            const date = document.getElementById('cDate').value;
+            const type = document.getElementById('cType').value;
+            const desc = document.getElementById('cDesc').value;
+
+            const btn = conductForm.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Registrando...';
+            btn.disabled = true;
+
+            try {
+                // Add to sub-collection "conduct"
+                await addDoc(collection(db, "students", parentEmail, "conduct"), {
+                    date: date,
+                    type: type,
+                    description: desc,
+                    timestamp: new Date()
+                });
+
+                alert("Reporte de conducta registrado exitosamente.");
+                conductForm.reset();
+                // Reset date to today
+                document.getElementById('cDate').valueAsDate = new Date();
+
+            } catch (error) {
+                console.error("Error adding conduct report: ", error);
+                alert("Error al registrar: " + error.message);
+            }
+
+            btn.innerText = originalText;
+            btn.disabled = false;
+        });
+
+        // Initialize date picker to today
+        document.getElementById('cDate').valueAsDate = new Date();
     </script>
 </body>
 

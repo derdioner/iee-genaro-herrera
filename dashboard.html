@@ -123,6 +123,16 @@
                         historial...</li>
                 </ul>
             </div>
+
+            <!-- Conduct Reports Section -->
+            <div class="info-card" style="grid-column: 1 / -1; border-left: 5px solid #e0a800;">
+                <h4 style="color: #856404;"><i class="fas fa-exclamation-circle"></i> Control de Conducta / Tutoría</h4>
+                <div id="conductListWrapper" style="margin-top: 15px;">
+                    <ul id="conductList" style="list-style: none; padding: 0;">
+                        <li style="padding: 10px; text-align: center; color: #666;">Cargando reportes...</li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -216,7 +226,11 @@
                             document.getElementById('qrList').innerHTML = '<li style="padding: 10px; text-align: center;">DNI no configurado en el sistema.</li>';
                             const histBtn = document.getElementById('viewHistoryBtn');
                             if (histBtn) histBtn.style.display = 'none';
+                            if (histBtn) histBtn.style.display = 'none';
                         }
+
+                        // --- FETCH CONDUCT REPORTS ---
+                        fetchConductReports(user.email);
 
                     } else {
                         console.log("No such document!");
@@ -436,6 +450,103 @@
                 } catch (e2) {
                     console.error("Error Fallback:", e2);
                     list.innerHTML = `<li style="padding: 10px; text-align: center; color: red;">Error: ${e2.message}</li>`;
+                }
+            }
+        }
+
+        async function fetchConductReports(email) {
+            const list = document.getElementById('conductList');
+            try {
+                // Subcollection 'conduct'
+                const q = query(
+                    collection(db, "students", email, "conduct"),
+                    orderBy("date", "desc"),
+                    limit(20)
+                );
+
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    list.innerHTML = '<li style="padding: 10px; text-align: center; color: #666;">No hay reportes de conducta registrados.</li>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const dateParts = data.date.split('-'); // YYYY-MM-DD
+                    const dateFmt = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+
+                    // Style based on type
+                    let color = '#333';
+                    let icon = 'fa-info-circle';
+                    if (data.type === 'Mérito') { color = 'green'; icon = 'fa-star'; }
+                    else if (data.type === 'Tardanza') { color = 'orange'; icon = 'fa-clock'; }
+                    else if (data.type === 'Indisciplina') { color = 'red'; icon = 'fa-times-circle'; }
+
+                    const li = document.createElement('li');
+                    li.style.padding = '15px';
+                    li.style.borderBottom = '1px solid #eee';
+                    li.style.display = 'flex';
+                    li.style.flexDirection = 'column';
+                    li.style.gap = '5px';
+
+                    li.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                            <span style="color: ${color};"><i class="fas ${icon}"></i> ${data.type}</span>
+                            <span style="font-size:0.9em; color:#666;">${dateFmt}</span>
+                        </div>
+                        <p style="margin:0; font-size:0.95em;">${data.description}</p>
+                    `;
+                    list.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error("Error fetching conduct:", error);
+
+                // Fallback if index is missing
+                if (error.message.includes("index")) {
+                    console.log("Index missing, trying fallback...");
+                    try {
+                        const q2 = query(collection(db, "students", email, "conduct"), limit(20));
+                        const snap2 = await getDocs(q2);
+                        if (snap2.empty) {
+                            list.innerHTML = '<li style="padding: 10px; text-align: center; color: #666;">No hay reportes de conducta registrados.</li>';
+                            return;
+                        }
+
+                        const docs = [];
+                        snap2.forEach(d => docs.push(d.data()));
+                        // Client sort
+                        docs.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                        list.innerHTML = '';
+                        docs.forEach(data => {
+                            const dateParts = data.date.split('-');
+                            const dateFmt = `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+                            let color = '#333';
+                            if (data.type === 'Mérito') color = 'green';
+                            else if (data.type === 'Tardanza') color = 'orange';
+                            else if (data.type === 'Indisciplina') color = 'red';
+
+                            const li = document.createElement('li');
+                            li.style.padding = '15px';
+                            li.style.borderBottom = '1px solid #eee';
+                            li.innerHTML = `
+                                <div style="display:flex; justify-content:space-between; font-weight:bold;">
+                                    <span style="color: ${color};">${data.type}</span>
+                                    <span style="font-size:0.9em; color:#666;">${dateFmt}</span>
+                                </div>
+                                <p style="margin:0;">${data.description}</p>
+                             `;
+                            list.appendChild(li);
+                        });
+
+                    } catch (e2) {
+                        list.innerHTML = `<li style="color:red; text-align:center;">Error cargando reportes.</li>`;
+                    }
+                } else {
+                    list.innerHTML = `<li style="color:red; text-align:center;">Error: ${error.message}</li>`;
                 }
             }
         }
