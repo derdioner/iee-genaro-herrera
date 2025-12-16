@@ -127,8 +127,8 @@
             </div>
 
             <div class="form-group">
-                <label>Subir Archivo (.xlsx):</label>
-                <input type="file" id="bulkFile" accept=".xlsx, .xls">
+                <label>Subir Archivo (.csv o .xlsx):</label>
+                <input type="file" id="bulkFile" accept=".csv, .xlsx, .xls">
             </div>
 
             <button type="button" id="processBtn"
@@ -208,24 +208,25 @@
 
         // --- BULK UPLOAD LOGIC ---
 
-        // 1. Download Template
+        // 1. Download Template (CSV Native - No Library Required)
         document.getElementById('downloadTplBtn').addEventListener('click', () => {
-            if (typeof XLSX === 'undefined') {
-                alert("Error: La librería de Excel no se cargó correctamente. Verifique su conexión a internet.");
-                return;
-            }
             try {
-                const wb = XLSX.utils.book_new();
-                const ws_data = [
-                    ["DNI", "TIPO", "DETALLE"], // Header
-                    ["12345678", "Mérito", "Participación destacada en clase"], // Example 1
-                    ["87654321", "Tardanza", "Llegó 15 minutos tarde"]  // Example 2
-                ];
-                const ws = XLSX.utils.aoa_to_sheet(ws_data);
-                XLSX.utils.book_append_sheet(wb, ws, "Reportes");
-                XLSX.writeFile(wb, "Plantilla_Conducta_GH.xlsx");
+                // BOM for Excel to read UTF-8 correctly
+                const BOOM = "\uFEFF";
+                const csvContent = BOOM + "DNI,TIPO,DETALLE\n" +
+                    "12345678,Mérito,Participación destacada en clase\n" +
+                    "87654321,Tardanza,Llegó 15 minutos tarde";
+
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", "Plantilla_Conducta_GH.csv");
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
             } catch (e) {
-                console.error("Error creating excel:", e);
+                console.error("Error creating scv:", e);
                 alert("Error generando la plantilla: " + e.message);
             }
         });
@@ -249,10 +250,38 @@
 
             reader.onload = async (e) => {
                 try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    let jsonData = [];
+
+                    // Detect File Type
+                    if (file.name.endsWith('.csv')) {
+                        // Parse CSV Manually
+                        const text = new TextDecoder("utf-8").decode(new Uint8Array(e.target.result));
+                        const lines = text.split('\n');
+                        const headers = lines[0].split(',').map(h => h.trim());
+
+                        for (let i = 1; i < lines.length; i++) {
+                            if (!lines[i].trim()) continue;
+                            const cols = lines[i].split(',');
+                            if (cols.length < 1) continue;
+
+                            let row = {};
+                            // Simple mapping assuming 3 columns: DNI, TIPO, DETALLE
+                            row['DNI'] = cols[0] ? cols[0].trim() : null;
+                            row['TIPO'] = cols[1] ? cols[1].trim() : null;
+                            row['DETALLE'] = cols[2] ? cols[2].trim() : null;
+                            jsonData.push(row);
+                        }
+
+                    } else {
+                        // Assume XLSX
+                        if (typeof XLSX === 'undefined') {
+                            throw new Error("Librería XLSX no cargada. Use formato CSV o verifique conexión.");
+                        }
+                        const data = new Uint8Array(e.target.result);
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    }
 
                     logBox.innerHTML += `> Filas encontradas: ${jsonData.length}<br>`;
                     logBox.innerHTML += `> Procesando... (No cierre la ventana)<br>--------------------------<br>`;
