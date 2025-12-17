@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comunicados Oficiales | IEE Genaro Herrera</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .notices-section {
+            padding: 80px 0;
+            background: var(--bg-light);
+        }
+
+        .notice-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 25px;
+            box-shadow: var(--shadow);
+            border-left: 5px solid var(--primary-color);
+            transition: var(--transition);
+        }
+
+        .notice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .notice-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            background: rgba(0, 191, 255, 0.1);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .notice-content {
+            flex: 1;
+        }
+
+        .notice-date {
+            font-size: 0.85rem;
+            color: var(--text-light);
+            margin-bottom: 5px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .notice-content h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .notice-content p {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+        }
+
+        .notice-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-download {
+            padding: 8px 15px;
+            font-size: 0.8rem;
+            border-radius: 5px;
+            background: #f1f1f1;
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+        }
+
+        .btn-download:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .notice-card {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .notice-actions {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="main-header" id="header">
+        <div class="container header-container">
+            <div class="logo">
+                <a href="index.html" style="display: flex; align-items: center; gap: 15px;">
+                    <img src="images/logo.png" alt="Insignia IEE Genaro Herrera" class="logo-img">
+                    <div class="logo-text">
+                        <h1>IEE GENARO HERRERA</h1>
+                        <span>Honor, Lealtad, Disciplina</span>
+                    </div>
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul class="nav-links">
+                    <li><a href="index.html">Inicio</a></li>
+                    <li><a href="quienes-somos.html">Nosotros</a></li>
+                    <li><a href="inicial.html">Inicial</a></li>
+                    <li><a href="primaria.html">Primaria</a></li>
+                    <li><a href="secundaria.html">Secundaria</a></li>
+                    <li><a href="admision.html">Admisión</a></li>
+                    <li><a href="servicios.html">Servicios</a></li>
+                    <li><a href="contacto.html">Contacto</a></li>
+                    <li><a href="index.html#intranet" class="btn-intranet"><i class="fas fa-laptop-house"></i> Aula
+                            Virtual</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Page Title -->
+    <section class="hero level-hero"
+        style="background-image: url('https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80'); height: 40vh;">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="animate-up">Comunicados Oficiales</h1>
+            <p class="animate-up delay-1">Información importante, circulares y avisos para la comunidad educativa.</p>
+        </div>
+    </section>
+
+    <!-- Notices Section -->
+    <section class="notices-section">
+        <div class="container">
+
+            <div class="section-title">
+                <h2>Últimos Avisos</h2>
+                <div class="underline"></div>
+            </div>
+
+            <!-- Comunicado 1 -->
+            <article class="notice-card fade-in">
+                <div class="notice-icon">
+                    <i class="fas fa-file-signature"></i>
+                </div>
+                <div class="notice-content">
+                    <span class="notice-date"><i class="far fa-calendar-alt"></i> 15 de Diciembre, 2024</span>
+                    <h3>Comunicado 015-2024: Proceso de Matrícula 2025</h3>
+                    <p>Se informa a los padres de familia sobre el cronograma y requisitos para la matrícula del año
+                        escolar 2025. Incluye fechas para estudiantes nuevos y regulares.</p>
+                    <div class="notice-actions">
+                        <a href="#" class="btn-download"><i class="fas fa-file-pdf"></i> Descargar Circular</a>
+                        <a href="#" class="btn-download"><i class="fas fa-eye"></i> Ver Detalles</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Comunicado 2 -->
+            <article class="notice-card fade-in delay-1">
+                <div class="notice-icon">
+                    <i class="fas fa-tshirt"></i>
+                </div>
+                <div class="notice-content">
+                    <span class="notice-date"><i class="far fa-calendar-alt"></i> 10 de Diciembre, 2024</span>
+                    <h3>Aviso Importante: Uniforme Escolar</h3>
+                    <p>Recordatorio sobre las especificaciones del uniforme escolar oficial para el próximo año. Evite
+                        sanciones asegurando el cumplimiento del reglamento.</p>
+                    <div class="notice-actions">
+                        <a href="#" class="btn-download"><i class="fas fa-file-image"></i> Ver Modelo</a>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Comunicado 3 -->
+            <article class="notice-card fade-in delay-2">
+                <div class="notice-icon">
+                    <i class="fas fa-bus"></i>
+                </div>
+                <div class="notice-content">
+                    <span class="notice-date"><i class="far fa-calendar-alt"></i> 01 de Diciembre, 2024</span>
+                    <h3>Rutas de Transporte Escolar</h3>
+                    <p>Actualización de las rutas y horarios de los buses escolares para el verano. Por favor revisar
+                        los nuevos paraderos.</p>
+                    <div class="notice-actions">
+                        <a href="#" class="btn-download"><i class="fas fa-map-marked-alt"></i> Ver Rutas</a>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container footer-content">
+            <div class="footer-col">
+                <h3>IEE GENARO HERRERA</h3>
+                <p>Educar es redimir.</p>
+            </div>
+            <div class="footer-col">
+                <h3>Contacto</h3>
+                <ul>
+                    <li><i class="fas fa-map-marker-alt"></i> Av. Moisés Rengifo 605, Contamana</li>
+                    <li><i class="fas fa-phone"></i> (065) 123-4567</li>
+                    <li><i class="fas fa-envelope"></i> ieegenaroherreracontamana@gmail.com</li>
+                </ul>
+            </div>
+            <div class="footer-col social">
+                <h3>Síguenos</h3>
+                <div class="social-icons">
+                    <a href="https://www.facebook.com/ieegenaroherrera" target="_blank"><i
+                            class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 IEE Genaro Herrera. Todos los derechos reservados.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple animation script (embedded for simplicity in this specific file)
+        document.addEventListener('DOMContentLoaded', () => {
+            const observerOptions = { threshold: 0.2 };
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in, .animate-up').forEach(el => observer.observe(el));
+        });
+    </script>
+</body>
+
+</html>
