@@ -308,9 +308,11 @@ ul {
 /* #home Specifics Updated - "Premium Animated" */
 /* #home Specifics Updated - "Professional Dynamic" */
 /* #home Specifics Updated - "Banner Image Mode" */
+/* #home Specifics Updated - "Banner Image Background" */
 #home {
-    background: white;
-    /* Image has its own background */
+    background: url('images/hero-full-banner.png') no-repeat center center;
+    background-size: cover;
+    /* Span full width nicely */
     min-height: 85vh;
     position: relative;
     display: flex;
@@ -322,42 +324,64 @@ ul {
 #home::before,
 #home::after {
     display: none;
-    /* No extra overlays needed for banner */
 }
 
 #home .hero-content {
     position: relative;
     z-index: 5;
     text-align: center;
-    width: 100%;
-    /* Full width */
-    max-width: none;
-    /* Remove cap */
-    padding: 0;
-    /* Remove padding for edge-to-edge */
+    max-width: 1200px;
+    padding: 20px;
     background: none;
     box-shadow: none;
     border: none;
 }
 
 .hero-banner {
-    width: 100%;
-    /* Force full width */
-    max-width: none;
-    height: auto;
-    display: block;
-    margin: 0;
-    border-radius: 0;
-    /* Flat edges for banner */
-    box-shadow: none;
-    animation: fadeInUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    display: none;
+    /* Hide img tag if present, we use BG now */
 }
 
-/* Clear out replaced text styles to keep CSS clean */
-#home h1,
-#home h2,
+/* Restore Text Styles */
+#home h2 {
+    display: inline-block;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: #64ffda;
+    /* Cyan stands out on blue */
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    /* Contrast */
+}
+
+#home h1 {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 5.5rem;
+    line-height: 1.1;
+    margin-bottom: 25px;
+    color: white;
+    text-transform: uppercase;
+    background: none;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    /* Readable shadow */
+    animation: none;
+    opacity: 1;
+}
+
 #home p {
-    display: none;
+    display: block;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-style: italic;
+    color: white;
+    margin: 0 auto;
+    max-width: 700px;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
 /* Tablet/Mobile sizing */
