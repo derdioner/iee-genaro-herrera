@@ -268,7 +268,7 @@ ul {
 .hero {
     height: 85vh;
     /* Reduced from 100vh */
-    background: url('images/hero-bg-new.jpg') no-repeat center center/cover;
+    background: var(--primary-dark);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -277,6 +277,25 @@ ul {
     position: relative;
     padding-top: 80px;
 }
+
+#home {
+    background: none;
+    background-color: var(--bg-light);
+    /* Or white */
+    color: var(--text-color);
+}
+
+#home .hero-overlay {
+    display: none;
+}
+
+#home h1,
+#home h2,
+#home p {
+    text-shadow: none;
+    color: var(--text-color);
+}
+
 
 /* Specific Heroes for Levels */
 .level-hero {
