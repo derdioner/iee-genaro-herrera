@@ -1037,8 +1037,8 @@ ul {
 .input-group input,
 .input-group select {
     width: 100%;
-    padding: 12px 15px 12px 45px;
-    /* Space for icon on left */
+    padding: 12px 15px 12px 55px;
+    /* Increased to avoids text overlap with icon */
     border: 2px solid #f0f0f0;
     border-radius: 10px;
     font-size: 0.95rem;
