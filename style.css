@@ -279,14 +279,37 @@ ul {
 }
 
 #home {
-    background: none;
-    background-color: var(--bg-light);
-    /* Or white */
-    color: var(--text-color);
+    background: url('images/hero-bg-new.jpg') no-repeat center center/cover;
+    /* Fallback or restore if they want, but assuming no image */
+    background: var(--bg-light);
+    /* Base */
+    /* Only apply the subtle pattern or gradient if desired, keeping it clean */
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 #home .hero-overlay {
+    background: rgba(255, 255, 255, 0.5);
+    /* Lighter overlay */
     display: none;
+    /* Hide overlay if we want clean look, or keep */
+}
+
+/* "Esa ventana": The container of the text */
+#home .hero-content {
+    background: rgba(0, 191, 255, 0.15);
+    /* Celeste transparente */
+    backdrop-filter: blur(10px);
+    /* Difuminado */
+    -webkit-backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 20px;
+    border: 1px solid rgba(0, 191, 255, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 191, 255, 0.1);
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 #home h1,
