@@ -92,13 +92,36 @@
                 <div class="underline"></div>
             </div>
 
-            <!-- Facebook Custom Feed (Populated by JS) -->
-            <div id="news-grid" class="news-grid">
-                <!-- Loading State -->
-                <div class="loading-news" style="grid-column: 1/-1; text-align: center; padding: 40px;">
-                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--primary-color);"></i>
-                    <p style="margin-top: 10px; color: var(--text-light);">Cargando noticias...</p>
+            <!-- Facebook Manual Embeds -->
+            <div class="news-grid-embeds" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
+
+                <!-- Post 1 -->
+                <div class="fb-post-embed">
+                    <iframe
+                        src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fieegenaroherrera%2Fposts%2Fpfbid02MTbVaC326fnr7abX5coG9DsgFnGqU1WTyiR3o2fjP6jksQ5k6gkQDqRZhqK8Rf8Xl&show_text=true&width=500"
+                        width="100%" height="600" style="border:none;overflow:hidden" scrolling="no" frameborder="0"
+                        allowfullscreen="true"
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
                 </div>
+
+                <!-- Post 2 (Duplicate for demo, change URL later) -->
+                <div class="fb-post-embed">
+                    <iframe
+                        src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fieegenaroherrera%2Fposts%2Fpfbid02MTbVaC326fnr7abX5coG9DsgFnGqU1WTyiR3o2fjP6jksQ5k6gkQDqRZhqK8Rf8Xl&show_text=true&width=500"
+                        width="100%" height="600" style="border:none;overflow:hidden" scrolling="no" frameborder="0"
+                        allowfullscreen="true"
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+                </div>
+
+                <!-- Post 3 (Duplicate for demo, change URL later) -->
+                <div class="fb-post-embed">
+                    <iframe
+                        src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fieegenaroherrera%2Fposts%2Fpfbid02MTbVaC326fnr7abX5coG9DsgFnGqU1WTyiR3o2fjP6jksQ5k6gkQDqRZhqK8Rf8Xl&show_text=true&width=500"
+                        width="100%" height="600" style="border:none;overflow:hidden" scrolling="no" frameborder="0"
+                        allowfullscreen="true"
+                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
+                </div>
+
             </div>
         </div>
     </section>
@@ -215,7 +238,6 @@
         </div>
     </footer>
 
-    <script type="module" src="facebook-news.js"></script>
     <script type="module" src="script.js"></script>
 </body>
 
