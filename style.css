@@ -397,17 +397,11 @@ ul {
     color: white;
     /* Explicitly white */
     text-transform: uppercase;
-    letter-spacing: -2px;
     background: none;
-    /* Remove gradient */
-    -webkit-background-clip: border-box;
-    /* Reset clip */
-    background-clip: border-box;
-    -webkit-text-fill-color: initial;
-    /* Reset fill */
-    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    /* Add shadow for better readability/pop */
-    animation: scaleIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    text-shadow: none;
+    /* No shadow */
+    animation: none;
+    /* No animation */
 }
 
 #home p {
