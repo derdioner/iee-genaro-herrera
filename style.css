@@ -307,10 +307,9 @@ ul {
 
 /* #home Specifics Updated - Matching Primary Style */
 #home {
-    background-image: url('images/hero-bg-new.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background: var(--primary-dark);
+    /* Solid color instead of image */
+    /* background-image removed as requested */
     min-height: 85vh;
     /* Keep tall for index */
     position: relative;
