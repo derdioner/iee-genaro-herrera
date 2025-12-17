@@ -307,10 +307,10 @@ ul {
 
 /* #home Specifics Updated - "Premium Animated" */
 /* #home Specifics Updated - "Professional Dynamic" */
+/* #home Specifics Updated - "Banner Image Mode" */
 #home {
-    background: linear-gradient(-45deg, #002d5a, #005b96, #00BFFF, #021b33);
-    background-size: 400% 400%;
-    animation: gradientBG 12s ease infinite;
+    background: white;
+    /* Image has its own background */
     min-height: 85vh;
     position: relative;
     display: flex;
@@ -319,114 +319,39 @@ ul {
     overflow: hidden;
 }
 
-@keyframes gradientBG {
-    0% {
-        background-position: 0% 50%;
-    }
-
-    50% {
-        background-position: 100% 50%;
-    }
-
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
-#home::before {
-    /* Subtle decorative "circuit" or "future" lines */
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image:
-        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-    background-size: 100px 100px;
-    z-index: 1;
-    mask-image: radial-gradient(circle, black 40%, transparent 100%);
-    -webkit-mask-image: radial-gradient(circle, black 40%, transparent 100%);
+#home::before,
+#home::after {
+    display: none;
+    /* No extra overlays needed for banner */
 }
 
 #home .hero-content {
     position: relative;
     z-index: 5;
     text-align: center;
-    max-width: 1000px;
-    padding: 60px 20px;
-    /* Glass feel without the boxy look */
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(5px);
-    border-radius: 40px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    max-width: 1200px;
+    padding: 20px;
+    background: none;
+    box-shadow: none;
+    border: none;
+}
+
+.hero-banner {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+    border-radius: 20px;
+    box-shadow: var(--shadow-soft);
+    /* Optional: nice floaty feel */
     animation: fadeInUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-#home h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 500;
-    font-size: 1.5rem;
-    letter-spacing: 6px;
-    text-transform: uppercase;
-    color: #64ffda;
-    /* Tech Cyan */
-    margin-bottom: 20px;
-    position: relative;
-    display: inline-block;
-}
-
-#home h2::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 2px;
-    background: #64ffda;
-    margin: 10px auto 0;
-    transition: width 0.3s;
-}
-
-#home h1 {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 900;
-    font-size: 5.5rem;
-    line-height: 1.1;
-    margin-bottom: 25px;
-    color: white;
-    /* Explicitly white */
-    text-transform: uppercase;
-    background: none;
-    text-shadow: none;
-    /* No shadow */
-    animation: none;
-    /* No animation */
-    opacity: 1;
-    /* Force visible, overriding .animate-up */
-}
-
+/* Clear out replaced text styles to keep CSS clean */
+#home h1,
+#home h2,
 #home p {
-    font-family: 'Playfair Display', serif;
-    /* Elegant contrast */
-    font-size: 1.8rem;
-    font-style: italic;
-    color: rgba(255, 255, 255, 0.9);
-    margin: 0 auto;
-    max-width: 700px;
-    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-}
-
-@keyframes scaleIn {
-    from {
-        transform: scale(0.9);
-        opacity: 0;
-    }
-
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
+    display: none;
 }
 
 /* Tablet/Mobile sizing */
