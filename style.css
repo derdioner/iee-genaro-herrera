@@ -986,7 +986,10 @@ ul {
     padding: 30px;
     /* Reduced */
     display: flex;
-    align-items: flex-end;
+    align-items: center;
+    /* Centered Vertically (was flex-end) */
+    justify-content: center;
+    /* Centered Horizontally */
 }
 
 .overlay-blue {
@@ -1000,6 +1003,8 @@ ul {
     transform: translateY(20px);
     opacity: 0;
     animation: fadeInUp 0.8s 0.2s forwards;
+    text-align: center;
+    /* Ensure text inside is centered */
 }
 
 .intranet-form-wrapper {
