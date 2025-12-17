@@ -536,6 +536,76 @@ ul {
     font-size: 0.95rem;
 }
 
+/* Flip Card Styles */
+.flip-card {
+    background-color: transparent;
+    perspective: 1000px;
+    /* Enable 3D effect */
+    padding: 0;
+    /* Remove padding from outer container to let inner handle it */
+    border: none;
+    box-shadow: none;
+    height: 320px;
+    /* Fixed height for consistency */
+}
+
+/* Container for flip animation */
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+    box-shadow: var(--shadow);
+    border-radius: 15px;
+}
+
+/* Flip on hover */
+.flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+/* Front and Back common styles */
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    /* Safari */
+    backface-visibility: hidden;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 30px;
+    /* Restore original padding */
+}
+
+/* Front Style (same as original card) */
+.flip-card-front {
+    background-color: white;
+}
+
+/* Back Style */
+.flip-card-back {
+    background-color: var(--primary-color);
+    color: white;
+    transform: rotateY(180deg);
+    padding: 0;
+    /* Remove padding to let image fill full space */
+    overflow: hidden;
+}
+
+.flip-card-back img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+}
+
 /* Teaching Staff (Plana Docente) Styling */
 .teachers-section {
     padding: 100px 0;
