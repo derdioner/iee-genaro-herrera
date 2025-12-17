@@ -346,15 +346,18 @@ ul {
 #home h2 {
     display: inline-block;
     font-family: 'Montserrat', sans-serif;
-    font-weight: 500;
-    font-size: 1.5rem;
+    font-weight: 700;
+    /* Bold */
+    font-size: 2.5rem;
+    /* Enlarged */
     letter-spacing: 6px;
     text-transform: uppercase;
     color: #64ffda;
     /* Cyan stands out on blue */
     margin-bottom: 20px;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    /* Contrast */
+    animation: slideDownFade 1s ease-out forwards;
+    /* Entrance Effect */
 }
 
 #home h1 {
