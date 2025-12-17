@@ -129,8 +129,7 @@ ul {
 .logo-img {
     height: 60px;
     width: auto;
-    display: none;
-    /* User requested to remove the insignia image */
+    /* Removed to show logo as requested */
 }
 
 .logo-text h1 {
