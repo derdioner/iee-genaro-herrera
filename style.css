@@ -390,19 +390,23 @@ ul {
 
 #home h1 {
     font-family: 'Montserrat', sans-serif;
-    /* Modern, Geometric */
     font-weight: 900;
     font-size: 5.5rem;
     line-height: 1.1;
     margin-bottom: 25px;
     color: white;
+    /* Explicitly white */
     text-transform: uppercase;
     letter-spacing: -2px;
-    background: linear-gradient(to right, #ffffff, #8be9fd);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 15px rgba(139, 233, 253, 0.3));
+    background: none;
+    /* Remove gradient */
+    -webkit-background-clip: border-box;
+    /* Reset clip */
+    background-clip: border-box;
+    -webkit-text-fill-color: initial;
+    /* Reset fill */
+    text-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    /* Add shadow for better readability/pop */
     animation: scaleIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
