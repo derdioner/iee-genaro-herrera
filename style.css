@@ -402,6 +402,8 @@ ul {
     /* No shadow */
     animation: none;
     /* No animation */
+    opacity: 1;
+    /* Force visible, overriding .animate-up */
 }
 
 #home p {
