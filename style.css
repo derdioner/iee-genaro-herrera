@@ -306,9 +306,11 @@ ul {
 }
 
 /* #home Specifics Updated - "Premium Animated" */
-/* #home Specifics Updated - "Visible & Impactful" */
+/* #home Specifics Updated - "Professional Dynamic" */
 #home {
-    background: radial-gradient(circle at center, #00BFFF 0%, #007bb5 50%, #004e75 100%);
+    background: linear-gradient(-45deg, #002d5a, #005b96, #00BFFF, #021b33);
+    background-size: 400% 400%;
+    animation: gradientBG 12s ease infinite;
     min-height: 85vh;
     position: relative;
     display: flex;
@@ -317,101 +319,129 @@ ul {
     overflow: hidden;
 }
 
-/* Add a visible geometric pattern */
+@keyframes gradientBG {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
 #home::before {
+    /* Subtle decorative "circuit" or "future" lines */
     content: '';
     position: absolute;
-    width: 100%;
-    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-image:
-        linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 30px 30px;
-    /* Grid pattern */
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 100px 100px;
     z-index: 1;
+    mask-image: radial-gradient(circle, black 40%, transparent 100%);
+    -webkit-mask-image: radial-gradient(circle, black 40%, transparent 100%);
 }
 
 #home .hero-content {
     position: relative;
     z-index: 5;
     text-align: center;
-    max-width: 900px;
-    padding: 0 20px;
+    max-width: 1000px;
+    padding: 60px 20px;
+    /* Glass feel without the boxy look */
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(5px);
+    border-radius: 40px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    animation: fadeInUp 1s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-/* Simplified, robust animations */
-@keyframes textZoom {
-    0% {
-        transform: scale(0.8);
+#home h2 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 500;
+    font-size: 1.5rem;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: #64ffda;
+    /* Tech Cyan */
+    margin-bottom: 20px;
+    position: relative;
+    display: inline-block;
+}
+
+#home h2::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: #64ffda;
+    margin: 10px auto 0;
+    transition: width 0.3s;
+}
+
+#home h1 {
+    font-family: 'Montserrat', sans-serif;
+    /* Modern, Geometric */
+    font-weight: 900;
+    font-size: 5.5rem;
+    line-height: 1.1;
+    margin-bottom: 25px;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: -2px;
+    background: linear-gradient(to right, #ffffff, #8be9fd);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 15px rgba(139, 233, 253, 0.3));
+    animation: scaleIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+#home p {
+    font-family: 'Playfair Display', serif;
+    /* Elegant contrast */
+    font-size: 1.8rem;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.9);
+    margin: 0 auto;
+    max-width: 700px;
+    text-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes scaleIn {
+    from {
+        transform: scale(0.9);
         opacity: 0;
     }
 
-    100% {
+    to {
         transform: scale(1);
         opacity: 1;
     }
 }
 
-@keyframes textGlow {
-
-    0%,
-    100% {
-        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
-    }
-
-    50% {
-        text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 30px var(--primary-color);
-    }
-}
-
-#home h2 {
-    color: #E0F7FA;
-    /* Light cyan */
-    font-size: 2rem;
-    font-weight: 600;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-    animation: slideDownFade 1s ease-out forwards;
-}
-
-#home h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 5.5rem;
-    color: white;
-    margin-bottom: 30px;
-    line-height: 1.1;
-    animation: textZoom 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
-    /* Continuous glow */
-    animation: textZoom 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) forwards, textGlow 3s ease-in-out infinite 1.2s;
-}
-
-#home p {
-    font-size: 1.5rem;
-    color: white;
-    max-width: 700px;
-    margin: 0 auto;
-    font-weight: 300;
-    opacity: 0;
-    animation: slideDownFade 1s ease-out 0.8s forwards;
-    /* Delay start */
-    border-top: 2px solid rgba(255, 255, 255, 0.2);
-    padding-top: 20px;
-    margin-top: 10px;
-}
-
-/* Tablet adjustments */
+/* Tablet/Mobile sizing */
 @media (max-width: 768px) {
     #home h1 {
-        font-size: 3.5rem;
+        font-size: 3rem;
     }
 
     #home h2 {
-        font-size: 1.5rem;
+        font-size: 1rem;
+        letter-spacing: 3px;
     }
 
     #home p {
-        font-size: 1.1rem;
+        font-size: 1.2rem;
     }
 }
 
