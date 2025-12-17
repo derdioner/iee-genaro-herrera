@@ -1018,6 +1018,21 @@ ul {
     box-shadow: var(--shadow-hover);
 }
 
+/* Re-adding base input styles with corrected padding */
+.input-group input,
+.input-group select {
+    width: 100%;
+    padding: 12px 15px 12px 70px;
+    /* 70px left padding for icon */
+    border: 2px solid #f0f0f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: var(--transition);
+    outline: none;
+    font-family: inherit;
+    background: #fcfcfc;
+}
+
 .input-group input:focus,
 .input-group select:focus {
     border-color: var(--primary-color);
