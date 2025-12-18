@@ -124,12 +124,12 @@
                 </ul>
             </div>
 
-            <!-- Conduct Reports Section -->
-            <div class="info-card" style="grid-column: 1 / -1; border-left: 5px solid #e0a800;">
-                <h4 style="color: #856404;"><i class="fas fa-exclamation-circle"></i> Control de Conducta / Tutoría</h4>
-                <div id="conductListWrapper" style="margin-top: 15px;">
-                    <ul id="conductList" style="list-style: none; padding: 0;">
-                        <li style="padding: 10px; text-align: center; color: #666;">Cargando reportes...</li>
+            <!-- Class Materials Section -->
+            <div class="info-card" style="grid-column: 1 / -1; border-left: 5px solid #28a745;">
+                <h4 style="color: #1e7e34;"><i class="fas fa-book"></i> Materiales de Clase y Tareas</h4>
+                <div id="materialsListWrapper" style="margin-top: 15px;">
+                    <ul id="materialsList" style="list-style: none; padding: 0;">
+                        <li style="padding: 10px; text-align: center; color: #666;">Cargando materiales...</li>
                     </ul>
                 </div>
             </div>
@@ -231,6 +231,9 @@
 
                         // --- FETCH CONDUCT REPORTS ---
                         fetchConductReports(user.email);
+
+                        // --- FETCH MATERIALS ---
+                        fetchMaterials(data.grade, data.section);
 
                     } else {
                         console.log("No such document!");
@@ -450,6 +453,79 @@
                 } catch (e2) {
                     console.error("Error Fallback:", e2);
                     list.innerHTML = `<li style="padding: 10px; text-align: center; color: red;">Error: ${e2.message}</li>`;
+                }
+            }
+        }
+
+        async function fetchMaterials(grade, section) {
+            const list = document.getElementById('materialsList');
+            try {
+                // Query materials matching student's grade and section
+                const q = query(
+                    collection(db, "materials"),
+                    where("grade", "==", grade),
+                    where("section", "==", section),
+                    orderBy("timestamp", "desc"),
+                    limit(20)
+                );
+
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    list.innerHTML = '<li style="padding: 10px; text-align: center; color: #666;">No hay materiales o tareas publicadas para este grado.</li>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const ts = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
+                    const dateFmt = `${ts.getDate().toString().padStart(2, '0')}/${(ts.getMonth() + 1).toString().padStart(2, '0')}/${ts.getFullYear()}`;
+
+                    const li = document.createElement('li');
+                    li.style.padding = '15px';
+                    li.style.borderBottom = '1px solid #eee';
+                    li.style.display = 'flex';
+                    li.style.justifyContent = 'space-between';
+                    li.style.alignItems = 'center';
+                    li.style.gap = '15px';
+
+                    li.innerHTML = `
+                        <div style="flex:1;">
+                            <div style="font-weight:bold; color:var(--primary-dark);">${data.title}</div>
+                            <div style="font-size:0.85em; color:#666;">${data.description || 'Sin descripción'}</div>
+                            <div style="font-size:0.8em; color:#999; margin-top:5px;">Publicado: ${dateFmt} • Por: ${data.teacherName || 'Docente'}</div>
+                        </div>
+                        <a href="${data.fileUrl}" target="_blank" class="btn btn-primary" style="padding: 5px 12px; font-size: 0.8rem; text-decoration: none; color: white;">
+                           <i class="fas fa-download"></i> Ver
+                        </a>
+                    `;
+                    list.appendChild(li);
+                });
+
+            } catch (error) {
+                console.error("Error fetching materials:", error);
+                // Fallback for missing index
+                if (error.message.includes("index")) {
+                    const q2 = query(collection(db, "materials"), where("grade", "==", grade), where("section", "==", section), limit(20));
+                    const snap2 = await getDocs(q2);
+                    if (snap2.empty) {
+                        list.innerHTML = '<li style="padding: 10px; text-align: center;">No hay materiales disponibles.</li>';
+                        return;
+                    }
+                    list.innerHTML = '';
+                    snap2.forEach(doc => {
+                        const data = doc.data();
+                        const li = document.createElement('li');
+                        li.style.padding = '10px';
+                        li.style.borderBottom = '1px solid #eee';
+                        li.style.display = 'flex';
+                        li.style.justifyContent = 'space-between';
+                        li.innerHTML = `<span>📂 ${data.title}</span> <a href="${data.fileUrl}" target="_blank">Ver</a>`;
+                        list.appendChild(li);
+                    });
+                } else {
+                    list.innerHTML = `<li style="color:red; text-align:center;">Error al cargar materiales.</li>`;
                 }
             }
         }

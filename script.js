@@ -64,59 +64,71 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginMessage = document.getElementById('loginMessage');
 
     if (loginForm) {
-        loginForm.addEventListener('submit', (e) => {
+        loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const emailInput = loginForm.querySelector('input[type="text"]'); // Assuming text input is email for now
-            const passwordInput = loginForm.querySelector('input[type="password"]');
+            const userInput = loginForm.querySelector('input[type="text"]').value.trim();
+            const passwordInput = loginForm.querySelector('input[type="password"]').value;
+            const roleSelect = document.getElementById('loginRole').value;
 
-            const email = emailInput.value;
-            const password = passwordInput.value;
-
-            // Basic UI feedback
+            // UI Feedback
             const btn = loginForm.querySelector('button');
             const originalText = btn.innerText;
             btn.innerText = 'Verificando...';
-            btn.style.opacity = '0.7';
             btn.disabled = true;
 
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    // Signed in 
-                    const user = userCredential.user;
-                    const role = document.getElementById('loginRole').value;
+            try {
+                let email = userInput;
 
-                    loginMessage.innerText = 'Acceso concedido. Redirigiendo...';
-                    loginMessage.style.color = 'green';
+                // Si el usuario ingresa un DNI (solo números, 8 dígitos)
+                if (/^\d{8}$/.test(userInput)) {
+                    loginMessage.innerText = 'Buscando DNI...';
 
-                    setTimeout(() => {
-                        if (role === 'staff') {
-                            window.location.href = 'admin.html';
-                        } else {
-                            window.location.href = 'dashboard.html';
+                    // Buscar el email asociado al DNI en Firestore
+                    const { db } = await import('./firebase-config.js');
+                    const { collection, query, where, getDocs, limit } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+
+                    const qTable = roleSelect === 'staff' ? "staff" : "students";
+                    const q = query(collection(db, qTable), where("dni", "==", userInput), limit(1));
+                    const snap = await getDocs(q);
+
+                    if (!snap.empty) {
+                        // El ID del documento es el email para padres, para staff buscamos el campo email
+                        email = snap.docs[0].id;
+                        if (roleSelect === 'staff' && !email.includes('@')) {
+                            email = snap.docs[0].data().email || email;
                         }
-                    }, 1000);
-                })
-                .catch((error) => {
-                    const errorCode = error.code;
-                    const errorMessage = error.message;
-
-                    console.error("Error de login:", errorCode, errorMessage);
-
-                    btn.innerText = originalText;
-                    btn.style.opacity = '1';
-                    btn.disabled = false;
-
-                    loginMessage.style.color = 'red';
-
-                    if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found') {
-                        loginMessage.innerText = 'Usuario o contraseña incorrectos.';
-                    } else if (errorCode === 'auth/invalid-email') {
-                        loginMessage.innerText = 'Por favor ingresa un correo válido.';
                     } else {
-                        loginMessage.innerText = 'Error al iniciar sesión. Intente nuevamente.';
+                        throw new Error("DNI no registrado para: " + (roleSelect === 'staff' ? "Docente" : "Padre"));
                     }
-                });
+                }
+
+                loginMessage.innerText = 'Autenticando...';
+                await signInWithEmailAndPassword(auth, email, passwordInput);
+
+                loginMessage.innerText = 'Acceso concedido. Redirigiendo...';
+                loginMessage.style.color = 'green';
+
+                setTimeout(() => {
+                    if (roleSelect === 'staff') {
+                        window.location.href = 'teacher.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
+                }, 1000);
+
+            } catch (error) {
+                console.error("Login Error:", error);
+                loginMessage.style.color = 'red';
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
+                    loginMessage.innerText = 'Cuidado: DNI o Contraseña incorrectos.';
+                } else {
+                    loginMessage.innerText = error.message;
+                }
+            } finally {
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         });
     }
 
