@@ -260,6 +260,17 @@
         const userForm = document.getElementById('userForm');
         const roleSelect = document.getElementById('uRole');
         const parentFields = document.getElementById('parentFields');
+        const uDniInput = document.getElementById('uDni');
+        const uStudentDniInput = document.getElementById('uStudentDni');
+
+        // Numeric filter for DNIs
+        [uDniInput, uStudentDniInput].forEach(inp => {
+            if (inp) {
+                inp.addEventListener('input', (e) => {
+                    e.target.value = e.target.value.replace(/\D/g, '');
+                });
+            }
+        });
 
         // Toggle fields based on role
         roleSelect.addEventListener('change', () => {

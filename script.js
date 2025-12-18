@@ -62,14 +62,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Intranet Login Implementation (Firebase) ---
     const loginForm = document.getElementById('loginForm');
     const loginMessage = document.getElementById('loginMessage');
+    const dniInput = document.getElementById('dniInput');
+
+    // Filter non-numeric characters in real-time
+    if (dniInput) {
+        dniInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/\D/g, '');
+        });
+    }
 
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const userInput = loginForm.querySelector('input[type="text"]').value.trim();
+            const userInput = document.getElementById('dniInput').value.trim();
             const passwordInput = loginForm.querySelector('input[type="password"]').value;
             const roleSelect = document.getElementById('loginRole').value;
+
+            if (userInput.length !== 8) {
+                loginMessage.innerText = 'El DNI debe tener exactamente 8 cifras.';
+                loginMessage.style.color = 'red';
+                return;
+            }
 
             // UI Feedback
             const btn = loginForm.querySelector('button');

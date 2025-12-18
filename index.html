@@ -183,7 +183,8 @@
                 <form id="loginForm" class="login-form">
                     <div class="input-group">
                         <i class="fas fa-id-card"></i>
-                        <input type="text" placeholder="DNI / Usuario" required>
+                        <input type="text" id="dniInput" placeholder="DNI (8 dígitos)" maxlength="8" pattern="\d{8}"
+                            required>
                     </div>
                     <div class="input-group">
                         <i class="fas fa-users-cog"></i>
