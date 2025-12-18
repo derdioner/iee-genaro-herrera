@@ -102,7 +102,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             email = snap.docs[0].data().email || email;
                         }
                     } else {
-                        throw new Error("DNI no registrado para: " + (roleSelect === 'staff' ? "Docente" : "Padre"));
+                        const roleLabel = roleSelect === 'staff' ? "Docente" : (roleSelect === 'admin' ? "Administrador" : "Padre");
+                        throw new Error(`DNI no registrado para: ${roleLabel}`);
                     }
                 }
 
