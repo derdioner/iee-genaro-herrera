@@ -135,14 +135,16 @@
                 <div id="academicFields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group" style="grid-column: 1 / -1;">
                         <label>Nivel Académico:</label>
-                        <select id="uLevel">
+                        <select id="uLevel" required>
+                            <option value="">Seleccione Nivel</option>
                             <option value="Primaria">Primaria</option>
                             <option value="Secundaria">Secundaria</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <label>Grado:</label>
-                        <select id="uGrade">
+                        <select id="uGrade" required>
+                            <option value="">--</option>
                             <option value="1">1ero</option>
                             <option value="2">2do</option>
                             <option value="3">3ero</option>
@@ -153,7 +155,8 @@
                     </div>
                     <div class="form-group">
                         <label>Sección:</label>
-                        <select id="uSection">
+                        <select id="uSection" required>
+                            <option value="">--</option>
                             <option value="A">A</option>
                             <option value="B">B</option>
                             <option value="C">C</option>
@@ -168,7 +171,7 @@
                 <!-- Specific field for students (DNI del hijo) -->
                 <div id="studentOnlyFields" class="form-group">
                     <label>DNI del Estudiante:</label>
-                    <input type="text" id="uStudentDni" maxlength="8" placeholder="8 cifras">
+                    <input type="text" id="uStudentDni" maxlength="8" placeholder="8 cifras" required>
                 </div>
 
                 <button type="submit" class="btn btn-full"
@@ -221,8 +224,10 @@
         roleSelect.addEventListener('change', () => {
             const isParent = roleSelect.value === 'students';
 
-            // studentOnlyFields visibility
+            // studentOnlyFields visibility and requirement
             studentOnlyFields.style.display = isParent ? 'block' : 'none';
+            uStudentDniInput.required = isParent;
+            uStudentDniInput.disabled = !isParent;
 
             // Dinámicamente actualizamos las etiquetas para mayor claridad
             document.getElementById('labelDni').innerText = isParent ? "DNI del Padre (Usuario):" : "DNI del Docente:";
@@ -235,7 +240,7 @@
             uLevel.addEventListener('change', () => {
                 const level = uLevel.value;
                 const maxGrade = level === 'Primaria' ? 6 : 5;
-                uGrade.innerHTML = '';
+                uGrade.innerHTML = '<option value="">--</option>';
                 for (let i = 1; i <= maxGrade; i++) {
                     const opt = document.createElement('option');
                     opt.value = i;
@@ -307,7 +312,9 @@
 
                 alert("¡Usuario registrado exitosamente!");
                 userForm.reset();
-                studentOnlyFields.style.display = 'block'; // Default to students role UI
+                studentOnlyFields.style.display = 'block';
+                uStudentDniInput.required = true;
+                uStudentDniInput.disabled = false;
             } catch (err) {
                 alert("Error: " + err.message);
             } finally {
