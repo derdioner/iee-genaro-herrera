@@ -310,8 +310,8 @@ ul {
 /* #home Specifics Updated - "Banner Image Mode" */
 /* #home Specifics Updated - "Banner Image Background" */
 #home {
-    background: url('images/hero-full-banner.png') no-repeat center center;
-    background-size: cover;
+    background: #001220;
+    /* Azul muy profundo institucional */
     min-height: 85vh;
     position: relative;
     display: flex;
