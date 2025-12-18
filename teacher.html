@@ -171,7 +171,10 @@
                         <option value="A">Sección A</option>
                         <option value="B">Sección B</option>
                         <option value="C">Sección C</option>
-                        <option value="Única">Única</option>
+                        <option value="D">Sección D</option>
+                        <option value="E">Sección E</option>
+                        <option value="F">Sección F</option>
+                        <option value="G">Sección G</option>
                     </select>
                 </div>
             </div>
@@ -199,14 +202,54 @@
         import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        let currentTeacher = null;
+        let currentTeacherData = null;
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentTeacher = user;
+                try {
+                    // Fetch profile from staff collection
+                    const docData = await getDoc(doc(db, "staff", user.email));
+                    if (docData.exists()) {
+                        currentTeacherData = docData.data();
+                        console.log("Teacher profile loaded:", currentTeacherData);
+
+                        // Auto-fill academic fields
+                        if (currentTeacherData.level) {
+                            document.getElementById('mLevel').value = currentTeacherData.level;
+                            // Trigger change to populate grades
+                            document.getElementById('mLevel').dispatchEvent(new Event('change'));
+                        }
+                        if (currentTeacherData.grade) document.getElementById('mGrade').value = currentTeacherData.grade;
+                        if (currentTeacherData.section) document.getElementById('mSection').value = currentTeacherData.section;
+
+                        console.log("Academic fields pre-filled for teacher.");
+                    }
+                } catch (err) {
+                    console.error("Error fetching teacher profile:", err);
+                }
             } else {
-                // Not logged in
-                // window.location.href = 'index.html';
+                window.location.href = 'index.html';
+            }
+        });
+
+        const mLevel = document.getElementById('mLevel');
+        const mGrade = document.getElementById('mGrade');
+
+        // Dynamic Grades
+        mLevel.addEventListener('change', () => {
+            const level = mLevel.value;
+            if (level === 'Inicial') {
+                mGrade.innerHTML = '<option value="3">3 Años</option><option value="4">4 Años</option><option value="5">5 Años</option>';
+            } else {
+                const maxGrade = level === 'Primaria' ? 6 : 5;
+                mGrade.innerHTML = '';
+                for (let i = 1; i <= maxGrade; i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = `${i}${i === 1 ? 'ero' : i === 2 ? 'do' : i === 3 ? 'ero' : i === 4 ? 'to' : i === 5 ? 'to' : 'to'}`;
+                    mGrade.appendChild(opt);
+                }
             }
         });
 

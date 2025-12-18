@@ -131,17 +131,17 @@
                     <input type="text" id="uName" placeholder="Ej: Juan Pérez Lopez" required>
                 </div>
 
-                <!-- dynamic fields for parents -->
-                <div id="parentFields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <!-- Académico fields (Visible for both roles) -->
+                <div id="academicFields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group" style="grid-column: 1 / -1;">
-                        <label>Nivel del Hijo:</label>
+                        <label>Nivel Académico:</label>
                         <select id="uLevel">
                             <option value="Primaria">Primaria</option>
                             <option value="Secundaria">Secundaria</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Grado del Hijo:</label>
+                        <label>Grado:</label>
                         <select id="uGrade">
                             <option value="1">1ero</option>
                             <option value="2">2do</option>
@@ -152,7 +152,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Sección del Hijo:</label>
+                        <label>Sección:</label>
                         <select id="uSection">
                             <option value="A">A</option>
                             <option value="B">B</option>
@@ -163,10 +163,12 @@
                             <option value="G">G</option>
                         </select>
                     </div>
-                    <div class="form-group" style="grid-column: 1 / -1; margin-top: -10px;">
-                        <label>DNI del Estudiante (Hijo):</label>
-                        <input type="text" id="uStudentDni" maxlength="8" placeholder="8 dígitos del niño">
-                    </div>
+                </div>
+
+                <!-- Specific field for students (DNI del hijo) -->
+                <div id="studentOnlyFields" class="form-group">
+                    <label>DNI del Estudiante:</label>
+                    <input type="text" id="uStudentDni" maxlength="8" placeholder="8 cifras">
                 </div>
 
                 <button type="submit" class="btn btn-full"
@@ -199,7 +201,8 @@
 
         const userForm = document.getElementById('userForm');
         const roleSelect = document.getElementById('uRole');
-        const parentFields = document.getElementById('parentFields');
+        const academicFields = document.getElementById('academicFields');
+        const studentOnlyFields = document.getElementById('studentOnlyFields');
         const uLevel = document.getElementById('uLevel');
         const uGrade = document.getElementById('uGrade');
         const uDniInput = document.getElementById('uDni');
@@ -217,7 +220,9 @@
         // Toggle fields based on role
         roleSelect.addEventListener('change', () => {
             const isParent = roleSelect.value === 'students';
-            parentFields.style.display = isParent ? 'grid' : 'none';
+
+            // studentOnlyFields visibility
+            studentOnlyFields.style.display = isParent ? 'block' : 'none';
 
             // Dinámicamente actualizamos las etiquetas para mayor claridad
             document.getElementById('labelDni').innerText = isParent ? "DNI del Padre (Usuario):" : "DNI del Docente:";
@@ -272,18 +277,18 @@
 
                 // --- STEP 2: SAVE PROFILE DATA IN FIRESTORE ---
                 const userData = {
-                    dni: dni,
-                    name: name,
-                    email: email,
-                    role: role === 'students' ? 'parent' : 'teacher',
+                    name,
+                    dni,
+                    role: role === 'students' ? 'parent' : 'teacher', // Store 'parent' or 'teacher' in Firestore
+                    email,
+                    level: document.getElementById('uLevel').value,
+                    grade: document.getElementById('uGrade').value,
+                    section: document.getElementById('uSection').value,
                     timestamp: new Date()
                 };
 
                 if (role === 'students') {
-                    userData.studentName = name;
-                    userData.level = document.getElementById('uLevel').value;
-                    userData.grade = document.getElementById('uGrade').value;
-                    userData.section = document.getElementById('uSection').value;
+                    userData.studentName = name; // For students, uName is student's name
                     userData.studentDni = studentDni;
                     userData.attendance = "100";
                     userData.average = "18";
@@ -302,7 +307,7 @@
 
                 alert("¡Usuario registrado exitosamente!");
                 userForm.reset();
-                parentFields.style.display = 'grid'; // Default
+                studentOnlyFields.style.display = 'block'; // Default to students role UI
             } catch (err) {
                 alert("Error: " + err.message);
             } finally {
