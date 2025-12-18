@@ -332,13 +332,14 @@
                     userData.rank = "1";
                 }
 
-                // Save using a composite ID or AddDoc to avoid overwriting multiple children
+                // Guardamos usando el correo del padre + DNI del hijo para total unicidad
                 let docId = email;
                 if (role === 'students') {
-                    // Unique ID per child for the same parent
-                    docId = `${email}_${name.replace(/\s+/g, '_').toLowerCase()}`;
+                    // ID único absoluto por cada hijo (incluso con el mismo nombre)
+                    docId = `${email}_${studentDni}`;
                 }
 
+                console.log("Registrando documento con ID:", docId);
                 await setDoc(doc(db, role, docId), userData);
 
                 alert("¡Usuario registrado exitosamente!");

@@ -261,6 +261,8 @@
                     const snapStudents = await getDocs(qStudents);
                     let cachedStudents = [];
 
+                    console.log(`Buscando hijos para ${user.email}. Encontrados: ${snapStudents.size}`);
+
                     if (snapStudents.empty) {
                         console.log("No students found!");
                         document.querySelector('.student-info').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay datos registrados. Comuníquese con administración.</p>';
@@ -285,72 +287,68 @@
                 } catch (error) {
                     console.error("Error getting students:", error);
                 }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
 
-                async function showStudentSelector(students) {
-                    const overlay = document.getElementById('studentSelectorOverlay');
-                    const grid = document.getElementById('studentsListGrid');
-                    grid.innerHTML = '';
-                    overlay.style.display = 'flex';
+        async function showStudentSelector(students) {
+            const overlay = document.getElementById('studentSelectorOverlay');
+            const grid = document.getElementById('studentsListGrid');
+            grid.innerHTML = '';
+            overlay.style.display = 'flex';
 
-                    students.forEach(student => {
-                        const card = document.createElement('div');
-                        card.className = 'student-card';
-                        card.innerHTML = `
+            students.forEach(student => {
+                const card = document.createElement('div');
+                card.className = 'student-card';
+                card.innerHTML = `
                             <i class="fas fa-user-graduate"></i>
                             <div class="info">
                                 <h4>${student.studentName}</h4>
                                 <p>${student.grade}° Grado ${student.section}</p>
                             </div>
                         `;
-                        card.onclick = () => {
-                            overlay.style.display = 'none';
-                            loadStudentData(student);
-                        };
-                        grid.appendChild(card);
-                    });
-                }
+                card.onclick = () => {
+                    overlay.style.display = 'none';
+                    loadStudentData(student);
+                };
+                grid.appendChild(card);
+            });
+        }
 
-                async function loadStudentData(data) {
-                    document.getElementById('studentName').textContent = data.studentName;
-                    document.getElementById('studentDni').textContent = data.dni || "No registrado";
-                    document.getElementById('studentGrade').textContent = data.grade;
-                    document.getElementById('studentSection').textContent = data.section;
-                    document.getElementById('studentAttendance').textContent = data.attendance + '%';
-                    document.getElementById('studentAverage').textContent = data.average;
-                    document.getElementById('studentRank').textContent = data.rank + '°';
+        async function loadStudentData(data) {
+            document.getElementById('studentName').textContent = data.studentName;
+            document.getElementById('studentDni').textContent = data.dni || "No registrado";
+            document.getElementById('studentGrade').textContent = data.grade;
+            document.getElementById('studentSection').textContent = data.section;
+            document.getElementById('studentAttendance').textContent = data.attendance + '%';
+            document.getElementById('studentAverage').textContent = data.average;
+            document.getElementById('studentRank').textContent = data.rank + '°';
 
-                    const att = parseInt(data.attendance);
-                    const statusSpan = document.getElementById('attendanceStatus');
-                    if (att >= 90) { statusSpan.textContent = 'Excelente'; statusSpan.style.color = 'green'; }
-                    else if (att >= 70) { statusSpan.textContent = 'Regular'; statusSpan.style.color = 'orange'; }
-                    else { statusSpan.textContent = 'Crítico'; statusSpan.style.color = 'red'; }
+            const att = parseInt(data.attendance);
+            const statusSpan = document.getElementById('attendanceStatus');
+            if (att >= 90) { statusSpan.textContent = 'Excelente'; statusSpan.style.color = 'green'; }
+            else if (att >= 70) { statusSpan.textContent = 'Regular'; statusSpan.style.color = 'orange'; }
+            else { statusSpan.textContent = 'Crítico'; statusSpan.style.color = 'red'; }
 
-                    if (data.reportCardUrl) {
-                        document.getElementById('reportCardContainer').style.display = 'block';
-                        document.getElementById('reportCardLink').href = data.reportCardUrl;
-                    } else {
-                        document.getElementById('reportCardContainer').style.display = 'none';
-                    }
-
-                    if (data.dni) {
-                        fetchQrAttendance(data.dni);
-                        document.getElementById('viewHistoryBtn').onclick = () => openHistoryModal(data.dni);
-                    } else {
-                        document.getElementById('qrList').innerHTML = '<li style="padding: 10px; text-align: center;">DNI no configurado.</li>';
-                        document.getElementById('viewHistoryBtn').style.display = 'none';
-                    }
-
-                    fetchConductReportsMulti(data.id); // Optimized for multi-child
-                    fetchMaterials(data.grade, data.section);
-                }
-
-
-
+            if (data.reportCardUrl) {
+                document.getElementById('reportCardContainer').style.display = 'block';
+                document.getElementById('reportCardLink').href = data.reportCardUrl;
             } else {
-                // User is signed out, redirect to index
-                window.location.href = 'index.html';
+                document.getElementById('reportCardContainer').style.display = 'none';
             }
-        });
+
+            if (data.dni) {
+                fetchQrAttendance(data.dni);
+                document.getElementById('viewHistoryBtn').onclick = () => openHistoryModal(data.dni);
+            } else {
+                document.getElementById('qrList').innerHTML = '<li style="padding: 10px; text-align: center;">DNI no configurado.</li>';
+                document.getElementById('viewHistoryBtn').style.display = 'none';
+            }
+
+            fetchConductReportsMulti(data.id); // Optimized for multi-child
+            fetchMaterials(data.grade, data.section);
+        }
 
         // --- MONTHLY HISTORY LOGIC ---
         const modal = document.getElementById('historyModal');
