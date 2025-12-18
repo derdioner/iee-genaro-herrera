@@ -76,7 +76,8 @@
                     status.innerText = "Cuenta creada. Registrando DNI...";
                 } catch (e) {
                     if (e.code === 'auth/email-already-in-use' || e.code === 'auth/admin-restricted-operation') {
-                        status.innerText = "Cuenta existente. Autenticando para actualizar datos...";
+                        status.innerText = "Cuenta existente. Sincronizando credenciales...";
+                        // Intentamos loguear con la clave dada para asegurar que funcione
                         await signInWithEmailAndPassword(auth, 'admin@genaroherrera.edu.pe', '339710');
                     } else { throw e; }
                 }
