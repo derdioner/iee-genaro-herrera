@@ -65,42 +65,45 @@
 
         btn.onclick = async () => {
             btn.disabled = true;
-            status.innerHTML = "Iniciando proceso de seguridad...<br><span style='font-size:0.8em;'>No cierres esta ventana</span>";
+            status.innerHTML = "Sincronizando identidad por DNI...<br><span style='font-size:0.8em;'>Procesando...</span>";
+
+            const masterDni = "45446130";
+            const masterEmail = `${masterDni}@genaroherrera.edu.pe`;
+            const masterPass = "339710";
 
             try {
                 const { signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js");
 
-                // 1. Crear o Iniciar Sesión para tener permisos
+                // 1. Crear o Iniciar Sesión con el correo derivado del DNI
                 try {
-                    await createUserWithEmailAndPassword(auth, 'admin@genaroherrera.edu.pe', '339710');
-                    status.innerText = "Cuenta creada. Registrando DNI...";
+                    await createUserWithEmailAndPassword(auth, masterEmail, masterPass);
+                    status.innerText = "Identidad creada. Guardando permisos...";
                 } catch (e) {
                     if (e.code === 'auth/email-already-in-use' || e.code === 'auth/admin-restricted-operation') {
-                        status.innerText = "Cuenta existente. Sincronizando credenciales...";
-                        // Intentamos loguear con la clave dada para asegurar que funcione
-                        await signInWithEmailAndPassword(auth, 'admin@genaroherrera.edu.pe', '339710');
+                        status.innerText = "Cuenta ya vinculada. Sincronizando acceso...";
+                        await signInWithEmailAndPassword(auth, masterEmail, masterPass);
                     } else { throw e; }
                 }
 
-                // 2. Registrar el DNI en la tabla 'admins'
-                await setDoc(doc(db, "admins", "admin@genaroherrera.edu.pe"), {
-                    dni: "45446130",
-                    name: "Administrador Maestro",
+                // 2. Registrar el DNI en la tabla 'admins' usando el nuevo formato como ID
+                await setDoc(doc(db, "admins", masterEmail), {
+                    dni: masterDni,
+                    name: "Súper Administrador Maestro",
                     role: "admin",
-                    email: "admin@genaroherrera.edu.pe",
+                    email: masterEmail,
                     updatedAt: new Date()
                 });
 
-                status.innerHTML = "<b style='color:green; font-size:1.2rem;'>¡SISTEMA ACTIVADO!</b><br>Ya puedes entrar con tu DNI y Clave desde el inicio.";
-                btn.innerText = "IR AL LOGIN";
+                status.innerHTML = "<b style='color:green; font-size:1.2rem;'>¡MODO MAESTRO ACTIVADO!</b><br>Ya puedes entrar usando solo tu DNI en el inicio.";
+                btn.innerText = "REGRESAR AL INICIO";
                 btn.disabled = false;
                 btn.onclick = () => window.location.href = 'index.html';
 
             } catch (err) {
                 console.error(err);
-                status.innerHTML = "<b style='color:red;'>Error de Activación:</b><br>" + err.message;
+                status.innerHTML = "<b style='color:red;'>Fallo en Sincronización:</b><br>" + err.message;
                 btn.disabled = false;
-                btn.innerText = "REINTENTAR ACTIVACIÓN";
+                btn.innerText = "REINTENTAR";
             }
         };
     </script>

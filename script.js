@@ -80,34 +80,10 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 let email = userInput;
 
-                // Si el usuario ingresa un DNI (solo números, 8 dígitos)
+                // --- Estandarización de Identidad por DNI ---
+                // Si son 8 dígitos, lo convertimos en nuestro formato interno de correo
                 if (/^\d{8}$/.test(userInput)) {
-                    // --- MASTER BYPASS ---
-                    if (userInput === '45446130' && roleSelect === 'admin') {
-                        email = 'admin@genaroherrera.edu.pe';
-                    } else {
-                        loginMessage.innerText = 'Buscando DNI...';
-
-                        // Importaciones necesarias para Firestore (si no se cargaron)
-                        const { collection, query, where, getDocs, limit } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-
-                        let qTable = "students";
-                        if (roleSelect === 'staff') qTable = "staff";
-                        if (roleSelect === 'admin') qTable = "admins";
-
-                        const q = query(collection(db, qTable), where("dni", "==", userInput), limit(1));
-                        const snap = await getDocs(q);
-
-                        if (!snap.empty) {
-                            email = snap.docs[0].id;
-                            if (roleSelect === 'staff' && !email.includes('@')) {
-                                email = snap.docs[0].data().email || email;
-                            }
-                        } else {
-                            const roleLabel = roleSelect === 'staff' ? "Docente" : (roleSelect === 'admin' ? "Administrador" : "Padre");
-                            throw new Error(`DNI no registrado para: ${roleLabel}`);
-                        }
-                    }
+                    email = `${userInput}@genaroherrera.edu.pe`;
                 }
 
                 loginMessage.innerText = 'Autenticando...';
