@@ -88,7 +88,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const { db } = await import('./firebase-config.js');
                     const { collection, query, where, getDocs, limit } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
 
-                    const qTable = roleSelect === 'staff' ? "staff" : "students";
+                    let qTable = "students";
+                    if (roleSelect === 'staff') qTable = "staff";
+                    if (roleSelect === 'admin') qTable = "admins";
+
                     const q = query(collection(db, qTable), where("dni", "==", userInput), limit(1));
                     const snap = await getDocs(q);
 
@@ -110,7 +113,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 loginMessage.style.color = 'green';
 
                 setTimeout(() => {
-                    if (roleSelect === 'staff') {
+                    if (roleSelect === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else if (roleSelect === 'staff') {
                         window.location.href = 'teacher.html';
                     } else {
                         window.location.href = 'dashboard.html';
