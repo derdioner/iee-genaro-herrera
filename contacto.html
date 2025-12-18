@@ -15,6 +15,13 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function () {
+            emailjs.init("sg-B59t6x30REly_L");
+        })();
+    </script>
 </head>
 
 <body>
@@ -109,23 +116,24 @@
             </div>
             <div class="intranet-form-wrapper"
                 style="max-width: 700px; margin: 0 auto; background: white; padding: 40px; border-radius: 15px; box-shadow: var(--shadow);">
-                <form>
+                <form id="contactForm">
                     <div class="input-group">
                         <i class="fas fa-user"></i>
-                        <input type="text" placeholder="Tu Nombre" required>
+                        <input type="text" name="from_name" id="from_name" placeholder="Tu Nombre" required>
                     </div>
                     <div class="input-group">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" placeholder="Tu Correo Electrónico" required>
+                        <input type="email" name="from_email" id="from_email" placeholder="Tu Correo Electrónico"
+                            required>
                     </div>
                     <div class="input-group">
                         <i class="fas fa-edit"></i>
-                        <textarea placeholder="Tu Mensaje" rows="5"
+                        <textarea name="message" id="message" placeholder="Tu Mensaje" rows="5"
                             style="width: 100%; padding: 15px 15px 15px 45px; border: 2px solid #eee; border-radius: 8px; font-family: inherit; font-size: 1rem; color: #333; height: auto;"
                             required></textarea>
                     </div>
                     <button type="submit" class="btn btn-full">Enviar Mensaje</button>
-                    <p class="message"></p>
+                    <p class="message" id="contactMessage"></p>
                 </form>
             </div>
         </div>

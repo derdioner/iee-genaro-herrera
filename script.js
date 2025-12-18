@@ -215,4 +215,49 @@ document.addEventListener('DOMContentLoaded', () => {
         // Handle Resize
         window.addEventListener('resize', updateCarousel);
     }
+
+    // --- Contact Form Implementation (EmailJS) ---
+    const contactForm = document.getElementById('contactForm');
+    const contactMessage = document.getElementById('contactMessage');
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            console.log("Iniciando envío de formulario...");
+
+            // Estos IDs se encuentran en tu dashboard de EmailJS
+            const SERVICE_ID = 'service_default';
+            const TEMPLATE_ID = 'template_contact';
+
+            const btn = contactForm.querySelector('button');
+            const originalText = btn.innerText;
+            btn.innerText = 'Enviando...';
+            btn.disabled = true;
+
+            if (typeof window.emailjs === 'undefined') {
+                console.error("EmailJS SDK no cargado.");
+                contactMessage.innerText = 'Error: El sistema de correos no cargó correctamente.';
+                contactMessage.style.color = 'red';
+                btn.innerText = originalText;
+                btn.disabled = false;
+                return;
+            }
+
+            window.emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, contactForm)
+                .then((response) => {
+                    console.log('SUCCESS!', response.status, response.text);
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    contactMessage.innerText = '¡Mensaje enviado con éxito!';
+                    contactMessage.style.color = 'green';
+                    contactForm.reset();
+                }, (error) => {
+                    console.error('FAILED...', error);
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    contactMessage.innerText = 'Error: ' + (error.text || 'No se pudo enviar el mensaje.');
+                    contactMessage.style.color = 'red';
+                });
+        });
+    }
 });
