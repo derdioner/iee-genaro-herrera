@@ -167,7 +167,6 @@
                 <h4><i class="fas fa-user-graduate"></i> Estudiante</h4>
                 <p><strong id="studentName">Cargando...</strong></p>
                 <p>DNI: <span id="studentDni">--</span></p>
-                <p>Nivel: <span id="studentLevel">--</span></p>
                 <p>Grado: <span id="studentGrade">--</span></p>
                 <p>Sección: <span id="studentSection">--</span></p>
             </div>
@@ -327,7 +326,6 @@
         async function loadStudentData(data) {
             document.getElementById('studentName').textContent = data.studentName;
             document.getElementById('studentDni').textContent = data.dni || "No registrado";
-            document.getElementById('studentLevel').textContent = data.level || "No especificado";
             document.getElementById('studentGrade').textContent = data.grade;
             document.getElementById('studentSection').textContent = data.section;
             document.getElementById('studentAttendance').textContent = data.attendance + '%';
