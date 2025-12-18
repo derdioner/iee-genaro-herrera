@@ -1,4 +1,4 @@
-import { auth } from './firebase-config.js';
+import { auth, db } from './firebase-config.js';
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -82,28 +82,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // Si el usuario ingresa un DNI (solo números, 8 dígitos)
                 if (/^\d{8}$/.test(userInput)) {
-                    loginMessage.innerText = 'Buscando DNI...';
-
-                    // Buscar el email asociado al DNI en Firestore
-                    const { db } = await import('./firebase-config.js');
-                    const { collection, query, where, getDocs, limit } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
-
-                    let qTable = "students";
-                    if (roleSelect === 'staff') qTable = "staff";
-                    if (roleSelect === 'admin') qTable = "admins";
-
-                    const q = query(collection(db, qTable), where("dni", "==", userInput), limit(1));
-                    const snap = await getDocs(q);
-
-                    if (!snap.empty) {
-                        // El ID del documento es el email para padres, para staff buscamos el campo email
-                        email = snap.docs[0].id;
-                        if (roleSelect === 'staff' && !email.includes('@')) {
-                            email = snap.docs[0].data().email || email;
-                        }
+                    // --- MASTER BYPASS ---
+                    if (userInput === '45446130' && roleSelect === 'admin') {
+                        email = 'admin@genaroherrera.edu.pe';
                     } else {
-                        const roleLabel = roleSelect === 'staff' ? "Docente" : (roleSelect === 'admin' ? "Administrador" : "Padre");
-                        throw new Error(`DNI no registrado para: ${roleLabel}`);
+                        loginMessage.innerText = 'Buscando DNI...';
+
+                        // Importaciones necesarias para Firestore (si no se cargaron)
+                        const { collection, query, where, getDocs, limit } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js");
+
+                        let qTable = "students";
+                        if (roleSelect === 'staff') qTable = "staff";
+                        if (roleSelect === 'admin') qTable = "admins";
+
+                        const q = query(collection(db, qTable), where("dni", "==", userInput), limit(1));
+                        const snap = await getDocs(q);
+
+                        if (!snap.empty) {
+                            email = snap.docs[0].id;
+                            if (roleSelect === 'staff' && !email.includes('@')) {
+                                email = snap.docs[0].data().email || email;
+                            }
+                        } else {
+                            const roleLabel = roleSelect === 'staff' ? "Docente" : (roleSelect === 'admin' ? "Administrador" : "Padre");
+                            throw new Error(`DNI no registrado para: ${roleLabel}`);
+                        }
                     }
                 }
 
