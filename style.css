@@ -1383,14 +1383,16 @@ footer {
 
 /* Hero Title Highlight - Text Stroke Effect */
 .hero-title-highlight {
-    -webkit-text-fill-color: white !important;
-    -webkit-text-stroke: 2px #25d366;
-    text-shadow: 0 0 15px rgba(37, 211, 102, 0.5);
+    -webkit-text-fill-color: #00BFFF !important;
+    /* Celeste */
+    -webkit-text-stroke: 1px #25d366;
+    /* Más fino */
+    text-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
     background: none !important;
     backdrop-filter: none !important;
     border: none !important;
     box-shadow: none !important;
-    animation: text-glow 2s infinite ease-in-out;
+    animation: text-glow 3s infinite ease-in-out;
     display: inline-block;
     padding: 0;
 }
@@ -1399,12 +1401,12 @@ footer {
 
     0%,
     100% {
-        text-shadow: 0 0 10px rgba(37, 211, 102, 0.4);
+        text-shadow: 0 0 10px rgba(0, 191, 255, 0.3);
         -webkit-text-stroke-color: #25d366;
     }
 
     50% {
-        text-shadow: 0 0 30px rgba(37, 211, 102, 0.8);
+        text-shadow: 0 0 25px rgba(175, 238, 238, 0.6);
         -webkit-text-stroke-color: #ffffff;
     }
 }
