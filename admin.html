@@ -69,10 +69,15 @@
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         onAuthStateChanged(auth, (user) => {
-            if (user && user.email === '45446130@genaroherrera.edu.pe') {
-                document.body.style.display = 'block';
+            if (user) {
+                if (user.email === '45446130@genaroherrera.edu.pe') {
+                    document.body.style.display = 'block';
+                } else {
+                    alert("Acceso denegado. Se requiere cuenta de Administrador Maestro.");
+                    window.location.href = 'index.html';
+                }
             } else {
-                alert("Acceso denegado. Se requiere cuenta de Administrador Maestro.");
+                // No hay usuario (logout o expiró sesión), salir en silencio
                 window.location.href = 'index.html';
             }
         });
