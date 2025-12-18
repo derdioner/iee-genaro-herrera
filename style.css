@@ -312,7 +312,6 @@ ul {
 #home {
     background: url('images/hero-full-banner.png') no-repeat center center;
     background-size: cover;
-    /* Span full width nicely */
     min-height: 85vh;
     position: relative;
     display: flex;
@@ -321,69 +320,53 @@ ul {
     overflow: hidden;
 }
 
-#home::before,
-#home::after {
-    display: none;
+#home .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0, 154, 205, 0.5), rgba(0, 0, 0, 0.7));
+    z-index: 1;
 }
 
 #home .hero-content {
     position: relative;
     z-index: 5;
     text-align: center;
-    max-width: 1200px;
-    padding: 20px;
-    background: none;
-    box-shadow: none;
-    border: none;
+    max-width: 900px;
+    padding: 0 20px;
 }
 
-.hero-banner {
-    display: none;
-    /* Hide img tag if present, we use BG now */
-}
-
-/* Restore Text Styles */
 #home h2 {
-    display: inline-block;
     font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    /* Bold */
-    font-size: 2.5rem;
-    /* Enlarged */
-    letter-spacing: 6px;
+    font-size: 1.8rem;
+    font-weight: 400;
+    color: #e0f7fa;
+    margin-bottom: 15px;
+    letter-spacing: 4px;
     text-transform: uppercase;
-    color: #64ffda;
-    /* Cyan stands out on blue */
-    margin-bottom: 20px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-    animation: slideDownFade 1s ease-out forwards;
-    /* Entrance Effect */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 #home h1 {
-    display: block;
     font-family: 'Montserrat', sans-serif;
     font-weight: 900;
-    font-size: 5.5rem;
+    font-size: 5rem;
     line-height: 1.1;
     margin-bottom: 25px;
     color: white;
     text-transform: uppercase;
-    background: none;
     text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    /* Readable shadow */
-    animation: none;
-    opacity: 1;
 }
 
 #home p {
-    display: block;
     font-family: 'Playfair Display', serif;
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-style: italic;
     color: white;
     margin: 0 auto;
-    max-width: 700px;
+    max-width: 750px;
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
 }
 
