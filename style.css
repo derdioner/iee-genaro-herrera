@@ -709,6 +709,73 @@ ul {
     line-height: 1.7;
 }
 
+/* Identity Cards Premium Styling */
+.identity-section .section-title {
+    margin-bottom: 50px;
+}
+
+.identity-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 40px 30px;
+    height: 100%;
+}
+
+.identity-card .card-icon {
+    margin-bottom: 20px;
+    background: var(--bg-light);
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.identity-card:nth-child(1) .card-icon {
+    color: #FFD700;
+}
+
+/* Gold for Mission */
+.identity-card:nth-child(2) .card-icon {
+    color: #00BFFF;
+}
+
+/* Blue for Vision */
+.identity-card:nth-child(3) .card-icon {
+    color: #FF4500;
+}
+
+/* Orange/Red for Values */
+
+.values-list {
+    text-align: left;
+    margin-top: 20px;
+}
+
+.values-list li {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: var(--text-light);
+}
+
+.values-list li i {
+    margin-top: 4px;
+    color: var(--primary-color);
+    font-size: 1rem;
+}
+
+.values-list li strong {
+    color: var(--text-color);
+    display: block;
+}
+
 /* Flip Card - restore base styles but keep improved look */
 .flip-card {
     background-color: transparent;
