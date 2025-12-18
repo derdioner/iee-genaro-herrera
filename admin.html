@@ -106,7 +106,7 @@
             <form id="userForm">
                 <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                     <div class="form-group">
-                        <label>DNI del Usuario:</label>
+                        <label id="labelDni">DNI (Acceso):</label>
                         <input type="text" id="uDni" maxlength="8" placeholder="8 dígitos" required>
                     </div>
                     <div class="form-group">
@@ -118,7 +118,7 @@
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>Nombre Completo:</label>
+                    <label id="labelName">Nombre Completo:</label>
                     <input type="text" id="uName" placeholder="Ej: Juan Pérez Lopez" required>
                 </div>
                 <div class="form-group">
@@ -149,10 +149,15 @@
                             <option value="Única">Única</option>
                         </select>
                     </div>
+                    <div class="form-group" style="grid-column: 1 / -1; margin-top: -10px;">
+                        <label>DNI del Estudiante (Hijo):</label>
+                        <input type="text" id="uStudentDni" maxlength="8" placeholder="8 dígitos del niño">
+                    </div>
                 </div>
 
                 <button type="submit" class="btn btn-full"
-                    style="background: #3498db; border: none; font-weight: bold;">Registrar Usuario</button>
+                    style="background: #3498db; border: none; font-weight: bold; width: 100%; padding: 12px; color: white; border-radius: 5px; cursor: pointer; margin-top: 15px;">Registrar
+                    Usuario</button>
             </form>
         </div>
 
@@ -239,7 +244,13 @@
 
         // Toggle fields based on role
         roleSelect.addEventListener('change', () => {
-            parentFields.style.display = roleSelect.value === 'students' ? 'grid' : 'none';
+            const isParent = roleSelect.value === 'students';
+            parentFields.style.display = isParent ? 'grid' : 'none';
+
+            // Dinámicamente actualizamos las etiquetas para mayor claridad
+            document.getElementById('labelDni').innerText = isParent ? "DNI del Padre (Usuario):" : "DNI del Docente:";
+            document.getElementById('labelName').innerText = isParent ? "Nombre Completo del Hijo:" : "Nombre Completo:";
+            document.getElementById('uName').placeholder = isParent ? "Ej: Carlos Herrera Pérez" : "Ej: Prof. Juan Lopez";
         });
 
         userForm.addEventListener('submit', async (e) => {
@@ -248,8 +259,9 @@
             const role = roleSelect.value;
             const name = document.getElementById('uName').value.trim();
             const pass = document.getElementById('uPass').value.trim();
+            const studentDni = document.getElementById('uStudentDni').value.trim();
 
-            // Generamos el correo institucional interno basado en el DNI
+            // Generamos el correo institucional interno basado en el DNI del PADRE
             const email = `${dni}@genaroherrera.edu.pe`;
 
             const btn = userForm.querySelector('button');
@@ -269,6 +281,7 @@
                     userData.studentName = name; // Assuming name is pupil name for simplicity in this demo
                     userData.grade = document.getElementById('uGrade').value;
                     userData.section = document.getElementById('uSection').value;
+                    userData.studentDni = studentDni; // Guardamos el DNI del hijo
                     userData.attendance = "100";
                     userData.average = "18";
                     userData.rank = "1";
