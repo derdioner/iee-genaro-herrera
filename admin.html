@@ -122,9 +122,9 @@
                     <input type="text" id="uName" placeholder="Ej: Juan Pérez Lopez" required>
                 </div>
                 <div class="form-group">
-                    <label>Correo Electrónico (Para Login):</label>
-                    <input type="email" id="uEmail" placeholder="ej: juan.perez@cuenta.com" required>
-                    <small>Este correo debe estar registrado en el sistema de Autenticación.</small>
+                    <label>Asignar Contraseña Inicial:</label>
+                    <input type="text" id="uPass" placeholder="Ej: 123456" required>
+                    <small>Esta será la clave que usará el usuario para su primer ingreso.</small>
                 </div>
 
                 <!-- dynamic fields for parents -->
@@ -247,7 +247,10 @@
             const dni = document.getElementById('uDni').value.trim();
             const role = roleSelect.value;
             const name = document.getElementById('uName').value.trim();
-            const email = document.getElementById('uEmail').value.toLowerCase().trim();
+            const pass = document.getElementById('uPass').value.trim();
+
+            // Generamos el correo institucional interno basado en el DNI
+            const email = `${dni}@genaroherrera.edu.pe`;
 
             const btn = userForm.querySelector('button');
             btn.disabled = true;
