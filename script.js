@@ -226,8 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log("Iniciando envío de formulario...");
 
             // Estos IDs se encuentran en tu dashboard de EmailJS
-            const SERVICE_ID = 'service_default';
-            const TEMPLATE_ID = 'template_contact';
+            const SERVICE_ID = 'service_payph79';
+            const TEMPLATE_ID = 'template_vsfa5g9';
 
             const btn = contactForm.querySelector('button');
             const originalText = btn.innerText;
