@@ -274,8 +274,14 @@
                     userData.rank = "1";
                 }
 
-                // Save using Email as ID
-                await setDoc(doc(db, role, email), userData);
+                // Save using a composite ID or AddDoc to avoid overwriting multiple children
+                let docId = email;
+                if (role === 'students') {
+                    // Unique ID per child for the same parent
+                    docId = `${email}_${name.replace(/\s+/g, '_').toLowerCase()}`;
+                }
+
+                await setDoc(doc(db, role, docId), userData);
 
                 alert("¡Usuario registrado exitosamente!");
                 userForm.reset();

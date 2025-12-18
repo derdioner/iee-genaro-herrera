@@ -12,6 +12,64 @@
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
     <style>
+        /* Multi-student selector styles */
+        #studentSelectorOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 18, 32, 0.95);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .selector-box {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .student-card {
+            background: #f0f7ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: 0.3s;
+            border: 2px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .student-card:hover {
+            border-color: #00bfff;
+            background: #e1f5fe;
+        }
+
+        .student-card i {
+            font-size: 2rem;
+            color: #00bfff;
+        }
+
+        .student-card .info h4 {
+            margin: 0;
+            color: #333;
+        }
+
+        .student-card .info p {
+            margin: 5px 0 0;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
         .dashboard-container {
             padding: 120px 20px 50px;
             max-width: 1000px;
@@ -60,6 +118,19 @@
 </head>
 
 <body>
+    <!-- Multi-student Selector Overlay -->
+    <div id="studentSelectorOverlay">
+        <div class="selector-box">
+            <h2 style="color: #001220; margin-bottom: 10px;">¡Bienvenido de nuevo!</h2>
+            <p style="color: #666;">Seleccione al estudiante que desea consultar:</p>
+            <div id="studentsListGrid">
+                <!-- Students cards here -->
+            </div>
+            <button onclick="signOut(auth).then(()=>window.location.href='index.html')" class="btn btn-secondary"
+                style="margin-top: 20px; width: 100%;">Cerrar Sesión</button>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="main-header" style="height: 70px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
         <div class="container header-container">
@@ -186,61 +257,91 @@
 
                 // Fetch Student Data
                 try {
-                    // Use Parent Email as key
-                    const docRef = doc(db, "students", user.email);
-                    const docSnap = await getDoc(docRef);
+                    const qStudents = query(collection(db, "students"), where("email", "==", user.email));
+                    const snapStudents = await getDocs(qStudents);
+                    let cachedStudents = [];
 
-                    if (docSnap.exists()) {
-                        const data = docSnap.data();
-
-                        document.getElementById('studentName').textContent = data.studentName;
-                        document.getElementById('studentDni').textContent = data.dni || "No registrado";
-                        document.getElementById('studentGrade').textContent = data.grade;
-                        document.getElementById('studentSection').textContent = data.section;
-                        document.getElementById('studentAttendance').textContent = data.attendance + '%';
-                        document.getElementById('studentAverage').textContent = data.average;
-                        document.getElementById('studentRank').textContent = data.rank + '°';
-
-                        // Simple logic for status
-                        const att = parseInt(data.attendance);
-                        const statusSpan = document.getElementById('attendanceStatus');
-                        if (att >= 90) { statusSpan.textContent = 'Excelente'; statusSpan.style.color = 'green'; }
-                        else if (att >= 70) { statusSpan.textContent = 'Regular'; statusSpan.style.color = 'orange'; }
-                        else { statusSpan.textContent = 'Crítico'; statusSpan.style.color = 'red'; }
-
-                        // Report Card Logic
-                        if (data.reportCardUrl) {
-                            document.getElementById('reportCardContainer').style.display = 'block';
-                            document.getElementById('reportCardLink').href = data.reportCardUrl;
-                        } else {
-                            document.getElementById('reportCardContainer').style.display = 'none';
-                        }
-
-                        // --- FETCH QR ATTENDANCE ---
-                        if (data.dni) {
-                            fetchQrAttendance(data.dni);
-                            // Attach Listener
-                            const histBtn = document.getElementById('viewHistoryBtn');
-                            if (histBtn) histBtn.onclick = () => openHistoryModal(data.dni);
-                        } else {
-                            document.getElementById('qrList').innerHTML = '<li style="padding: 10px; text-align: center;">DNI no configurado en el sistema.</li>';
-                            const histBtn = document.getElementById('viewHistoryBtn');
-                            if (histBtn) histBtn.style.display = 'none';
-                            if (histBtn) histBtn.style.display = 'none';
-                        }
-
-                        // --- FETCH CONDUCT REPORTS ---
-                        fetchConductReports(user.email);
-
-                        // --- FETCH MATERIALS ---
-                        fetchMaterials(data.grade, data.section);
-
-                    } else {
-                        console.log("No such document!");
-                        document.querySelector('.student-info').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay datos registrados para este estudiante. Comuníquese con administración.</p>';
+                    if (snapStudents.empty) {
+                        console.log("No students found!");
+                        document.querySelector('.student-info').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay datos registrados. Comuníquese con administración.</p>';
+                        return;
                     }
+
+                    snapStudents.forEach(doc => {
+                        cachedStudents.push({ id: doc.id, ...doc.data() });
+                    });
+
+                    if (cachedStudents.length > 1) {
+                        const changeBtn = document.getElementById('changeStudentBtn');
+                        if (changeBtn) {
+                            changeBtn.style.display = 'inline-block';
+                            changeBtn.onclick = () => showStudentSelector(cachedStudents);
+                        }
+                        showStudentSelector(cachedStudents);
+                    } else {
+                        loadStudentData(cachedStudents[0]);
+                    }
+
                 } catch (error) {
-                    console.error("Error getting document:", error);
+                    console.error("Error getting students:", error);
+                }
+
+                async function showStudentSelector(students) {
+                    const overlay = document.getElementById('studentSelectorOverlay');
+                    const grid = document.getElementById('studentsListGrid');
+                    grid.innerHTML = '';
+                    overlay.style.display = 'flex';
+
+                    students.forEach(student => {
+                        const card = document.createElement('div');
+                        card.className = 'student-card';
+                        card.innerHTML = `
+                            <i class="fas fa-user-graduate"></i>
+                            <div class="info">
+                                <h4>${student.studentName}</h4>
+                                <p>${student.grade}° Grado ${student.section}</p>
+                            </div>
+                        `;
+                        card.onclick = () => {
+                            overlay.style.display = 'none';
+                            loadStudentData(student);
+                        };
+                        grid.appendChild(card);
+                    });
+                }
+
+                async function loadStudentData(data) {
+                    document.getElementById('studentName').textContent = data.studentName;
+                    document.getElementById('studentDni').textContent = data.dni || "No registrado";
+                    document.getElementById('studentGrade').textContent = data.grade;
+                    document.getElementById('studentSection').textContent = data.section;
+                    document.getElementById('studentAttendance').textContent = data.attendance + '%';
+                    document.getElementById('studentAverage').textContent = data.average;
+                    document.getElementById('studentRank').textContent = data.rank + '°';
+
+                    const att = parseInt(data.attendance);
+                    const statusSpan = document.getElementById('attendanceStatus');
+                    if (att >= 90) { statusSpan.textContent = 'Excelente'; statusSpan.style.color = 'green'; }
+                    else if (att >= 70) { statusSpan.textContent = 'Regular'; statusSpan.style.color = 'orange'; }
+                    else { statusSpan.textContent = 'Crítico'; statusSpan.style.color = 'red'; }
+
+                    if (data.reportCardUrl) {
+                        document.getElementById('reportCardContainer').style.display = 'block';
+                        document.getElementById('reportCardLink').href = data.reportCardUrl;
+                    } else {
+                        document.getElementById('reportCardContainer').style.display = 'none';
+                    }
+
+                    if (data.dni) {
+                        fetchQrAttendance(data.dni);
+                        document.getElementById('viewHistoryBtn').onclick = () => openHistoryModal(data.dni);
+                    } else {
+                        document.getElementById('qrList').innerHTML = '<li style="padding: 10px; text-align: center;">DNI no configurado.</li>';
+                        document.getElementById('viewHistoryBtn').style.display = 'none';
+                    }
+
+                    fetchConductReportsMulti(data.id); // Optimized for multi-child
+                    fetchMaterials(data.grade, data.section);
                 }
 
 
@@ -527,6 +628,42 @@
                 } else {
                     list.innerHTML = `<li style="color:red; text-align:center;">Error al cargar materiales.</li>`;
                 }
+            }
+        }
+
+        async function fetchConductReportsMulti(studentDocId) {
+            const list = document.getElementById('conductList');
+            try {
+                // Fetch from the specific student document's sub-collection
+                const q = query(
+                    collection(db, "students", studentDocId, "conduct"),
+                    orderBy("timestamp", "desc")
+                );
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    list.innerHTML = '<li style="padding: 10px; text-align: center;">No registra incidencias de conducta.</li>';
+                    return;
+                }
+
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const li = document.createElement('li');
+                    li.style.padding = '10px';
+                    li.style.borderBottom = '1px solid #eee';
+                    li.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight:bold; color:#d9534f;">${data.type}</span>
+                            <span style="font-size:0.8em; color:#666;">${data.date}</span>
+                        </div>
+                        <p style="margin:5px 0 0; font-size:0.9em; color:#333;">${data.description}</p>
+                    `;
+                    list.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Error fetching conduct reports:", error);
+                list.innerHTML = `<li style="color:red; text-align:center;">Error al cargar reportes.</li>`;
             }
         }
 
