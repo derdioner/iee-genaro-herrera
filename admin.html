@@ -270,6 +270,8 @@
         const userForm = document.getElementById('userForm');
         const roleSelect = document.getElementById('uRole');
         const parentFields = document.getElementById('parentFields');
+        const uLevel = document.getElementById('uLevel');
+        const uGrade = document.getElementById('uGrade');
         const uDniInput = document.getElementById('uDni');
         const uStudentDniInput = document.getElementById('uStudentDni');
 
@@ -292,6 +294,21 @@
             document.getElementById('labelName').innerText = isParent ? "Nombre Completo del Hijo:" : "Nombre Completo:";
             document.getElementById('uName').placeholder = isParent ? "Ej: Carlos Herrera Pérez" : "Ej: Prof. Juan Lopez";
         });
+
+        // Dynamic Grades based on Level
+        if (uLevel && uGrade) {
+            uLevel.addEventListener('change', () => {
+                const level = uLevel.value;
+                const maxGrade = level === 'Primaria' ? 6 : 5;
+                uGrade.innerHTML = '';
+                for (let i = 1; i <= maxGrade; i++) {
+                    const opt = document.createElement('option');
+                    opt.value = i;
+                    opt.textContent = `${i}${i === 1 ? 'ero' : i === 2 ? 'do' : i === 3 ? 'ero' : i === 4 ? 'to' : i === 5 ? 'to' : 'to'}`;
+                    uGrade.appendChild(opt);
+                }
+            });
+        }
 
         userForm.addEventListener('submit', async (e) => {
             e.preventDefault();
