@@ -145,7 +145,7 @@
                 <textarea id="mDesc" rows="3" placeholder="Instrucciones adicionales para los padres..."></textarea>
             </div>
 
-            <div class="form-row">
+            <div class="form-row" id="academicSelectGroup">
                 <div class="form-group">
                     <label>Nivel:</label>
                     <select id="mLevel" required>
@@ -177,6 +177,11 @@
                         <option value="G">Sección G</option>
                     </select>
                 </div>
+            </div>
+            <!-- Info box for assigned teacher -->
+            <div id="assignedInfo"
+                style="display: none; background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #c8e6c9; color: #2e7d32; font-weight: 600; text-align: center;">
+                <i class="fas fa-info-circle"></i> Material dirigido a: <span id="assignedLabel"></span>
             </div>
 
             <div class="form-group">
@@ -222,6 +227,15 @@
                         }
                         if (currentTeacherData.grade) document.getElementById('mGrade').value = currentTeacherData.grade;
                         if (currentTeacherData.section) document.getElementById('mSection').value = currentTeacherData.section;
+
+                        // NEW: Hide selectors and show info if data is complete
+                        if (currentTeacherData.level && currentTeacherData.grade && currentTeacherData.section) {
+                            document.getElementById('academicSelectGroup').style.display = 'none';
+                            const infoBox = document.getElementById('assignedInfo');
+                            const label = document.getElementById('assignedLabel');
+                            infoBox.style.display = 'block';
+                            label.innerText = `${currentTeacherData.level} - ${currentTeacherData.grade}° Grado "${currentTeacherData.section}"`;
+                        }
 
                         console.log("Academic fields pre-filled for teacher.");
                     }
