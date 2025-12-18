@@ -134,6 +134,13 @@
 
                 <!-- dynamic fields for parents -->
                 <div id="parentFields" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label>Nivel del Hijo:</label>
+                        <select id="uLevel">
+                            <option value="Primaria">Primaria</option>
+                            <option value="Secundaria">Secundaria</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label>Grado del Hijo:</label>
                         <select id="uGrade">
@@ -151,7 +158,10 @@
                             <option value="A">A</option>
                             <option value="B">B</option>
                             <option value="C">C</option>
-                            <option value="Única">Única</option>
+                            <option value="D">D</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                            <option value="G">G</option>
                         </select>
                     </div>
                     <div class="form-group" style="grid-column: 1 / -1; margin-top: -10px;">
@@ -323,10 +333,11 @@
                 };
 
                 if (role === 'students') {
-                    userData.studentName = name; // Assuming name is pupil name for simplicity in this demo
+                    userData.studentName = name;
+                    userData.level = document.getElementById('uLevel').value;
                     userData.grade = document.getElementById('uGrade').value;
                     userData.section = document.getElementById('uSection').value;
-                    userData.studentDni = studentDni; // Guardamos el DNI del hijo
+                    userData.studentDni = studentDni;
                     userData.attendance = "100";
                     userData.average = "18";
                     userData.rank = "1";
