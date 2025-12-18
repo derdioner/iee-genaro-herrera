@@ -1140,10 +1140,7 @@ ul {
     box-shadow: 0 0 0 4px rgba(0, 191, 255, 0.1);
 }
 
-.input-group input:focus~i {
-    /* If we could select prev, but sadly no. */
-    /* Handled by JS or ignored. */
-}
+
 
 .input-group:focus-within i {
     color: var(--primary-color);
@@ -1295,4 +1292,49 @@ footer {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* PDF Viewer Styles */
+.pdf-viewer-section {
+    margin-top: 50px;
+    text-align: center;
+}
+
+.pdf-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+    background: white;
+    padding: 10px;
+    border-radius: 20px;
+    box-shadow: var(--shadow-hover);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    overflow: hidden;
+}
+
+.pdf-container iframe {
+    width: 100%;
+    height: 700px;
+    border: none;
+    border-radius: 12px;
+}
+
+.pdf-header {
+    margin-bottom: 20px;
+}
+
+.btn-download-pdf {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    color: var(--primary-color);
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: var(--transition);
+}
+
+.btn-download-pdf:hover {
+    color: var(--primary-dark);
+    transform: translateY(-2px);
 }
