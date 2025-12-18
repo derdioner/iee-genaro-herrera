@@ -266,6 +266,15 @@
             btn.innerText = 'Registrando...';
 
             try {
+                // --- STEP 0: VALIDATE UNIQUENESS OF STUDENT DNI ---
+                if (role === 'students') {
+                    const qDni = query(collection(db, "students"), where("studentDni", "==", studentDni), limit(1));
+                    const snapDni = await getDocs(qDni);
+                    if (!snapDni.empty) {
+                        throw new Error(`El DNI de estudiante ${studentDni} ya está registrado en el sistema.`);
+                    }
+                }
+
                 // --- STEP 1: CREATE USER IN FIREBASE AUTH (Security Key) ---
                 try {
                     await createUserWithEmailAndPassword(secondaryAuth, email, pass);
