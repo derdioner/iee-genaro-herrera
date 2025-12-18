@@ -233,10 +233,24 @@
     </div>
 
     <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { db, storage } from './firebase-config.js';
         import { doc, setDoc, addDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { qrDb } from './firebase-qr-config.js';
+
+        // Secondary App for user creation (doesn't sign out current admin)
+        const secondaryConfig = {
+            apiKey: "AIzaSyAcI0CyWAcfBYdkBquCgj9RWSdpTrqjj6g",
+            authDomain: "iee-genaro-herrera.firebaseapp.com",
+            projectId: "iee-genaro-herrera",
+            storageBucket: "iee-genaro-herrera.firebasestorage.app",
+            messagingSenderId: "380822703142",
+            appId: "1:380822703142:web:1834c7a730435ee01f2ae7"
+        };
+        const secondaryApp = initializeApp(secondaryConfig, "secondary");
+        const secondaryAuth = getAuth(secondaryApp);
 
         const userForm = document.getElementById('userForm');
         const roleSelect = document.getElementById('uRole');
@@ -269,6 +283,21 @@
             btn.innerText = 'Registrando...';
 
             try {
+                // --- STEP 1: CREATE USER IN FIREBASE AUTH (Security Key) ---
+                try {
+                    await createUserWithEmailAndPassword(secondaryAuth, email, pass);
+                    // Critical: Sign out from the secondary app instance immediately 
+                    // so it doesn't try to persist a session that might conflict
+                    await signOut(secondaryAuth);
+                } catch (authErr) {
+                    if (authErr.code === 'auth/email-already-in-use') {
+                        console.log("Auth user already exists, proceeding to update Firestore...");
+                    } else {
+                        throw new Error("Error de Seguridad (Auth): " + authErr.message);
+                    }
+                }
+
+                // --- STEP 2: SAVE PROFILE DATA IN FIRESTORE ---
                 const userData = {
                     dni: dni,
                     name: name,
