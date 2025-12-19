@@ -87,5 +87,28 @@ Una vez que hayas guardado tus cambios en VS Code, necesitas enviarlos a la nube
 
 ---
 
+### 4. Configurar Firebase Storage (Para que funcionen las subidas)
+Si los archivos se quedan en "Subiendo...", es probable que falte activar el Storage.
+1.  Entra a [Firebase Console](https://console.firebase.google.com/).
+2.  Selecciona tu proyecto **"iee-genaro-herrera"**.
+3.  En el menú izquierdo, ve a **Build > Storage**.
+4.  Haz clic en **Get Started** (Comenzar).
+5.  Selecciona **Start in test mode** (Iniciar en modo de prueba) para empezar rápido, o modo producción.
+6.  Dale a "Siguiente" y elige la ubicación del servidor (puedes dejar la por defecto).
+7.  **IMPORTANTE (Reglas):** Ve a la pestaña **Rules** y asegúrate de que se vea así para permitir subidas a usuarios registrados:
+    ```javascript
+    rules_version = '2';
+    service firebase.storage {
+      match /b/{bucket}/o {
+        match /{allPaths=**} {
+          allow read, write: if request.auth != null;
+        }
+      }
+    }
+    ```
+8.  Haz clic en **Publish** (Publicar).
+
+---
+
 ### ¡Tú tienes el control total! 
 Todo el código es tuyo y está en tu cuenta de GitHub.
