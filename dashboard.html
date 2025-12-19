@@ -180,6 +180,16 @@
                 <p>Promedio General: <strong id="studentAverage">--</strong></p>
                 <p>Puesto en clase: <span id="studentRank">--</span></p>
             </div>
+            <!-- Progress Comments Section -->
+            <div class="info-card" id="progressContainer"
+                style="grid-column: 1 / -1; border-left: 5px solid #1565c0; background: #e3f2fd;">
+                <h4><i class="fas fa-comment-dots"></i> Avance Educativo (Comentario del Docente)</h4>
+                <p id="progressComment"
+                    style="font-style: italic; color: #0d47a1; margin-top: 10px; font-size: 1.1rem; line-height: 1.5;">
+                    No hay comentarios registrados para este periodo.
+                </p>
+                <p id="progressDate" style="font-size: 0.8rem; color: #546e7a; margin-top: 10px;"></p>
+            </div>
 
             <!-- Report Card Button -->
             <div class="info-card" id="reportCardContainer"
@@ -343,6 +353,22 @@
                 document.getElementById('reportCardLink').href = data.reportCardUrl;
             } else {
                 document.getElementById('reportCardContainer').style.display = 'none';
+            }
+
+            // --- NEW: PROGRESS COMMENT HANDLING ---
+            const progressComment = document.getElementById('progressComment');
+            const progressDate = document.getElementById('progressDate');
+            if (data.progressComment) {
+                progressComment.innerText = data.progressComment;
+                if (data.progressTimestamp) {
+                    const ts = new Date(data.progressTimestamp.seconds * 1000);
+                    progressDate.innerText = "Actualizado el: " + ts.toLocaleDateString() + " " + ts.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                } else {
+                    progressDate.innerText = "";
+                }
+            } else {
+                progressComment.innerText = "No hay comentarios registrados para este periodo.";
+                progressDate.innerText = "";
             }
 
             if (data.dni) {

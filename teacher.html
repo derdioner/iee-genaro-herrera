@@ -10,6 +10,8 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <!-- SheetJS for Excel Parsing -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         body {
             background: #f0f7ff;
@@ -246,25 +248,34 @@
         </form>
 
         <!-- Excel Template Section -->
-        <div class="excel-section">
+        <div class="excel-section" style="margin-top: 50px; border-top: 2px solid #eee; padding-top: 30px;">
             <div style="font-size: 2.5rem; color: #2e7d32;">
                 <i class="fas fa-file-excel"></i>
             </div>
             <div class="excel-info">
                 <h4>Comentarios de Avance Educativo</h4>
-                <p>Descarga la plantilla para registrar el progreso y observaciones de tus estudiantes de forma masiva.
-                </p>
+                <p>Descarga la plantilla, llénala con los comentarios de progreso y súbela aquí para actualizar a los
+                    padres.</p>
+
+                <div style="margin-top: 15px; display: flex; gap: 10px;">
+                    <a href="#" onclick="downloadTemplate()" class="btn-excel">
+                        <i class="fas fa-download"></i> Descargar Plantilla
+                    </a>
+                    <button onclick="document.getElementById('excelFile').click()" class="btn-excel"
+                        style="background: #1565c0;">
+                        <i class="fas fa-upload"></i> Subir Excel / CSV
+                    </button>
+                    <input type="file" id="excelFile" style="display: none;" accept=".csv, .xlsx, .xls">
+                </div>
+                <div id="excelStatus" style="margin-top: 10px; font-size: 0.85rem; font-weight: 600;"></div>
             </div>
-            <a href="#" onclick="downloadTemplate()" class="btn-excel">
-                <i class="fas fa-download"></i> Descargar Plantilla
-            </a>
         </div>
     </div>
 
     <script type="module">
         import { db, storage, auth } from './firebase-config.js';
         import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-        import { collection, addDoc, serverTimestamp, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, addDoc, serverTimestamp, getDoc, doc, updateDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         let currentTeacherData = null;
@@ -342,6 +353,7 @@
         const form = document.getElementById('uploadForm');
         form.onsubmit = async (e) => {
             e.preventDefault();
+            console.log("Submit triggered");
 
             const file = fileInput.files[0];
             const title = document.getElementById('mTitle').value;
@@ -350,6 +362,13 @@
             const grade = document.getElementById('mGrade').value;
             const section = document.getElementById('mSection').value;
 
+            if (!file) {
+                alert("Por favor selecciona un archivo.");
+                return;
+            }
+
+            console.log("Data to upload:", { title, level, grade, section, filename: file.name });
+
             const btn = document.getElementById('uploadBtn');
             const progBar = document.getElementById('progBar');
             const progInner = document.getElementById('progInner');
@@ -357,10 +376,14 @@
             btn.disabled = true;
             btn.innerText = "Subiendo archivo...";
             progBar.style.display = "block";
+            progInner.style.width = "0%";
 
             try {
                 // 1. Upload to Storage
-                const storagePath = `materials/${level}/${grade}/${section}/${Date.now()}_${file.name}`;
+                const timestamp = Date.now();
+                const storagePath = `materials/${level}/${grade}/${section}/${timestamp}_${file.name}`;
+                console.log("Storage Path:", storagePath);
+
                 const storageRef = ref(storage, storagePath);
                 const uploadTask = uploadBytesResumable(storageRef, file);
 
@@ -368,43 +391,127 @@
                     (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
                         progInner.style.width = progress + "%";
+                        console.log("Upload progress:", progress.toFixed(2) + "%");
                     },
                     (error) => {
+                        console.error("Storage error:", error);
                         alert("Error al subir archivo: " + error.message);
                         btn.disabled = false;
+                        btn.innerText = "Publicar Material";
                     },
                     async () => {
-                        // 2. Get Download URL
-                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        try {
+                            // 2. Get Download URL
+                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                            console.log("File uploaded, URL:", downloadURL);
 
-                        // 3. Save Metadata to Firestore
-                        await addDoc(collection(db, "materials"), {
-                            title: title,
-                            description: desc,
-                            level: level,
-                            grade: grade,
-                            section: section,
-                            fileUrl: downloadURL,
-                            fileName: file.name,
-                            teacherEmail: currentTeacher ? currentTeacher.email : "Invitado",
-                            timestamp: serverTimestamp()
-                        });
+                            // 3. Save Metadata to Firestore
+                            const payload = {
+                                title: title,
+                                description: desc,
+                                level: level,
+                                grade: String(grade), // Ensure string for consistency
+                                section: section,
+                                fileUrl: downloadURL,
+                                fileName: file.name,
+                                teacherEmail: currentTeacher ? currentTeacher.email : "Invitado",
+                                timestamp: serverTimestamp()
+                            };
 
-                        alert("¡Material publicado con éxito!");
-                        form.reset();
-                        fileDisplay.innerText = "Haz clic para seleccionar un archivo";
-                        fileDisplay.style.color = "#666";
-                        progBar.style.display = "none";
-                        btn.disabled = false;
-                        btn.innerText = "Publicar Material";
+                            console.log("Saving to Firestore...", payload);
+                            await addDoc(collection(db, "materials"), payload);
+
+                            alert("¡Material publicado con éxito!");
+                            form.reset();
+                            fileDisplay.innerText = "Haz clic para seleccionar un archivo";
+                            fileDisplay.style.color = "#666";
+                            progBar.style.display = "none";
+                            btn.disabled = false;
+                            btn.innerText = "Publicar Material";
+                        } catch (fsErr) {
+                            console.error("Firestore error:", fsErr);
+                            alert("Error al guardar datos: " + fsErr.message);
+                            btn.disabled = false;
+                            btn.innerText = "Publicar Material";
+                        }
                     }
                 );
 
             } catch (err) {
-                console.error(err);
+                console.error("Critical error:", err);
                 alert("Error crítico: " + err.message);
                 btn.disabled = false;
+                btn.innerText = "Publicar Material";
             }
+        };
+
+        // --- NEW: EXCEL UPLOAD LOGIC ---
+        const excelInput = document.getElementById('excelFile');
+        const excelStatus = document.getElementById('excelStatus');
+
+        excelInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            excelStatus.innerText = "Procesando archivo: " + file.name;
+            excelStatus.style.color = "#1565c0";
+
+            const reader = new FileReader();
+            reader.onload = async (evt) => {
+                try {
+                    const data = evt.target.result;
+                    const workbook = XLSX.read(data, { type: 'binary' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+
+                    // Convert to JSON
+                    const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                    console.log("Excel JSON:", json);
+
+                    // Skip header [0]
+                    let updatedCount = 0;
+                    let errorCount = 0;
+
+                    for (let i = 1; i < json.length; i++) {
+                        const row = json[i];
+                        if (row.length < 3) continue; // Skip empty rows
+
+                        let dni = String(row[0]).trim();
+                        let comment = row[2] ? String(row[2]).trim() : "";
+
+                        if (dni && comment) {
+                            // Find student by DNI
+                            const q = query(collection(db, "students"), where("dni", "==", dni));
+                            const snap = await getDocs(q);
+
+                            if (!snap.empty) {
+                                // Update all docs matching DNI (usually just 1)
+                                for (const docSnap of snap.docs) {
+                                    await updateDoc(doc(db, "students", docSnap.id), {
+                                        progressComment: comment,
+                                        progressTimestamp: serverTimestamp()
+                                    });
+                                }
+                                updatedCount++;
+                            } else {
+                                console.warn("Student not found for DNI:", dni);
+                                errorCount++;
+                            }
+                        }
+                    }
+
+                    alert(`Proceso terminado.\nÉxito: ${updatedCount} estudiantes actualizados.\nNo encontrados: ${errorCount} DNIs.`);
+                    excelStatus.innerText = `Última carga: ${updatedCount} exitosos.`;
+                    excelStatus.style.color = "#28a745";
+                    excelInput.value = ""; // Clear for next upload
+                } catch (err) {
+                    console.error("Excel processing error:", err);
+                    alert("Error al procesar el archivo: " + err.message);
+                    excelStatus.innerText = "Error en la última carga.";
+                    excelStatus.style.color = "red";
+                }
+            };
+            reader.readAsBinaryString(file);
         };
 
         // --- NEW: EXCEL TEMPLATE DOWNLOAD LOGIC ---
