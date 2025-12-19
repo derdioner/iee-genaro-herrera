@@ -409,16 +409,15 @@
 
         // --- NEW: EXCEL TEMPLATE DOWNLOAD LOGIC ---
         window.downloadTemplate = () => {
-            // Using a simple CSV/Text approach if real .xlsx file isn't hosted yet
-            // Or we could use XLSX library if we want to be fancy.
-            // For now, let's suggest a mock download of the structure
-            const studentName = currentTeacherData ? currentTeacherData.name : "DOCENTE";
-            const aula = currentTeacherData ? `${currentTeacherData.level} ${currentTeacherData.grade}${currentTeacherData.section}` : "AULA";
+            const aula = currentTeacherData ? `${currentTeacherData.level}_${currentTeacherData.grade}${currentTeacherData.section}` : "AULA";
 
-            const header = "DNI_ESTUDIANTE,NOMBRE_ESTUDIANTE,COMENTARIO_AVANCE_EDUCATIVO,FECHA\n";
-            const example = "12345678,Juan Perez,El estudiante muestra gran progreso en el area de comunicacion.,2025-12-19\n";
+            // Usamos punto y coma (;) para que Excel en español lo divida en celdas automáticamente
+            const header = "DNI_ESTUDIANTE;NOMBRE_ESTUDIANTE;COMENTARIO_AVANCE_EDUCATIVO;FECHA\n";
+            const example = "12345678;Juan Perez;El estudiante muestra gran progreso en el area de comunicacion.;2025-12-19\n";
 
-            const blob = new Blob([header + example], { type: 'text/csv;charset=utf-8;' });
+            // UTF-8 BOM para que Excel reconozca la codificación correctamente
+            const BOM = "\uFEFF";
+            const blob = new Blob([BOM + header + example], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
@@ -428,7 +427,7 @@
             link.click();
             document.body.removeChild(link);
 
-            alert("Descargando plantilla CSV (compatible con Excel). Por favor complete los datos de sus estudiantes.");
+            alert("Descargando plantilla. Los datos ya deberían aparecer en celdas separadas al abrir con Excel.");
         };
     </script>
 </body>
