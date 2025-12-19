@@ -631,27 +631,58 @@
             reader.readAsBinaryString(file);
         };
 
-        // --- NEW: EXCEL TEMPLATE DOWNLOAD LOGIC ---
-        window.downloadTemplate = () => {
-            const aula = currentTeacherData ? `${currentTeacherData.level}_${currentTeacherData.grade}${currentTeacherData.section}` : "AULA";
+        // --- NEW: EXCEL TEMPLATE DOWNLOAD LOGIC (WITH AUTOMATIC STUDENT LIST) ---
+        window.downloadTemplate = async () => {
+            if (!currentTeacherData) {
+                alert("Error: No se ha detectado su información académica. Por favor, recargue la página o verifique su perfil.");
+                return;
+            }
 
-            // Usamos punto y coma (;) para que Excel en español lo divida en celdas automáticamente
-            const header = "DNI_ESTUDIANTE;NOMBRE_ESTUDIANTE;COMENTARIO_AVANCE_EDUCATIVO;FECHA\n";
-            const example = "12345678;Juan Perez;El estudiante muestra gran progreso en el area de comunicacion.;2025-12-19\n";
+            const { level, grade, section } = currentTeacherData;
+            console.log(`Generating template for: ${level} ${grade}° "${section}"`);
 
-            // UTF-8 BOM para que Excel reconozca la codificación correctamente
-            const BOM = "\uFEFF";
-            const blob = new Blob([BOM + header + example], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            const url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", `Plantilla_Avance_${aula}.csv`);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            try {
+                // Fetch students matching the teacher's assigned level, grade, and section
+                const q = query(
+                    collection(db, "students"),
+                    where("level", "==", level),
+                    where("grade", "==", String(grade)),
+                    where("section", "==", section)
+                );
 
-            alert("Descargando plantilla. Los datos ya deberían aparecer en celdas separadas al abrir con Excel.");
+                const snap = await getDocs(q);
+
+                // BOM for Excel UTF-8 compatibility
+                const BOM = "\uFEFF";
+                let csvContent = "DNI_ESTUDIANTE;NOMBRE_ESTUDIANTE;COMENTARIO_AVANCE_EDUCATIVO;FECHA_REFERENCIA\n";
+
+                if (snap.empty) {
+                    csvContent += "00000000;Sin Estudiantes Registrados;Escribe aquí el comentario;2025-12-19\n";
+                    alert("Aviso: No se encontraron alumnos registrados en tu aula. Se descargará una plantilla con un ejemplo.");
+                } else {
+                    snap.forEach(doc => {
+                        const s = doc.data();
+                        const dni = s.studentDni || s.dni || "";
+                        const name = s.studentName || s.name || "";
+                        csvContent += `${dni};${name};;\n`;
+                    });
+                }
+
+                const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement("a");
+                const url = URL.createObjectURL(blob);
+                link.setAttribute("href", url);
+                link.setAttribute("download", `Plantilla_Avance_${level}_${grade}_${section}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                console.log("Template generated successfully.");
+            } catch (err) {
+                console.error("Error generating student template:", err);
+                alert("Error al generar la plantilla: " + err.message);
+            }
         };
 
         // --- NEW: TEACHER MATERIAL HISTORY LOGIC ---
