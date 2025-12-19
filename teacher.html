@@ -110,6 +110,51 @@
             width: 0%;
             transition: width 0.3s;
         }
+
+        /* Excel Template Section */
+        .excel-section {
+            background: #fff8e1;
+            border: 1px solid #ffe082;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .excel-info {
+            flex: 1;
+        }
+
+        .excel-info h4 {
+            margin: 0 0 5px 0;
+            color: #795548;
+        }
+
+        .excel-info p {
+            margin: 0;
+            font-size: 0.85rem;
+            color: #8d6e63;
+        }
+
+        .btn-excel {
+            background: #2e7d32;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+
+        .btn-excel:hover {
+            background: #1b5e20;
+        }
     </style>
 </head>
 
@@ -199,19 +244,34 @@
 
             <button type="submit" class="btn-upload" id="uploadBtn">Publicar Material</button>
         </form>
+
+        <!-- Excel Template Section -->
+        <div class="excel-section">
+            <div style="font-size: 2.5rem; color: #2e7d32;">
+                <i class="fas fa-file-excel"></i>
+            </div>
+            <div class="excel-info">
+                <h4>Comentarios de Avance Educativo</h4>
+                <p>Descarga la plantilla para registrar el progreso y observaciones de tus estudiantes de forma masiva.
+                </p>
+            </div>
+            <a href="#" onclick="downloadTemplate()" class="btn-excel">
+                <i class="fas fa-download"></i> Descargar Plantilla
+            </a>
+        </div>
     </div>
 
     <script type="module">
         import { db, storage, auth } from './firebase-config.js';
         import { ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-        import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, addDoc, serverTimestamp, getDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         let currentTeacherData = null;
 
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                currentTeacher = user;
+                window.currentTeacher = user;
                 try {
                     // Fetch profile from staff collection
                     const docData = await getDoc(doc(db, "staff", user.email));
@@ -228,8 +288,10 @@
                         if (currentTeacherData.grade) document.getElementById('mGrade').value = currentTeacherData.grade;
                         if (currentTeacherData.section) document.getElementById('mSection').value = currentTeacherData.section;
 
-                        // NEW: Hide selectors and show info if data is complete
-                        if (currentTeacherData.level && currentTeacherData.grade && currentTeacherData.section) {
+                        // Logic refinement: Hide selectors if teacher is Primaria or has fully assigned data
+                        const isPrimaria = currentTeacherData.level === 'Primaria';
+
+                        if (isPrimaria || (currentTeacherData.level && currentTeacherData.grade && currentTeacherData.section)) {
                             document.getElementById('academicSelectGroup').style.display = 'none';
                             const infoBox = document.getElementById('assignedInfo');
                             const label = document.getElementById('assignedLabel');
@@ -237,7 +299,7 @@
                             label.innerText = `${currentTeacherData.level} - ${currentTeacherData.grade}° Grado "${currentTeacherData.section}"`;
                         }
 
-                        console.log("Academic fields pre-filled for teacher.");
+                        console.log("Academic fields handled for teacher.");
                     }
                 } catch (err) {
                     console.error("Error fetching teacher profile:", err);
@@ -343,6 +405,30 @@
                 alert("Error crítico: " + err.message);
                 btn.disabled = false;
             }
+        };
+
+        // --- NEW: EXCEL TEMPLATE DOWNLOAD LOGIC ---
+        window.downloadTemplate = () => {
+            // Using a simple CSV/Text approach if real .xlsx file isn't hosted yet
+            // Or we could use XLSX library if we want to be fancy.
+            // For now, let's suggest a mock download of the structure
+            const studentName = currentTeacherData ? currentTeacherData.name : "DOCENTE";
+            const aula = currentTeacherData ? `${currentTeacherData.level} ${currentTeacherData.grade}${currentTeacherData.section}` : "AULA";
+
+            const header = "DNI_ESTUDIANTE,NOMBRE_ESTUDIANTE,COMENTARIO_AVANCE_EDUCATIVO,FECHA\n";
+            const example = "12345678,Juan Perez,El estudiante muestra gran progreso en el area de comunicacion.,2025-12-19\n";
+
+            const blob = new Blob([header + example], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Plantilla_Avance_${aula}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            alert("Descargando plantilla CSV (compatible con Excel). Por favor complete los datos de sus estudiantes.");
         };
     </script>
 </body>
