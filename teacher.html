@@ -531,31 +531,53 @@
             reader.onload = async (evt) => {
                 try {
                     const data = evt.target.result;
-                    const workbook = XLSX.read(data, { type: 'binary' });
+                    // For better CSV handling with semicolons, we can pass raw: true or use specific parser
+                    const workbook = XLSX.read(data, { type: 'binary', codepage: 65001 });
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
 
                     // Convert to JSON
                     const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                    console.log("Excel JSON:", json);
+                    console.log("Excel JSON Initial rows count:", json.length);
 
-                    // Skip header [0]
                     let updatedCount = 0;
                     let errorCount = 0;
+                    let skipCount = 0;
 
                     for (let i = 1; i < json.length; i++) {
-                        const row = json[i];
-                        if (row.length < 3) continue; // Skip empty rows
+                        let row = json[i];
+                        if (!row || row.length === 0) {
+                            skipCount++;
+                            continue;
+                        }
 
-                        let dni = String(row[0]).trim();
+                        console.log(`Processing Row ${i}:`, row);
+
+                        // Handling the case where the whole row might be in the first cell (CSV semicolon issue)
+                        if (row.length === 1 && String(row[0]).includes(';')) {
+                            row = String(row[0]).split(';');
+                            console.log(`Row ${i} auto-split by semicolon:`, row);
+                        }
+
+                        let dni = row[0] ? String(row[0]).trim() : "";
                         let comment = row[2] ? String(row[2]).trim() : "";
 
+                        // Basic check: if DNI looks like a header or is empty, skip
+                        if (!dni || dni.toLowerCase().includes("dni")) {
+                            console.log(`Row ${i} skipped (Invalid DNI: ${dni})`);
+                            skipCount++;
+                            continue;
+                        }
+
                         if (dni && comment) {
+                            console.log(`Searching for student with DNI: [${dni}]...`);
                             // Find student by DNI
+                            // We try both as String and Number just in case, though Firestore is usually specific
                             const q = query(collection(db, "students"), where("dni", "==", dni));
                             const snap = await getDocs(q);
 
                             if (!snap.empty) {
+                                console.log(`Match found! Updating ${snap.size} document(s) for DNI ${dni}`);
                                 // Update all docs matching DNI (usually just 1)
                                 for (const docSnap of snap.docs) {
                                     await updateDoc(doc(db, "students", docSnap.id), {
@@ -565,16 +587,21 @@
                                 }
                                 updatedCount++;
                             } else {
-                                console.warn("Student not found for DNI:", dni);
+                                console.warn(`Student NOT found in Firestore for DNI: [${dni}]. Check if DNI matches exactly.`);
                                 errorCount++;
                             }
+                        } else {
+                            console.log(`Row ${i} missing DNI or Comment. DNI: [${dni}], Comment: [${comment}]`);
+                            errorCount++;
                         }
                     }
 
-                    alert(`Proceso terminado.\nÉxito: ${updatedCount} estudiantes actualizados.\nNo encontrados: ${errorCount} DNIs.`);
-                    excelStatus.innerText = `Última carga: ${updatedCount} exitosos.`;
-                    excelStatus.style.color = "#28a745";
+                    const finalMsg = `Proceso terminado.\n\n- Actualizados: ${updatedCount}\n- No encontrados/Error: ${errorCount}\n- Filas omitidas: ${skipCount}`;
+                    alert(finalMsg);
+                    excelStatus.innerText = `Resultado: ${updatedCount} exitosos, ${errorCount} fallidos.`;
+                    excelStatus.style.color = updatedCount > 0 ? "#28a745" : "orange";
                     excelInput.value = ""; // Clear for next upload
+
                 } catch (err) {
                     console.error("Excel processing error:", err);
                     alert("Error al procesar el archivo: " + err.message);
