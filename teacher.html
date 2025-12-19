@@ -571,14 +571,33 @@
 
                         if (dni && comment) {
                             console.log(`Searching for student with DNI: [${dni}]...`);
-                            // Find student by DNI
-                            // We try both as String and Number just in case, though Firestore is usually specific
-                            const q = query(collection(db, "students"), where("dni", "==", dni));
-                            const snap = await getDocs(q);
+
+                            // 1. Try studentDni (standard for students)
+                            let q = query(collection(db, "students"), where("studentDni", "==", dni));
+                            let snap = await getDocs(q);
+
+                            // 2. Fallback: Try dni field (sometimes used for parent, but might be used for student in legacy)
+                            if (snap.empty) {
+                                console.log(`No match for studentDni="${dni}". Trying dni="${dni}"...`);
+                                q = query(collection(db, "students"), where("dni", "==", dni));
+                                snap = await getDocs(q);
+                            }
+
+                            // 3. Match numeric DNI (in case it was stored as Number)
+                            if (snap.empty && !isNaN(dni) && dni !== "") {
+                                const dniNum = Number(dni);
+                                console.log(`No match for string. Trying numeric studentDni=${dniNum}...`);
+                                q = query(collection(db, "students"), where("studentDni", "==", dniNum));
+                                snap = await getDocs(q);
+                                if (snap.empty) {
+                                    console.log(`Trying numeric dni=${dniNum}...`);
+                                    q = query(collection(db, "students"), where("dni", "==", dniNum));
+                                    snap = await getDocs(q);
+                                }
+                            }
 
                             if (!snap.empty) {
                                 console.log(`Match found! Updating ${snap.size} document(s) for DNI ${dni}`);
-                                // Update all docs matching DNI (usually just 1)
                                 for (const docSnap of snap.docs) {
                                     await updateDoc(doc(db, "students", docSnap.id), {
                                         progressComment: comment,
@@ -587,7 +606,7 @@
                                 }
                                 updatedCount++;
                             } else {
-                                console.warn(`Student NOT found in Firestore for DNI: [${dni}]. Check if DNI matches exactly.`);
+                                console.warn(`Student NOT found for DNI: [${dni}]. Please verify if this DNI exists in the 'students' collection.`);
                                 errorCount++;
                             }
                         } else {
