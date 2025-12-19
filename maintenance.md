@@ -108,6 +108,15 @@ Si los archivos se quedan en "Subiendo...", es probable que falte activar el Sto
     ```
 8.  Haz clic en **Publish** (Publicar).
 
+### 5. Configurar Índices de Firestore (Errores de consulta)
+Si ves un error que dice "The query requires an index", es porque Firestore necesita un índice para realizar búsquedas avanzadas (como ordenar por fecha).
+1.  **Haz clic en el enlace** que aparece en el mensaje de error (en la consola F12 o en el panel).
+2.  Te llevará directamente a la consola de Firebase con los campos ya seleccionados.
+3.  Haz clic en **"Crear índice"**.
+4.  Espera unos minutos a que el estado cambie de "Creando" a "Activo".
+
+*Nota: He añadido un sistema de respaldo en el código para que el historial funcione incluso si el índice no está listo, pero crear el índice oficial hará que la web sea más rápida.*
+
 ---
 
 ### ¡Tú tienes el control total! 

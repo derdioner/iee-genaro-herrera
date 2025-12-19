@@ -614,6 +614,7 @@
             if (!currentTeacher) return;
 
             try {
+                // Try ordered query first
                 const q = query(
                     collection(db, "materials"),
                     where("teacherEmail", "==", currentTeacher.email),
@@ -621,37 +622,66 @@
                 );
 
                 const snap = await getDocs(q);
-                tbody.innerHTML = '';
+                renderHistoryTable(snap.docs.map(d => ({ id: d.id, ...d.data() })));
 
-                if (snap.empty) {
-                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">Aún no has subido ningún material.</td></tr>';
-                    return;
-                }
-
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    const tr = document.createElement('tr');
-                    const ts = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
-                    const dateFmt = `${ts.getDate().toString().padStart(2, '0')}/${(ts.getMonth() + 1).toString().padStart(2, '0')}/${ts.getFullYear()}`;
-
-                    tr.innerHTML = `
-                        <td>${dateFmt}</td>
-                        <td>
-                            <strong>${data.title}</strong><br>
-                            <small style="color: #666;">${data.fileName || 'Archivo'}</small>
-                        </td>
-                        <td>${data.level} - ${data.grade}° "${data.section}"</td>
-                        <td>
-                            <a href="${data.fileUrl}" target="_blank" class="btn" style="padding: 4px 8px; font-size: 0.75rem; background: #eee; color: #333; text-decoration: none; border-radius: 4px; margin-right: 5px;"><i class="fas fa-eye"></i></a>
-                            <button class="btn-delete-item" onclick="deleteMaterial('${doc.id}', '${data.fileUrl}')"><i class="fas fa-trash"></i></button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
             } catch (err) {
-                console.error("Error fetching history:", err);
-                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: red;">Error al cargar historial: ${err.message}</td></tr>`;
+                console.warn("Index not ready or missing, using fallback (client-side sort):", err);
+
+                if (err.message.includes("index")) {
+                    try {
+                        // Fallback: Simple query + client-side sort
+                        const qFallback = query(
+                            collection(db, "materials"),
+                            where("teacherEmail", "==", currentTeacher.email)
+                        );
+                        const snapFallback = await getDocs(qFallback);
+
+                        const data = snapFallback.docs.map(d => ({ id: d.id, ...d.data() }));
+                        data.sort((a, b) => {
+                            const tA = a.timestamp ? a.timestamp.seconds : 0;
+                            const tB = b.timestamp ? b.timestamp.seconds : 0;
+                            return tB - tA;
+                        });
+
+                        renderHistoryTable(data);
+                    } catch (err2) {
+                        console.error("Critical error in history fallback:", err2);
+                        tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: red;">Error: ${err2.message}</td></tr>`;
+                    }
+                } else {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: red;">Error: ${err.message}</td></tr>`;
+                }
             }
+        }
+
+        function renderHistoryTable(items) {
+            const tbody = document.getElementById('historyBody');
+            tbody.innerHTML = '';
+
+            if (items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #999;">Aún no has subido ningún material.</td></tr>';
+                return;
+            }
+
+            items.forEach(data => {
+                const tr = document.createElement('tr');
+                const ts = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
+                const dateFmt = `${ts.getDate().toString().padStart(2, '0')}/${(ts.getMonth() + 1).toString().padStart(2, '0')}/${ts.getFullYear()}`;
+
+                tr.innerHTML = `
+                     <td>${dateFmt}</td>
+                     <td>
+                         <strong>${data.title}</strong><br>
+                         <small style="color: #666;">${data.fileName || 'Archivo'}</small>
+                     </td>
+                     <td>${data.level} - ${data.grade}° "${data.section}"</td>
+                     <td>
+                         <a href="${data.fileUrl}" target="_blank" class="btn" style="padding: 4px 8px; font-size: 0.75rem; background: #eee; color: #333; text-decoration: none; border-radius: 4px; margin-right: 5px;"><i class="fas fa-eye"></i></a>
+                         <button class="btn-delete-item" onclick="deleteMaterial('${data.id}', '${data.fileUrl}')"><i class="fas fa-trash"></i></button>
+                     </td>
+                 `;
+                tbody.appendChild(tr);
+            });
         }
 
         window.deleteMaterial = async (id, fileUrl) => {
