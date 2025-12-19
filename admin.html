@@ -130,6 +130,29 @@
             background: #fef5e7;
             color: #f39c12;
         }
+
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
     </style>
 </head>
 
@@ -179,12 +202,10 @@
 
         <!-- User Management Section (Registration) -->
         <div id="registrationSection">
-            style="background: #eef2f7; padding: 20px; border-radius: 10px; border: 1px solid #d1d9e6; margin-bottom:
-            30px;">
-            <h3 style="color: #2c3e50; margin-bottom: 15px;"><i class="fas fa-user-plus"></i> Gestión de Usuarios e
-                Intranet</h3>
-            <p style="font-size: 0.9em; margin-bottom: 15px;">Use este formulario para registrar nuevos Padres o
-                Docentes y permitirles el acceso con su DNI.</p>
+            <p
+                style="font-size: 0.9em; margin-bottom: 20px; color: #666; border-left: 4px solid #3498db; padding-left: 10px;">
+                Complete el formulario para registrar un nuevo <b>Padre</b> o <b>Docente</b>.
+            </p>
 
             <form id="userForm">
                 <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
@@ -266,6 +287,12 @@
                 <button onclick="fetchUsers()" class="btn"
                     style="padding: 8px 15px; font-size: 0.9rem; background: #2ecc71; color: white; border: none; border-radius: 5px;">Actualizar
                     Lista</button>
+            </div>
+
+            <div class="filter-container">
+                <button class="filter-btn active" onclick="filterBy('all', this)">Todos</button>
+                <button class="filter-btn" onclick="filterBy('staff', this)">Grupo Docentes</button>
+                <button class="filter-btn" onclick="filterBy('students', this)">Grupo Padres de Familia</button>
             </div>
 
             <div style="overflow-x: auto;">
@@ -442,6 +469,8 @@
 
         // --- NEW: USER LIST LOGIC ---
 
+        let allUsers = [];
+
         window.switchTab = (tab) => {
             const regSection = document.getElementById('registrationSection');
             const listSection = document.getElementById('userListSection');
@@ -466,52 +495,78 @@
             tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Cargando...</td></tr>';
 
             try {
-                const users = [];
+                allUsers = [];
 
                 // Fetch Staff (Teachers)
                 const staffSnap = await getDocs(query(collection(db, "staff"), orderBy("timestamp", "desc")));
                 staffSnap.forEach(doc => {
-                    users.push({ id: doc.id, collection: 'staff', ...doc.data() });
+                    allUsers.push({ id: doc.id, collection: 'staff', ...doc.data() });
                 });
 
                 // Fetch Students (Parents)
                 const studentsSnap = await getDocs(query(collection(db, "students"), orderBy("timestamp", "desc")));
                 studentsSnap.forEach(doc => {
-                    users.push({ id: doc.id, collection: 'students', ...doc.data() });
+                    allUsers.push({ id: doc.id, collection: 'students', ...doc.data() });
                 });
 
-                // Sort by timestamp if needed (already sorted by collection, we can sort combined)
-                users.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                // Sort combined list
+                allUsers.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
 
-                if (users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No hay usuarios registrados.</td></tr>';
-                    return;
-                }
+                renderUserTable(allUsers);
 
-                tbody.innerHTML = '';
-                users.forEach(user => {
-                    const tr = document.createElement('tr');
-                    const roleBadge = user.collection === 'staff' ? '<span class="badge badge-teacher">Docente</span>' : '<span class="badge badge-parent">Padre</span>';
-                    const location = `${user.level || '-'} ${user.grade || '-'}${user.section || '-'}`;
+                // Reset filter buttons to 'Todos'
+                const filterBtns = document.querySelectorAll('.filter-btn');
+                filterBtns.forEach(btn => btn.classList.remove('active'));
+                filterBtns[0].classList.add('active');
 
-                    tr.innerHTML = `
-                        <td>${roleBadge}</td>
-                        <td>
-                            <div style="font-weight: 600;">${user.name || 'Sin nombre'}</div>
-                            ${user.studentDni ? `<div style="font-size: 0.8rem; color: #666;">Hijo: ${user.studentDni}</div>` : ''}
-                        </td>
-                        <td>${user.dni || '-'}</td>
-                        <td>${location}</td>
-                        <td>
-                            <button class="btn-delete" onclick="deleteUser('${user.collection}', '${user.id}')">Eliminar</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
             } catch (err) {
                 console.error("Error fetching users:", err);
                 tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Error: ${err.message}</td></tr>`;
             }
+        };
+
+        window.filterBy = (group, btn) => {
+            // UI
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Logic
+            if (group === 'all') {
+                renderUserTable(allUsers);
+            } else {
+                const filtered = allUsers.filter(u => u.collection === group);
+                renderUserTable(filtered);
+            }
+        };
+
+        window.renderUserTable = (users) => {
+            const tbody = document.getElementById('userTableBody');
+
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No hay usuarios en este grupo.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                const roleBadge = user.collection === 'staff' ? '<span class="badge badge-teacher">Docente</span>' : '<span class="badge badge-parent">Padre</span>';
+                const location = `${user.level || '-'} ${user.grade || '-'}${user.section || '-'}`;
+
+                tr.innerHTML = `
+                    <td>${roleBadge}</td>
+                    <td>
+                        <div style="font-weight: 600;">${user.name || 'Sin nombre'}</div>
+                        ${user.studentDni ? `<div style="font-size: 0.8rem; color: #666;">Hijo: ${user.studentDni}</div>` : ''}
+                    </td>
+                    <td>${user.dni || '-'}</td>
+                    <td>${location}</td>
+                    <td>
+                        <button class="btn-delete" onclick="deleteUser('${user.collection}', '${user.id}')">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         };
 
         window.deleteUser = async (coll, id) => {
