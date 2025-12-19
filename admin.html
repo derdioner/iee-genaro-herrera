@@ -58,6 +58,78 @@
             display: none;
             text-align: center;
         }
+
+        /* User List styles */
+        .admin-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .nav-link {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #666;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+        }
+
+        .nav-link.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .user-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .user-table th,
+        .user-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-table th {
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .badge-teacher {
+            background: #e8f4fd;
+            color: #3498db;
+        }
+
+        .badge-parent {
+            background: #fef5e7;
+            color: #f39c12;
+        }
     </style>
 </head>
 
@@ -99,9 +171,16 @@
         <h2>Panel de Gestión Administrativa</h2>
         <div id="successMsg" class="success-msg">¡Datos guardados correctamente!</div>
 
-        <!-- User Management Section -->
-        <div id="userManagementSection"
-            style="background: #eef2f7; padding: 20px; border-radius: 10px; border: 1px solid #d1d9e6; margin-bottom: 30px;">
+        <!-- Navigation Tabs -->
+        <div class="admin-nav">
+            <div class="nav-link active" onclick="switchTab('register')">Registrar Usuario</div>
+            <div class="nav-link" onclick="switchTab('list')">Ver Usuarios</div>
+        </div>
+
+        <!-- User Management Section (Registration) -->
+        <div id="registrationSection">
+            style="background: #eef2f7; padding: 20px; border-radius: 10px; border: 1px solid #d1d9e6; margin-bottom:
+            30px;">
             <h3 style="color: #2c3e50; margin-bottom: 15px;"><i class="fas fa-user-plus"></i> Gestión de Usuarios e
                 Intranet</h3>
             <p style="font-size: 0.9em; margin-bottom: 15px;">Use este formulario para registrar nuevos Padres o
@@ -180,13 +259,42 @@
             </form>
         </div>
 
+        <!-- User List Section -->
+        <div id="userListSection" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>Lista de Usuarios Registrados</h3>
+                <button onclick="fetchUsers()" class="btn"
+                    style="padding: 8px 15px; font-size: 0.9rem; background: #2ecc71; color: white; border: none; border-radius: 5px;">Actualizar
+                    Lista</button>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="user-table">
+                    <thead>
+                        <tr>
+                            <th>Rol</th>
+                            <th>Nombre / Estudiante</th>
+                            <th>DNI Acceso</th>
+                            <th>Nivel / Grado / Sec</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 20px;">Cargando usuarios...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { db, storage } from './firebase-config.js';
-        import { doc, setDoc, addDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { doc, setDoc, addDoc, collection, query, where, getDocs, limit, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { qrDb } from './firebase-qr-config.js';
 
@@ -331,6 +439,92 @@
                 btn.innerText = 'Registrar Usuario';
             }
         });
+
+        // --- NEW: USER LIST LOGIC ---
+
+        window.switchTab = (tab) => {
+            const regSection = document.getElementById('registrationSection');
+            const listSection = document.getElementById('userListSection');
+            const tabs = document.querySelectorAll('.nav-link');
+
+            if (tab === 'register') {
+                regSection.style.display = 'block';
+                listSection.style.display = 'none';
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+            } else {
+                regSection.style.display = 'none';
+                listSection.style.display = 'block';
+                tabs[0].classList.remove('active');
+                tabs[1].classList.add('active');
+                fetchUsers();
+            }
+        };
+
+        window.fetchUsers = async () => {
+            const tbody = document.getElementById('userTableBody');
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">Cargando...</td></tr>';
+
+            try {
+                const users = [];
+
+                // Fetch Staff (Teachers)
+                const staffSnap = await getDocs(query(collection(db, "staff"), orderBy("timestamp", "desc")));
+                staffSnap.forEach(doc => {
+                    users.push({ id: doc.id, collection: 'staff', ...doc.data() });
+                });
+
+                // Fetch Students (Parents)
+                const studentsSnap = await getDocs(query(collection(db, "students"), orderBy("timestamp", "desc")));
+                studentsSnap.forEach(doc => {
+                    users.push({ id: doc.id, collection: 'students', ...doc.data() });
+                });
+
+                // Sort by timestamp if needed (already sorted by collection, we can sort combined)
+                users.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+
+                if (users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No hay usuarios registrados.</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                users.forEach(user => {
+                    const tr = document.createElement('tr');
+                    const roleBadge = user.collection === 'staff' ? '<span class="badge badge-teacher">Docente</span>' : '<span class="badge badge-parent">Padre</span>';
+                    const location = `${user.level || '-'} ${user.grade || '-'}${user.section || '-'}`;
+
+                    tr.innerHTML = `
+                        <td>${roleBadge}</td>
+                        <td>
+                            <div style="font-weight: 600;">${user.name || 'Sin nombre'}</div>
+                            ${user.studentDni ? `<div style="font-size: 0.8rem; color: #666;">Hijo: ${user.studentDni}</div>` : ''}
+                        </td>
+                        <td>${user.dni || '-'}</td>
+                        <td>${location}</td>
+                        <td>
+                            <button class="btn-delete" onclick="deleteUser('${user.collection}', '${user.id}')">Eliminar</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            } catch (err) {
+                console.error("Error fetching users:", err);
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: red;">Error: ${err.message}</td></tr>`;
+            }
+        };
+
+        window.deleteUser = async (coll, id) => {
+            if (!confirm("¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.")) return;
+
+            try {
+                await deleteDoc(doc(db, coll, id));
+                alert("Usuario eliminado correctamente.");
+                fetchUsers();
+            } catch (err) {
+                alert("Error al eliminar: " + err.message);
+            }
+        };
 
     </script>
 </body>
