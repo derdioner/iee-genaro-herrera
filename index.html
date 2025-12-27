@@ -5,244 +5,485 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IEE Genaro Herrera | Excelencia Educativa</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Playfair+Display:wght@700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,700;1,500&display=swap"
         rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Styles -->
+    <!-- Base Styles -->
     <link rel="stylesheet" href="style.css">
+    <style>
+        .hero-gradient {
+            background: linear-gradient(rgba(0, 18, 32, 0.7), rgba(0, 131, 176, 0.7)), url('https://images.unsplash.com/photo-1523050335102-c6744729ea24?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .nav-link:hover {
+            color: #00B4DB;
+            border-bottom: 2px solid #00B4DB;
+        }
+
+        .text-glow {
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 
-<body>
-    <!-- Header -->
-    <header class="main-header" id="header">
-        <div class="container header-container">
-            <div class="logo">
-                <img src="images/logo.png" alt="Insignia IEE Genaro Herrera" class="logo-img">
-                <div class="logo-text">
-                    <h1>IEE GENARO HERRERA</h1>
-                    <span>Honor, Lealtad, Disciplina</span>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header / Navigation -->
+    <nav class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <img src="images/logo.png" alt="Logo" class="h-12 w-auto">
+                <div class="hidden sm:block">
+                    <span class="text-xl font-bold text-gray-800 block leading-tight">IEE GENARO HERRERA</span>
+                    <span class="text-[10px] uppercase tracking-[3px] text-sky-600 font-semibold">Honor, Lealtad,
+                        Disciplina</span>
                 </div>
             </div>
-            <nav class="main-nav">
-                <ul class="nav-links">
-                    <li><a href="index.html" class="active">Inicio</a></li>
-                    <li><a href="quienes-somos.html">Nosotros</a></li>
-                    <li><a href="inicial.html">Inicial</a></li>
-                    <li><a href="primaria.html">Primaria</a></li>
-                    <li><a href="secundaria.html">Secundaria</a></li>
-                    <li><a href="admision.html">Admisión</a></li>
-                    <li><a href="servicios.html">Servicios</a></li>
-                    <li><a href="contacto.html">Contacto</a></li>
-                    <li><a href="#intranet" class="btn-intranet"><i class="fas fa-laptop-house"></i> Aula Virtual</a>
-                    </li>
-                </ul>
-                <div class="burger">
-                    <div class="line1"></div>
-                    <div class="line2"></div>
-                    <div class="line3"></div>
-                </div>
-            </nav>
+            <div class="hidden lg:flex space-x-6 font-semibold text-gray-600">
+                <a href="index.html" class="text-sky-600 border-b-2 border-sky-600 pb-1">Inicio</a>
+                <a href="quienes-somos.html" class="hover:text-sky-500 transition">Nosotros</a>
+                <a href="admision.html" class="hover:text-sky-500 transition">Admisión</a>
+                <a href="servicios.html" class="hover:text-sky-500 transition">Servicios</a>
+                <a href="contacto.html" class="hover:text-sky-500 transition">Contacto</a>
+                <a href="#intranet" class="text-sky-600 hover:text-sky-700 flex items-center gap-1">
+                    <i class="fas fa-laptop-house text-sm"></i> Aula Virtual
+                </a>
+            </div>
+            <!-- Mobile Menu Toggle -->
+            <button class="lg:hidden text-gray-600 focus:outline-none" onclick="toggleMobileMenu()">
+                <i class="fas fa-bars text-2xl" id="menuIcon"></i>
+            </button>
+            <a href="contacto.html"
+                class="hidden md:block bg-sky-500 text-white px-6 py-2 rounded-full hover:bg-sky-600 transition shadow-lg font-bold">Contáctanos</a>
+        </div>
+        <!-- Mobile Navigation -->
+        <div id="mobileMenu"
+            class="hidden lg:hidden bg-white border-t py-4 px-6 flex flex-col space-y-4 font-medium shadow-inner">
+            <a href="index.html" class="text-sky-600">Inicio</a>
+            <a href="quienes-somos.html" class="hover:text-sky-600">Nosotros</a>
+            <a href="admision.html" class="hover:text-sky-600">Admisión</a>
+            <a href="servicios.html" class="hover:text-sky-600">Servicios</a>
+            <a href="contacto.html" class="hover:text-sky-600">Contacto</a>
+            <a href="#intranet" class="text-sky-600 font-bold border-t pt-2">Aula Virtual</a>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-gradient min-h-[85vh] flex items-center text-white relative overflow-hidden">
+        <div class="container mx-auto px-6 text-center lg:text-left relative z-10">
+            <h2 class="text-xl md:text-2xl font-medium tracking-[5px] uppercase mb-4 opacity-0"
+                style="animation: fadeInUp 1s forwards">Bienvenidos a la</h2>
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight text-glow opacity-0"
+                style="animation: fadeInUp 1s forwards 0.3s">IEE GENARO <br class="hidden md:block">HERRERA</h1>
+            <p class="text-xl md:text-2xl mb-10 max-w-2xl font-serif italic opacity-0"
+                style="animation: fadeInUp 1s forwards 0.6s">Formando el futuro con excelencia, valores sólidos e
+                innovación tecnológica.</p>
+            <div class="flex flex-col md:flex-row justify-center lg:justify-start space-y-4 md:space-y-0 md:space-x-4 opacity-0"
+                style="animation: fadeInUp 1s forwards 0.9s">
+                <a href="#admision"
+                    class="bg-white text-sky-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-gray-100 transition shadow-xl text-center">Admisión
+                    2025</a>
+                <a href="quienes-somos.html"
+                    class="border-2 border-white text-white px-8 py-4 rounded-lg font-bold text-lg hover:bg-white hover:text-sky-900 transition text-center">Conoce
+                    Nuestra Historia</a>
+            </div>
+        </div>
+        <!-- Decorative Scroll Down -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce">
+            <i class="fas fa-chevron-down text-2xl"></i>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero">
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-            <h2 class="animate-up">Bienvenidos a la</h2>
-            <h1 class="animate-up delay-1">IEE GENARO HERRERA</h1>
-            <div class="hero-divider"
-                style="width: 80px; height: 3px; background: #64ffda; margin: 20px auto; opacity: 0.8;"></div>
-            <p class="animate-up delay-2">Formando el futuro con excelencia.</p>
-        </div>
-    </section>
+    <!-- Nuestros Pilares Section -->
+    <section class="py-24 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6 text-center">
+            <div class="mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4 inline-block relative">
+                    Nuestros Pilares
+                    <span class="absolute bottom-0 left-0 w-full h-1 bg-sky-500 rounded-full"></span>
+                </h2>
+                <p class="text-gray-500 mt-4 text-lg italic">Fundamentos de nuestra propuesta educativa</p>
+            </div>
 
-    <!-- Accesos Rápidos -->
-    <section class="quick-links">
-        <div class="container">
-            <div class="links-grid">
-                <a href="comunicados.html" class="quick-link-item fade-in">
-                    <div class="icon-box"><i class="fas fa-bullhorn"></i></div>
-                    <h3>Comunicados</h3>
-                </a>
-                <a href="calendario.html" class="quick-link-item fade-in delay-1">
-                    <div class="icon-box"><i class="fas fa-calendar-alt"></i></div>
-                    <h3>Calendario</h3>
-                </a>
-                <a href="contacto.html" class="quick-link-item fade-in delay-2">
-                    <div class="icon-box"><i class="fas fa-envelope-open-text"></i></div>
-                    <h3>Contacto</h3>
-                </a>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div
+                    class="p-10 border rounded-3xl hover:shadow-2xl transition duration-500 bg-sky-50 group border-sky-100">
+                    <div
+                        class="bg-white w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-sm group-hover:bg-sky-500 transition duration-500">
+                        <i
+                            class="fas fa-laptop-code text-4xl text-sky-500 group-hover:text-white transition duration-500"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-700">Tecnología</h3>
+                    <p class="text-gray-600 leading-relaxed">Implementamos herramientas digitales y laboratorios
+                        modernos para integrar la innovación en el aprendizaje diario.</p>
+                </div>
+
+                <div
+                    class="p-10 border rounded-3xl hover:shadow-2xl transition duration-500 bg-sky-50 group border-sky-100">
+                    <div
+                        class="bg-white w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-sm group-hover:bg-sky-500 transition duration-500">
+                        <i
+                            class="fas fa-heart text-4xl text-sky-500 group-hover:text-white transition duration-500"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-700">Valores</h3>
+                    <p class="text-gray-600 leading-relaxed">Formamos ciudadanos con integridad, basados en el respeto,
+                        la disciplina y el compromiso con la sociedad.</p>
+                </div>
+
+                <div
+                    class="p-10 border rounded-3xl hover:shadow-2xl transition duration-500 bg-sky-50 group border-sky-100">
+                    <div
+                        class="bg-white w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-8 shadow-sm group-hover:bg-sky-500 transition duration-500">
+                        <i
+                            class="fas fa-trophy text-4xl text-sky-500 group-hover:text-white transition duration-500"></i>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-4 text-gray-700">Excelencia</h3>
+                    <p class="text-gray-600 leading-relaxed">Buscamos el máximo desarrollo de competencias académicas y
+                        artísticas de nuestros estudiantes.</p>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- Noticias Destacadas -->
-    <section class="news-section">
-        <div class="container">
-            <div class="section-title fade-in">
-                <h2>Noticias Destacadas</h2>
-                <div class="underline"></div>
+    <!-- Facebook News Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-12">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-3xl font-bold text-gray-800">Noticias de Facebook</h2>
+                    <p class="text-sky-600">Sigue de cerca nuestras actividades diarias</p>
+                </div>
+                <a href="https://www.facebook.com/ieegenaroherrera" target="_blank"
+                    class="text-sky-500 font-bold hover:underline flex items-center gap-2">
+                    Ver canal oficial <i class="fab fa-facebook"></i>
+                </a>
             </div>
 
-            <!-- Facebook Manual Embeds -->
-            <div class="news-grid-embeds fade-in delay-1"
-                style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;">
-
-                <!-- Post Nuevo -->
-                <div class="fb-post-embed">
+            <div class="flex flex-wrap justify-center gap-8">
+                <!-- Facebook Post Embeds -->
+                <div class="bg-white rounded-2xl shadow-lg border overflow-hidden w-full max-w-[450px]">
                     <iframe
                         src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fieegenaroherrera%2Fposts%2Fpfbid02Wbp1xcZ31iCMs1xkBgAxBKwxKaBJ9XUhy96LJocJJoUzLSYspA81aTQeqWCGkmNNl&show_text=true&width=500"
                         width="100%" height="479" style="border:none;overflow:hidden" scrolling="no" frameborder="0"
                         allowfullscreen="true"
                         allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
                 </div>
-
-                <!-- Post 1 -->
-                <div class="fb-post-embed">
+                <div class="bg-white rounded-2xl shadow-lg border overflow-hidden w-full max-w-[450px]">
                     <iframe
                         src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fieegenaroherrera%2Fposts%2Fpfbid02MTbVaC326fnr7abX5coG9DsgFnGqU1WTyiR3o2fjP6jksQ5k6gkQDqRZhqK8Rf8Xl&show_text=true&width=500"
-                        width="100%" height="600" style="border:none;overflow:hidden" scrolling="no" frameborder="0"
+                        width="100%" height="479" style="border:none;overflow:hidden" scrolling="no" frameborder="0"
                         allowfullscreen="true"
                         allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-                </div>
-
-                <!-- Post 2 -->
-                <div class="fb-post-embed">
-                    <iframe
-                        src="https://www.facebook.com/plugins/post.php?href=https%3A%2F%2Fwww.facebook.com%2Fieegenaroherrera%2Fposts%2Fpfbid0LavVRNjkmPiaFCz39p1SsL5PAdrtddaA9DJ67gHTSLbpHfVR6zF7EV6k2YKy9ebcl&show_text=true&width=500"
-                        width="100%" height="609" style="border:none;overflow:hidden" scrolling="no" frameborder="0"
-                        allowfullscreen="true"
-                        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"></iframe>
-                </div>
-
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Educational Levels -->
-    <section id="about" class="info-section">
-        <div class="container">
-            <div class="section-title">
-                <h2>Nuestros Niveles</h2>
-                <div class="underline"></div>
-            </div>
-            <div class="cards-grid">
-                <div class="card fade-in">
-                    <div class="card-icon"><i class="fas fa-shapes"></i></div>
-                    <h3>Inicial</h3>
-                    <p>Estimulación temprana y desarrollo de habilidades sociales en un ambiente seguro y divertido para
-                        los más pequeños.</p>
-                    <br>
-                    <a href="inicial.html" class="btn btn-outline"
-                        style="color: var(--primary-color); border-color: var(--primary-color);">Ver Detalles</a>
-                </div>
-                <div class="card fade-in delay-1">
-                    <div class="card-icon"><i class="fas fa-book-reader"></i></div>
-                    <h3>Primaria</h3>
-                    <p>Formación integral enfocada en valores, creatividad y el dominio de competencias fundamentales.
-                    </p>
-                    <br>
-                    <a href="primaria.html" class="btn btn-outline"
-                        style="color: var(--primary-color); border-color: var(--primary-color);">Ver Detalles</a>
-                </div>
-                <div class="card fade-in delay-2">
-                    <div class="card-icon"><i class="fas fa-atom"></i></div>
-                    <h3>Secundaria</h3>
-                    <p>Preparación académica rigurosa y orientación vocacional para formar líderes listos para la
-                        universidad.</p>
-                    <br>
-                    <a href="secundaria.html" class="btn btn-outline"
-                        style="color: var(--primary-color); border-color: var(--primary-color);">Ver Detalles</a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Intranet Section -->
-    <section id="intranet" class="intranet-section">
-        <div class="container intranet-container">
-            <div class="intranet-image">
-                <div class="overlay-blue">
-                    <h3>Acceso a Padres de Familia</h3>
-                    <p>Monitorea el progreso académico y disciplinario de tus hijos desde nuestra plataforma virtual.
-                    </p>
+    <!-- Educational Levels Cards -->
+    <section class="py-24 bg-white">
+        <div class="container mx-auto px-6">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-800 mb-4">Niveles Educativos</h2>
+                <div class="w-24 h-1 bg-sky-500 mx-auto"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <!-- Inicial -->
+                <div
+                    class="group h-full flex flex-col bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition duration-500">
+                    <div class="h-48 bg-sky-100 flex items-center justify-center group-hover:bg-sky-200 transition">
+                        <i
+                            class="fas fa-shapes text-7xl text-sky-400 group-hover:scale-110 transition duration-500"></i>
+                    </div>
+                    <div class="p-8 flex-grow">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Inicial</h3>
+                        <p class="text-gray-600 mb-8">Estimulación temprana y desarrollo de habilidades sociales en un
+                            ambiente seguro y creativo.</p>
+                        <a href="inicial.html"
+                            class="block text-center border-2 border-sky-500 text-sky-500 font-bold py-3 rounded-xl hover:bg-sky-500 hover:text-white transition">Explorar
+                            Nivel</a>
+                    </div>
+                </div>
+
+                <!-- Primaria -->
+                <div
+                    class="group h-full flex flex-col bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition duration-500">
+                    <div class="h-48 bg-sky-100 flex items-center justify-center group-hover:bg-sky-200 transition">
+                        <i
+                            class="fas fa-book-reader text-7xl text-sky-400 group-hover:scale-110 transition duration-500"></i>
+                    </div>
+                    <div class="p-8 flex-grow">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Primaria</h3>
+                        <p class="text-gray-600 mb-8">Formación integral enfocada en el pensamiento analítico, la
+                            creatividad y valores fundamentales.</p>
+                        <a href="primaria.html"
+                            class="block text-center border-2 border-sky-500 text-sky-500 font-bold py-3 rounded-xl hover:bg-sky-500 hover:text-white transition">Explorar
+                            Nivel</a>
+                    </div>
+                </div>
+
+                <!-- Secundaria -->
+                <div
+                    class="group h-full flex flex-col bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition duration-500">
+                    <div class="h-48 bg-sky-100 flex items-center justify-center group-hover:bg-sky-200 transition">
+                        <i class="fas fa-atom text-7xl text-sky-400 group-hover:scale-110 transition duration-500"></i>
+                    </div>
+                    <div class="p-8 flex-grow">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4">Secundaria</h3>
+                        <p class="text-gray-600 mb-8">Preparación académica rigurosa y orientación vocacional para los
+                            retos de la vida universitaria.</p>
+                        <a href="secundaria.html"
+                            class="block text-center border-2 border-sky-500 text-sky-500 font-bold py-3 rounded-xl hover:bg-sky-500 hover:text-white transition">Explorar
+                            Nivel</a>
+                    </div>
                 </div>
             </div>
-            <div class="intranet-form-wrapper">
-                <div class="form-header">
-                    <i class="fas fa-user-circle"></i>
-                    <h3>Iniciar Sesión</h3>
+        </div>
+    </section>
+
+    <!-- Events Section -->
+    <section class="py-24 bg-sky-50 relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-between items-end mb-16 px-4">
+                <div>
+                    <h2 class="text-4xl font-bold text-gray-800">Próximos Eventos</h2>
+                    <p class="text-sky-600 text-lg mt-2 font-medium italic">Mantente al día con nuestra comunidad
+                        educativa</p>
                 </div>
-                <form id="loginForm" class="login-form">
-                    <div class="input-group">
-                        <i class="fas fa-id-card"></i>
-                        <input type="text" id="dniInput" placeholder="DNI (8 dígitos)" maxlength="8" pattern="\d{8}"
-                            required>
+                <a href="calendario.html"
+                    class="hidden sm:inline-block bg-sky-500 text-white px-8 py-3 rounded-full font-bold hover:bg-sky-600 transition shadow-md">Ver
+                    Calendario →</a>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div
+                    class="flex flex-col sm:flex-row bg-white rounded-3xl shadow-xl overflow-hidden group hover:-translate-y-2 transition duration-500">
+                    <div
+                        class="bg-sky-600 text-white p-10 flex flex-col justify-center items-center sm:w-44 group-hover:bg-sky-700 transition duration-500">
+                        <span class="text-4xl font-extrabold">15</span>
+                        <span class="text-xl uppercase font-semibold tracking-wider">OCT</span>
                     </div>
-                    <div class="input-group">
-                        <i class="fas fa-users-cog"></i>
-                        <select id="loginRole">
-                            <option value="parent">Padre de Familia</option>
-                            <option value="staff">Personal / Docente</option>
-                            <option value="admin">Administrador</option>
-                        </select>
+                    <div class="p-10 flex flex-col justify-center">
+                        <h4 class="font-bold text-2xl text-gray-800 mb-3">Feria de Ciencias 2024</h4>
+                        <p class="text-gray-500 italic text-lg leading-relaxed">Presentación de proyectos científicos
+                            innovadores de nuestros estudiantes de nivel secundaria.</p>
                     </div>
-                    <div class="input-group">
-                        <i class="fas fa-lock"></i>
-                        <input type="password" placeholder="Contraseña" required>
+                </div>
+
+                <div
+                    class="flex flex-col sm:flex-row bg-white rounded-3xl shadow-xl overflow-hidden group hover:-translate-y-2 transition duration-500">
+                    <div
+                        class="bg-sky-600 text-white p-10 flex flex-col justify-center items-center sm:w-44 group-hover:bg-sky-700 transition duration-500">
+                        <span class="text-4xl font-extrabold">22</span>
+                        <span class="text-xl uppercase font-semibold tracking-wider">OCT</span>
                     </div>
-                    <div class="form-options">
-                        <label><input type="checkbox"> Recordarme</label>
-                        <a href="#">¿Olvidaste tu clave?</a>
+                    <div class="p-10 flex flex-col justify-center">
+                        <h4 class="font-bold text-2xl text-gray-800 mb-3">Escuela para Padres</h4>
+                        <p class="text-gray-500 italic text-lg leading-relaxed">Taller interactivo presencial sobre el
+                            manejo de las emociones en la adolescencia.</p>
                     </div>
-                    <button type="submit" class="btn btn-full">Ingresar</button>
-                    <p class="message" id="loginMessage"></p>
-                </form>
+                </div>
+            </div>
+            <div class="sm:hidden text-center mt-12">
+                <a href="calendario.html"
+                    class="inline-block bg-sky-500 text-white px-8 py-4 rounded-full font-bold shadow-lg">Ver
+                    Calendario</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Intranet Login Section -->
+    <section id="intranet" class="py-24 bg-white relative overflow-hidden">
+        <div class="container mx-auto px-6">
+            <div
+                class="flex flex-col lg:flex-row bg-white border border-gray-100 rounded-[3rem] shadow-2xl overflow-hidden">
+                <div class="lg:w-1/2 relative min-h-[400px]">
+                    <img src="https://images.unsplash.com/photo-1571260899304-425eee4c7efc?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                        alt="Intranet" class="absolute inset-0 w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-sky-900/60 flex items-center justify-center p-12">
+                        <div class="text-white">
+                            <h3 class="text-4xl font-bold mb-6">Acceso <br>Aula Virtual</h3>
+                            <p class="text-xl text-sky-100 italic leading-relaxed">Monitorea el progreso académico de
+                                tus hijos y accede a materiales exclusivos de enseñanza desde cualquier lugar.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="lg:w-1/2 p-12 md:p-16 flex flex-col justify-center bg-gray-50/50">
+                    <div class="mb-10 flex items-center gap-4">
+                        <div
+                            class="bg-sky-500 w-12 h-12 rounded-full flex items-center justify-center text-white text-xl">
+                            <i class="fas fa-user-lock"></i>
+                        </div>
+                        <h3 class="text-3xl font-bold text-gray-800 tracking-tight">Iniciar Sesión</h3>
+                    </div>
+                    <form id="loginForm" class="space-y-6">
+                        <div class="relative">
+                            <i class="fas fa-id-card absolute left-4 top-1/2 -translate-y-1/2 text-sky-500"></i>
+                            <input type="text" id="dniInput" placeholder="DNI (8 dígitos)" maxlength="8" pattern="\d{8}"
+                                required
+                                class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition outline-none text-lg">
+                        </div>
+                        <div class="relative">
+                            <i class="fas fa-users-cog absolute left-4 top-1/2 -translate-y-1/2 text-sky-500"></i>
+                            <select id="loginRole"
+                                class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition outline-none appearance-none bg-white text-lg">
+                                <option value="parent">Padre de Familia</option>
+                                <option value="staff">Personal / Docente</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-sky-500"></i>
+                            <input type="password" placeholder="Contraseña" required
+                                class="w-full pl-12 pr-4 py-4 rounded-2xl border border-gray-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 transition outline-none text-lg">
+                        </div>
+                        <div class="flex items-center justify-between text-sm py-2">
+                            <label class="flex items-center gap-2 cursor-pointer text-gray-600 font-medium">
+                                <input type="checkbox"
+                                    class="w-4 h-4 rounded text-sky-500 border-gray-300 focus:ring-sky-500"> Recordarme
+                            </label>
+                            <a href="#" class="text-sky-600 font-bold hover:underline">¿Olvidaste tu clave?</a>
+                        </div>
+                        <button type="submit"
+                            class="w-full bg-sky-600 text-white font-extrabold py-5 rounded-2xl hover:bg-sky-700 transition shadow-lg text-xl tracking-tight">Ingresar
+                            al Aula Virtual</button>
+                        <p class="text-center text-red-500 font-bold" id="loginMessage"></p>
+                    </form>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer>
-        <div class="container footer-content">
-            <div class="footer-col">
-                <h3>IEE GENARO HERRERA</h3>
-                <p>Educar es redimir.</p>
+    <footer class="bg-gray-950 text-white pt-24 pb-12 overflow-hidden">
+        <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+            <div class="space-y-6">
+                <div class="flex items-center gap-3">
+                    <img src="images/logo.png" alt="Logo" class="h-10 w-auto brightness-200">
+                    <h3 class="text-2xl font-bold tracking-tight">IEE GENARO <br>HERRERA</h3>
+                </div>
+                <p class="text-gray-400 text-lg leading-relaxed italic border-l-4 border-sky-500 pl-4 py-2">
+                    "Educar es redimir". <br>Formando los líderes con valores y excelencia.
+                </p>
             </div>
-            <div class="footer-col">
-                <h3>Contacto</h3>
-                <ul>
-                    <li><i class="fas fa-map-marker-alt"></i> Av. Moisés Rengifo 605, Contamana</li>
-                    <li><i class="fas fa-phone"></i> (065) 123-4567</li>
-                    <li><i class="fas fa-envelope"></i> ieegenaroherreracontamana@gmail.com</li>
+
+            <div>
+                <h4
+                    class="text-xl font-bold mb-8 uppercase tracking-widest text-sky-500 border-b border-gray-800 pb-2 inline-block">
+                    Enlaces</h4>
+                <ul class="space-y-4 text-gray-400 font-medium italic">
+                    <li><a href="quienes-somos.html" class="hover:text-white transition flex items-center gap-2">
+                            <div class="w-1 h-1 bg-sky-500 rounded-full"></div> Nosotros
+                        </a></li>
+                    <li><a href="admision.html" class="hover:text-white transition flex items-center gap-2">
+                            <div class="w-1 h-1 bg-sky-500 rounded-full"></div> Admisión 2025
+                        </a></li>
+                    <li><a href="calendario.html" class="hover:text-white transition flex items-center gap-2">
+                            <div class="w-1 h-1 bg-sky-500 rounded-full"></div> Calendario Escolar
+                        </a></li>
+                    <li><a href="#intranet" class="hover:text-white transition flex items-center gap-2">
+                            <div class="w-1 h-1 bg-sky-500 rounded-full"></div> Aula Virtual
+                        </a></li>
+                    <li><a href="servicios.html" class="hover:text-white transition flex items-center gap-2">
+                            <div class="w-1 h-1 bg-sky-500 rounded-full"></div> Servicios
+                        </a></li>
                 </ul>
             </div>
-            <div class="footer-col social">
-                <h3>Síguenos</h3>
-                <div class="social-icons">
-                    <a href="https://www.facebook.com/ieegenaroherrera" target="_blank"><i
-                            class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
+
+            <div>
+                <h4
+                    class="text-xl font-bold mb-8 uppercase tracking-widest text-sky-500 border-b border-gray-800 pb-2 inline-block">
+                    Contacto</h4>
+                <div class="space-y-6 text-gray-400 italic">
+                    <div class="flex items-start gap-4">
+                        <i class="fas fa-map-marker-alt text-sky-500 mt-1"></i>
+                        <p>Av. Moisés Rengifo 605, Contamana, Ucayali-Perú</p>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <i class="fas fa-phone-alt text-sky-500 mt-1"></i>
+                        <p>(065) 123-4567 / (065) 987-6543</p>
+                    </div>
+                    <div class="flex items-start gap-4 overflow-hidden">
+                        <i class="fas fa-envelope text-sky-500 mt-1"></i>
+                        <p class="truncate">ieegenaroherreracontamana@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4
+                    class="text-xl font-bold mb-8 uppercase tracking-widest text-sky-500 border-b border-gray-800 pb-2 inline-block">
+                    Síguenos</h4>
+                <p class="text-gray-400 mb-6 italic">Mantente conectado con nuestra red oficial.</p>
+                <div class="flex space-x-4">
+                    <a href="https://www.facebook.com/ieegenaroherrera" target="_blank"
+                        class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center hover:bg-sky-600 hover:border-sky-600 transition text-xl">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="#"
+                        class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center hover:bg-sky-600 hover:border-sky-600 transition text-xl">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#"
+                        class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center hover:bg-sky-600 hover:border-sky-600 transition text-xl">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <a href="#"
+                        class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center hover:bg-sky-600 hover:border-sky-600 transition text-xl">
+                        <i class="fab fa-tiktok"></i>
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 IEE Genaro Herrera. Todos los derechos reservados.</p>
+        <div class="text-center mt-24 border-t border-gray-900 pt-8 text-gray-500 text-sm font-medium">
+            &copy; 2025 Institución Educativa Emblemática Genaro Herrera. Todos los derechos reservados.
         </div>
     </footer>
 
-    <a href="https://wa.me/51920844268" class="whatsapp-float" target="_blank">
-        <i class="fab fa-whatsapp whatsapp-icon"></i>
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/51920844268" target="_blank"
+        class="fixed bottom-8 right-8 bg-green-500 text-white w-16 h-16 rounded-full flex items-center justify-center shadow-2xl hover:bg-green-600 hover:scale-110 transition duration-300 z-[100]">
+        <i class="fab fa-whatsapp text-4xl"></i>
     </a>
+
     <script type="module" src="script.js"></script>
+    <script>
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const icon = document.getElementById('menuIcon');
+            menu.classList.toggle('hidden');
+            if (menu.classList.contains('hidden')) {
+                icon.classList.replace('fa-times', 'fa-bars');
+            } else {
+                icon.classList.replace('fa-bars', 'fa-times');
+            }
+        }
+    </script>
 </body>
 
 </html>
