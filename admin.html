@@ -198,6 +198,7 @@
         <div class="admin-nav">
             <div class="nav-link active" onclick="switchTab('register')">Registrar Usuario</div>
             <div class="nav-link" onclick="switchTab('list')">Ver Usuarios</div>
+            <div class="nav-link" onclick="switchTab('boletas')">Subir Boletas (SIAGIE)</div>
         </div>
 
         <!-- User Management Section (Registration) -->
@@ -278,6 +279,31 @@
                     style="background: #3498db; border: none; font-weight: bold; width: 100%; padding: 12px; color: white; border-radius: 5px; cursor: pointer; margin-top: 15px;">Registrar
                     Usuario</button>
             </form>
+        </div>
+
+        <!-- Boletas Management Section -->
+        <div id="boletasSection" style="display: none;">
+            <div style="background: #e8f4fd; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                <h3 style="margin-top: 0; color: #1565c0;"><i class="fas fa-file-upload"></i> Carga Masiva de Boletas
+                    (SIAGIE)</h3>
+                <p style="font-size: 0.9rem; color: #555;">
+                    El sistema extraerá el <b>DNI</b> automáticamente de los nombres de archivo tipo SIAGIE.<br>
+                    Ejemplo: "SAAVEDRA SALAS ... - 000000<b>61499186</b>.pdf"
+                </p>
+                <div class="form-group">
+                    <label>Seleccione archivos PDF:</label>
+                    <input type="file" id="boletaFiles" multiple accept=".pdf"
+                        style="padding: 10px; background: white;">
+                </div>
+                <button id="btnUploadBoletas" class="btn"
+                    style="background: #1e88e5; color: white; width: 100%; border: none; padding: 12px; font-weight: bold; border-radius: 5px; cursor: pointer;">
+                    Iniciar Vinculación Masiva
+                </button>
+                <div id="boletaStatus"
+                    style="margin-top: 15px; font-size: 0.9rem; max-height: 200px; overflow-y: auto;">
+                    <!-- Progress list -->
+                </div>
+            </div>
         </div>
 
         <!-- User List Section -->
@@ -474,20 +500,102 @@
         window.switchTab = (tab) => {
             const regSection = document.getElementById('registrationSection');
             const listSection = document.getElementById('userListSection');
+            const boletasSection = document.getElementById('boletasSection');
             const tabs = document.querySelectorAll('.nav-link');
+
+            // Hide all
+            regSection.style.display = 'none';
+            listSection.style.display = 'none';
+            boletasSection.style.display = 'none';
+            tabs.forEach(t => t.classList.remove('active'));
 
             if (tab === 'register') {
                 regSection.style.display = 'block';
-                listSection.style.display = 'none';
                 tabs[0].classList.add('active');
-                tabs[1].classList.remove('active');
-            } else {
-                regSection.style.display = 'none';
+            } else if (tab === 'list') {
                 listSection.style.display = 'block';
-                tabs[0].classList.remove('active');
                 tabs[1].classList.add('active');
                 fetchUsers();
+            } else if (tab === 'boletas') {
+                boletasSection.style.display = 'block';
+                tabs[2].classList.add('active');
             }
+        };
+
+        // --- NEW: BOLETAS UPLOAD LOGIC ---
+        const btnUploadBoletas = document.getElementById('btnUploadBoletas');
+        const boletaFilesInput = document.getElementById('boletaFiles');
+        const boletaStatus = document.getElementById('boletaStatus');
+
+        btnUploadBoletas.onclick = async () => {
+            const files = boletaFilesInput.files;
+            if (files.length === 0) {
+                alert("Por favor seleccione al menos un archivo PDF.");
+                return;
+            }
+
+            btnUploadBoletas.disabled = true;
+            btnUploadBoletas.innerText = "Procesando...";
+            boletaStatus.innerHTML = "<p>Iniciando carga de " + files.length + " archivos...</p>";
+
+            let successCount = 0;
+            let failureCount = 0;
+
+            for (const file of files) {
+                try {
+                    // 1. Extract DNI from SIAGIE format
+                    // Filename: "NAME - 000000DNI.pdf"
+                    // Regex searches for any string of 8 digits. Grab the last one.
+                    const matches = file.name.match(/\d{8}/g);
+                    if (!matches) {
+                        throw new Error("No se encontró un DNI de 8 dígitos en el nombre.");
+                    }
+                    const dni = matches[matches.length - 1];
+                    console.log(`Processing file: ${file.name} -> Detected DNI: ${dni}`);
+
+                    // 2. Find student in Firestore
+                    // Try studentDni field first, then fallback to dni
+                    let q = query(collection(db, "students"), where("studentDni", "==", dni), limit(1));
+                    let snap = await getDocs(q);
+
+                    if (snap.empty) {
+                        q = query(collection(db, "students"), where("dni", "==", dni), limit(1));
+                        snap = await getDocs(q);
+                    }
+
+                    if (snap.empty) {
+                        throw new Error(`Estudiante con DNI ${dni} no encontrado en la base de datos.`);
+                    }
+
+                    const studentDoc = snap.docs[0];
+                    const studentId = studentDoc.id;
+
+                    // 3. Upload to Storage
+                    const storagePath = `report_cards/${dni}_${Date.now()}.pdf`;
+                    const storageRef = ref(storage, storagePath);
+                    await uploadBytes(storageRef, file);
+                    const downloadURL = await getDownloadURL(storageRef);
+
+                    // 4. Update Firestore
+                    await setDoc(doc(db, "students", studentId), {
+                        reportCardUrl: downloadURL
+                    }, { merge: true });
+
+                    successCount++;
+                    boletaStatus.innerHTML += `<div style="color: green;">✅ ${file.name}: Vinculado con éxito.</div>`;
+
+                } catch (err) {
+                    failureCount++;
+                    console.error(`Error with file ${file.name}:`, err);
+                    boletaStatus.innerHTML += `<div style="color: red;">❌ ${file.name}: ${err.message}</div>`;
+                }
+                // Scroll to bottom
+                boletaStatus.scrollTop = boletaStatus.scrollHeight;
+            }
+
+            btnUploadBoletas.disabled = false;
+            btnUploadBoletas.innerText = "Iniciar Vinculación Masiva";
+            alert(`Proceso terminado.\nÉxito: ${successCount}\nFallos: ${failureCount}`);
         };
 
         window.fetchUsers = async () => {
