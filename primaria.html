@@ -13,7 +13,9 @@
         rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Styles -->
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Base Styles -->
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -128,32 +130,84 @@
     </section>
 
     <!-- Footer -->
-    <footer>
-        <div class="container footer-content">
-            <div class="footer-col">
-                <h3>IEE GENARO HERRERA</h3>
-                <p>Educar es redimir.</p>
+    <footer class="bg-gray-950 text-white pt-24 pb-12 overflow-hidden mt-20">
+        <div class="container mx-auto px-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 text-left">
+            <div class="space-y-6">
+                <div class="flex items-center gap-3">
+                    <img src="images/logo.png" alt="Logo" class="h-10 w-auto brightness-200">
+                    <h3 class="text-2xl font-bold tracking-tight">IEE GENARO <br>HERRERA</h3>
+                </div>
+                <p class="text-gray-400 text-lg leading-relaxed italic border-l-4 border-sky-500 pl-4 py-2">
+                    "Educar es redimir". <br>Formando los líderes con valores y excelencia.
+                </p>
             </div>
-            <div class="footer-col">
-                <h3>Contacto</h3>
-                <ul>
-                    <li><i class="fas fa-map-marker-alt"></i> Av. Moisés Rengifo 605, Contamana</li>
-                    <li><i class="fas fa-phone"></i> (065) 123-4567</li>
-                    <li><i class="fas fa-envelope"></i> ieegenaroherreracontamana@gmail.com</li>
+
+            <div>
+                <h4
+                    class="text-xl font-bold mb-8 uppercase tracking-widest text-sky-500 border-b border-gray-800 pb-2 inline-block">
+                    Enlaces</h4>
+                <ul class="space-y-4 text-gray-400 font-medium italic">
+                    <li><a href="quienes-somon.html" class="hover:text-white transition flex items-center gap-2">
+                            <div class="w-1 h-1 bg-sky-500 rounded-full"></div> Nosotros
+                        </a></li>
+                    <li><a href="admision.html" class="hover:text-white transition flex items-center gap-2">
+                            <div class="w-1 h-1 bg-sky-500 rounded-full"></div> Admisión 2025
+                        </a></li>
+                    <li><a href="calendario.html" class="hover:text-white transition flex items-center gap-2">
+                            <div class="w-1 h-1 bg-sky-500 rounded-full"></div> Calendario Escolar
+                        </a></li>
+                    <li><a href="index.html#intranet" class="hover:text-white transition flex items-center gap-2">
+                            <div class="w-1 h-1 bg-sky-500 rounded-full"></div> Aula Virtual
+                        </a></li>
+                    <li><a href="servicios.html" class="hover:text-white transition flex items-center gap-2">
+                            <div class="w-1 h-1 bg-sky-500 rounded-full"></div> Servicios
+                        </a></li>
                 </ul>
             </div>
-            <div class="footer-col social">
-                <h3>Síguenos</h3>
-                <div class="social-icons">
-                    <a href="https://www.facebook.com/ieegenaroherrera" target="_blank"><i
-                            class="fab fa-facebook-f"></i></a>
-                    <a href="#"><i class="fab fa-instagram"></i></a>
-                    <a href="#"><i class="fab fa-twitter"></i></a>
+
+            <div>
+                <h4
+                    class="text-xl font-bold mb-8 uppercase tracking-widest text-sky-500 border-b border-gray-800 pb-2 inline-block">
+                    Contacto</h4>
+                <div class="space-y-6 text-gray-400 italic">
+                    <div class="flex items-start gap-4">
+                        <i class="fas fa-map-marker-alt text-sky-500 mt-1"></i>
+                        <p>Av. Moisés Rengifo 605, Contamana, Ucayali-Perú</p>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <i class="fas fa-phone-alt text-sky-500 mt-1"></i>
+                        <p>(065) 123-4567 / (065) 987-6543</p>
+                    </div>
+                    <div class="flex items-start gap-4 overflow-hidden">
+                        <i class="fas fa-envelope text-sky-500 mt-1"></i>
+                        <p class="truncate">ieegenaroherreracontamana@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h4
+                    class="text-xl font-bold mb-8 uppercase tracking-widest text-sky-500 border-b border-gray-800 pb-2 inline-block">
+                    Síguenos</h4>
+                <p class="text-gray-400 mb-6 italic">Mantente conectado con nuestra red oficial.</p>
+                <div class="flex space-x-4">
+                    <a href="https://www.facebook.com/ieegenaroherrera" target="_blank"
+                        class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center hover:bg-sky-600 hover:border-sky-600 transition text-xl">
+                        <i class="fab fa-facebook-f"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@ieegenaroherrera6087" target="_blank"
+                        class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center hover:bg-sky-600 hover:border-sky-600 transition text-xl">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                    <a href="https://www.tiktok.com/@ieegenaroherrera" target="_blank"
+                        class="w-12 h-12 rounded-full border border-gray-700 flex items-center justify-center hover:bg-sky-600 hover:border-sky-600 transition text-xl">
+                        <i class="fab fa-tiktok"></i>
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="footer-bottom">
-            <p>&copy; 2025 IEE Genaro Herrera. Todos los derechos reservados.</p>
+        <div class="text-center mt-24 border-t border-gray-900 pt-8 text-gray-500 text-sm font-medium">
+            &copy; 2025 Institución Educativa Emblemática Genaro Herrera. Todos los derechos reservados.
         </div>
     </footer>
 
