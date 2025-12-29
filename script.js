@@ -109,8 +109,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => {
                     if (roleSelect === 'admin') {
                         window.location.href = 'admin.html';
-                    } else if (roleSelect === 'staff') {
-                        window.location.href = 'teacher.html';
+                    } else if (roleSelect === 'staff' || roleSelect === 'editor') {
+                        // We check the actual role in Firestore later if needed, 
+                        // but for navigation we can use the select value.
+                        if (roleSelect === 'editor') {
+                            window.location.href = 'noticias_admin.html';
+                        } else {
+                            window.location.href = 'teacher.html';
+                        }
                     } else {
                         window.location.href = 'dashboard.html';
                     }

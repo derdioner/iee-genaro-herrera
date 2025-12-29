@@ -219,6 +219,7 @@
                         <select id="uRole" required>
                             <option value="students">Padre de Familia</option>
                             <option value="staff">Docente / Personal</option>
+                            <option value="staff_news">Editor de Noticias</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -390,10 +391,16 @@
             uStudentDniInput.required = isParent;
             uStudentDniInput.disabled = !isParent;
 
+            // Logic for news editor: academic fields might not be required
+            const isNewsEditor = roleSelect.value === 'staff_news';
+            uLevel.required = !isNewsEditor;
+            uGrade.required = !isNewsEditor;
+            academicFields.style.opacity = isNewsEditor ? '0.5' : '1';
+
             // Dinámicamente actualizamos las etiquetas para mayor claridad
-            document.getElementById('labelDni').innerText = isParent ? "DNI del Padre (Usuario):" : "DNI del Docente:";
-            document.getElementById('labelName').innerText = isParent ? "Nombre del Estudiante:" : "Nombre del Docente:";
-            document.getElementById('uName').placeholder = isParent ? "Ej: Carlos Herrera Pérez" : "Ej: Prof. Juan Lopez";
+            document.getElementById('labelDni').innerText = isParent ? "DNI del Padre (Usuario):" : "DNI del Usuario:";
+            document.getElementById('labelName').innerText = isParent ? "Nombre del Estudiante:" : "Nombre del Usuario:";
+            document.getElementById('uName').placeholder = isParent ? "Ej: Carlos Herrera Pérez" : "Ej: Nombre Completo";
         });
 
         // Dynamic Grades based on Level
@@ -454,7 +461,7 @@
                 const userData = {
                     name,
                     dni,
-                    role: role === 'students' ? 'parent' : 'teacher', // Store 'parent' or 'teacher' in Firestore
+                    role: role === 'students' ? 'parent' : (role === 'staff_news' ? 'news_editor' : 'teacher'),
                     email,
                     level: document.getElementById('uLevel').value,
                     grade: document.getElementById('uGrade').value,
@@ -478,7 +485,8 @@
                 }
 
                 console.log("Registrando documento con ID:", docId);
-                await setDoc(doc(db, role, docId), userData);
+                const collectionPath = role === 'staff_news' ? 'staff' : role;
+                await setDoc(doc(db, collectionPath, docId), userData);
 
                 alert("¡Usuario registrado exitosamente!");
                 userForm.reset();

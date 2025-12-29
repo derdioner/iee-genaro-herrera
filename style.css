@@ -17,6 +17,23 @@
     /* iOS-like smooth curve */
     --glass: rgba(255, 255, 255, 0.7);
     --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+    --plexus-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Plexus Canvas Background */
+.plexus-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    pointer-events: none;
+}
+
+#plexusCanvas {
+    width: 100%;
+    height: 100%;
 }
 
 /* Reset & Base */
