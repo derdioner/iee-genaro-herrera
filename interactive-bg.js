@@ -11,7 +11,7 @@ class PlexusEffect {
 
         this.ctx = this.canvas.getContext('2d');
         this.particles = [];
-        this.particleCount = 80;
+        this.particleCount = 100; // Increased from 80
         this.maxDistance = 150;
         this.mouse = { x: null, y: null };
 
@@ -36,10 +36,10 @@ class PlexusEffect {
 
         // Adjust particle count based on screen size
         if (window.innerWidth < 768) {
-            this.particleCount = 40;
+            this.particleCount = 50; // Increased
             this.maxDistance = 100;
         } else {
-            this.particleCount = 80;
+            this.particleCount = 100; // Increased
             this.maxDistance = 150;
         }
     }
@@ -90,8 +90,8 @@ class PlexusEffect {
 
     drawLine(p1, p2, distance, isMouse = false) {
         const opacity = 1 - (distance / (isMouse ? this.maxDistance * 1.5 : this.maxDistance));
-        this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.3})`;
-        this.ctx.lineWidth = 1;
+        this.ctx.strokeStyle = `rgba(255, 255, 255, ${opacity * 0.5})`; // Increased from 0.3
+        this.ctx.lineWidth = 1.2; // Slightly thicker
         this.ctx.beginPath();
         this.ctx.moveTo(p1.x, p1.y);
         this.ctx.lineTo(p2.x, p2.y);
@@ -129,7 +129,7 @@ class Particle {
     }
 
     draw(ctx) {
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)'; // Increased from 0.5
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.fill();
