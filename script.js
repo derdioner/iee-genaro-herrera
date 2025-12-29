@@ -1,72 +1,70 @@
 import { auth, db } from './firebase-config.js';
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+// --- Global Error Diagnostic ---
+window.addEventListener('error', (e) => {
+    console.error("Critical System Error:", e);
+    // Only alert if it's likely related to our login logic
+    if (e.message.includes('auth') || e.message.includes('pwdInput') || e.message.includes('dniInput')) {
+        alert("Error de Sistema detectado: " + e.message + "\nArchivo: " + e.filename + "\nLínea: " + e.lineno);
+    }
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     // --- Mobile Navigation ---
     const burger = document.querySelector('.burger');
     const nav = document.querySelector('.nav-links');
     const navLinks = document.querySelectorAll('.nav-links li');
 
-    burger.addEventListener('click', () => {
-        // Toggle Nav
-        nav.classList.toggle('nav-active');
-
-        // Burger Animation
-        burger.classList.toggle('toggle');
-    });
-
-    // Close nav when clicking a link
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            nav.classList.remove('nav-active');
-            burger.classList.remove('toggle');
+    if (burger && nav) {
+        burger.addEventListener('click', () => {
+            nav.classList.toggle('nav-active');
+            burger.classList.toggle('toggle');
         });
-    });
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                nav.classList.remove('nav-active');
+                burger.classList.remove('toggle');
+            });
+        });
+    }
 
     // --- Header Scroll Effect ---
     const header = document.querySelector('.main-header');
-
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 100) {
-            header.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
-            header.style.height = '70px';
-        } else {
-            header.style.boxShadow = '0 2px 15px rgba(0,0,0,0.05)';
-            header.style.height = '80px';
-        }
-    });
-
-    // --- Scroll Animations (Intersection Observer) ---
-    const faders = document.querySelectorAll('.fade-in');
-
-    const appearOptions = {
-        threshold: 0.2, // Trigger when 20% visible
-        rootMargin: "0px 0px -50px 0px"
-    };
-
-    const appearOnScroll = new IntersectionObserver(function (entries, appearOnScroll) {
-        entries.forEach(entry => {
-            if (!entry.isIntersecting) {
-                return;
+    if (header) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                header.style.boxShadow = '0 5px 20px rgba(0,0,0,0.1)';
+                header.style.height = '70px';
             } else {
+                header.style.boxShadow = '0 2px 15px rgba(0,0,0,0.05)';
+                header.style.height = '80px';
+            }
+        });
+    }
+
+    // --- Scroll Animations ---
+    const faders = document.querySelectorAll('.fade-in');
+    const appearOptions = { threshold: 0.2, rootMargin: "0px 0px -50px 0px" };
+    const appearOnScroll = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
                 entry.target.classList.add('visible');
-                appearOnScroll.unobserve(entry.target);
+                observer.unobserve(entry.target);
             }
         });
     }, appearOptions);
 
-    faders.forEach(fader => {
-        appearOnScroll.observe(fader);
-    });
+    faders.forEach(fader => appearOnScroll.observe(fader));
 
     // --- Intranet Login Implementation (Firebase) ---
     const loginForm = document.getElementById('loginForm');
     const loginMessage = document.getElementById('loginMessage');
-    const dniInput = document.getElementById('dniInput');
+    const dniInputField = document.getElementById('dniInput');
 
-    // Filter non-numeric characters in real-time
-    if (dniInput) {
-        dniInput.addEventListener('input', (e) => {
+    if (dniInputField) {
+        dniInputField.addEventListener('input', (e) => {
             e.target.value = e.target.value.replace(/\D/g, '');
         });
     }
@@ -74,214 +72,166 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            e.stopPropagation();
 
-            const userInput = document.getElementById('dniInput').value.trim();
-            const passwordInput = document.getElementById('pwdInput').value;
-            const roleSelect = document.getElementById('loginRole').value;
+            const dniVal = document.getElementById('dniInput')?.value.trim();
+            const roleSelect = document.getElementById('loginRole')?.value;
+            // Robust password field selection (fallback if ID is missing)
+            const pwdField = document.getElementById('pwdInput') || loginForm.querySelector('input[type="password"]');
+            const pwdVal = pwdField?.value;
 
-            console.log("Intentando login para:", userInput);
-            console.log("Rol seleccionado:", roleSelect);
+            console.log("Debug: Login Attempt", { dniVal, roleSelect });
 
-            if (userInput.length !== 8) {
-                loginMessage.innerText = 'El DNI debe tener exactamente 8 cifras.';
-                loginMessage.style.color = 'red';
+            if (!dniVal || dniVal.length !== 8) {
+                if (loginMessage) loginMessage.innerText = 'El DNI debe tener exactamente 8 cifras.';
                 return;
             }
 
-            // UI Feedback
-            const btn = loginForm.querySelector('button');
-            const originalText = btn.innerText;
-            btn.innerText = 'Verificando...';
-            btn.disabled = true;
+            if (!pwdVal) {
+                if (loginMessage) loginMessage.innerText = 'Por favor, ingrese su contraseña.';
+                return;
+            }
+
+            const btn = loginForm.querySelector('button[type="submit"]');
+            const originalText = btn?.innerText;
+            if (btn) {
+                btn.innerText = 'Verificando...';
+                btn.disabled = true;
+            }
 
             try {
-                let email = userInput;
+                const email = `${dniVal}@genaroherrera.edu.pe`;
+                console.log("Debug: Auth Email", email);
 
-                // --- Estandarización de Identidad por DNI ---
-                // Si son 8 dígitos, lo convertimos en nuestro formato interno de correo
-                if (/^\d{8}$/.test(userInput)) {
-                    email = `${userInput}@genaroherrera.edu.pe`;
+                if (loginMessage) {
+                    loginMessage.innerText = 'Autenticando...';
+                    loginMessage.style.color = 'blue';
                 }
 
-                console.log("Correo procesado:", email);
-                loginMessage.innerText = 'Autenticando...';
-                await signInWithEmailAndPassword(auth, email, passwordInput);
+                await signInWithEmailAndPassword(auth, email, pwdVal);
 
-                console.log("Autenticación exitosa");
+                console.log("Debug: Login Successful");
                 alert("LOGIN EXITOSO: Usted ha sido autenticado correctamente.");
 
-                loginMessage.innerText = 'Acceso concedido. Redirigiendo...';
-                loginMessage.style.color = 'green';
+                if (loginMessage) {
+                    loginMessage.innerText = 'Acceso concedido. Redirigiendo...';
+                    loginMessage.style.color = 'green';
+                }
 
                 setTimeout(() => {
-                    if (roleSelect === 'admin') {
-                        console.log("Redirigiendo a admin.html");
-                        window.location.href = 'admin.html';
-                    } else if (roleSelect === 'staff' || roleSelect === 'editor') {
-                        // We check the actual role in Firestore later if needed, 
-                        // but for navigation we can use the select value.
-                        if (roleSelect === 'editor') {
-                            window.location.href = 'noticias_admin.html';
-                        } else {
-                            window.location.href = 'teacher.html';
-                        }
-                    } else {
-                        window.location.href = 'dashboard.html';
-                    }
-                }, 1000);
+                    let finalPath = 'dashboard.html';
+                    if (roleSelect === 'admin') finalPath = 'admin.html';
+                    else if (roleSelect === 'editor') finalPath = 'noticias_admin.html';
+                    else if (roleSelect === 'staff') finalPath = 'teacher.html';
+
+                    console.log("Redirigiendo a:", finalPath);
+                    window.location.href = finalPath;
+                }, 800);
 
             } catch (error) {
                 console.error("Login Error:", error);
-                loginMessage.style.color = 'red';
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                    loginMessage.innerText = 'Cuidado: DNI o Contraseña incorrectos.';
-                } else {
-                    loginMessage.innerText = error.message;
+                if (loginMessage) {
+                    loginMessage.style.color = 'red';
+                    if (error.code === 'auth/invalid-credential') {
+                        loginMessage.innerText = 'DNI o Contraseña incorrectos.';
+                    } else if (error.code === 'auth/network-request-failed') {
+                        loginMessage.innerText = 'Error de conexión. Revisa tu internet.';
+                    } else {
+                        loginMessage.innerText = "Error: " + error.message;
+                    }
                 }
-            } finally {
-                btn.innerText = originalText;
-                btn.disabled = false;
+                if (btn) {
+                    btn.innerText = originalText || 'Ingresar';
+                    btn.disabled = false;
+                }
             }
         });
     }
 
-
     // --- Image Slider ---
     const slides = document.querySelectorAll('.slide');
-    if (slides.length > 0) {
+    if (slides.length > 1) {
         let currentSlide = 0;
-        const totalSlides = slides.length;
-
         setInterval(() => {
             slides[currentSlide].classList.remove('active');
-            currentSlide = (currentSlide + 1) % totalSlides;
+            currentSlide = (currentSlide + 1) % slides.length;
             slides[currentSlide].classList.add('active');
-        }, 3000);
+        }, 4000);
     }
 
     // --- Teacher Carousel ---
     const track = document.querySelector('.carousel-track');
     if (track) {
-        // Determine number of teachers based on page
-        let count = 30; // Default for Primaria & Secundaria
-        if (window.location.pathname.includes('inicial.html')) {
-            count = 20;
-        }
-
-        // Dummy data for teachers
-        const teachers = Array.from({ length: count }, (_, i) => ({
-            name: `Docente ${i + 1}`,
-            role: i % 3 === 0 ? "Tutor" : "Docente de Aula",
-            specialty: ["Matemáticas", "Ciencias", "Comunicación", "Arte", "Inglés"][i % 5],
-            img: "https://via.placeholder.com/150/00BFFF/FFFFFF?text=Docente"
-        }));
-
-        // Render Cards
-        teachers.forEach(teacher => {
-            const slide = document.createElement('li');
-            slide.classList.add('carousel-slide');
-            slide.innerHTML = `
-                <div class="card teacher-card">
-                    <div class="teacher-img">
-                        <i class="fas fa-chalkboard-teacher"></i>
-                    </div>
-                    <h3>${teacher.name}</h3>
-                    <p class="role">${teacher.role}</p>
-                    <p>${teacher.specialty}</p>
-                    <a href="#" class="btn-profile">Ver Perfil</a>
-                </div>
-            `;
-            track.appendChild(slide);
-        });
-
         const nextButton = document.querySelector('.carousel-button--right');
         const prevButton = document.querySelector('.carousel-button--left');
-        const slides = Array.from(track.children);
-        let currentIndex = 0;
+        const slidesItems = Array.from(track.children);
 
-        const updateCarousel = () => {
-            // Calculate width dynamically
-            const slideWidth = slides[0].getBoundingClientRect().width;
-            // Add gap overlap compensation if needed, but flex gap usually handled by margin logic or gap property. 
-            // With flex gap, we stride by (width + gap).
-            // Let's approximate stride by fetching offsetLeft diff
-            const stride = slides[1].offsetLeft - slides[0].offsetLeft;
-            track.style.transform = `translateX(-${currentIndex * stride}px)`;
+        if (slidesItems.length > 0) {
+            let currentIndex = 0;
+            const updateCarousel = () => {
+                const stride = slidesItems[0].getBoundingClientRect().width + 20; // width + gap
+                track.style.transform = `translateX(-${currentIndex * stride}px)`;
+            };
 
-            // Hide/Show buttons logic if needed (infinite loop better)
+            nextButton?.addEventListener('click', () => {
+                const visible = window.innerWidth < 768 ? 1 : 3;
+                currentIndex = (currentIndex < slidesItems.length - visible) ? currentIndex + 1 : 0;
+                updateCarousel();
+            });
+
+            prevButton?.addEventListener('click', () => {
+                const visible = window.innerWidth < 768 ? 1 : 3;
+                currentIndex = (currentIndex > 0) ? currentIndex - 1 : Math.max(0, slidesItems.length - visible);
+                updateCarousel();
+            });
+
+            window.addEventListener('resize', updateCarousel);
         }
-
-        const getVisibleCount = () => window.innerWidth < 768 ? 1 : 3;
-
-        nextButton.addEventListener('click', () => {
-            const visibleCount = getVisibleCount();
-            if (currentIndex < slides.length - visibleCount) {
-                currentIndex++;
-                updateCarousel();
-            } else {
-                // Optional: Loop back to start
-                currentIndex = 0;
-                updateCarousel();
-            }
-        });
-
-        prevButton.addEventListener('click', () => {
-            if (currentIndex > 0) {
-                currentIndex--;
-                updateCarousel();
-            } else {
-                // Loop to end
-                const visibleCount = getVisibleCount();
-                currentIndex = slides.length - visibleCount;
-                updateCarousel();
-            }
-        });
-
-        // Handle Resize
-        window.addEventListener('resize', updateCarousel);
     }
 
-    // --- Contact Form Implementation (EmailJS) ---
+    // --- Contact Form (EmailJS) ---
     const contactForm = document.getElementById('contactForm');
-    const contactMessage = document.getElementById('contactMessage');
-
     if (contactForm) {
         contactForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            console.log("Iniciando envío de formulario...");
-
-            // Estos IDs se encuentran en tu dashboard de EmailJS
-            const SERVICE_ID = 'service_payph79';
-            const TEMPLATE_ID = 'template_vsfa5g9';
-
             const btn = contactForm.querySelector('button');
-            const originalText = btn.innerText;
-            btn.innerText = 'Enviando...';
-            btn.disabled = true;
+            const originalText = btn?.innerText;
+            const contactMsg = document.getElementById('contactMessage');
+
+            if (btn) {
+                btn.innerText = 'Enviando...';
+                btn.disabled = true;
+            }
 
             if (typeof window.emailjs === 'undefined') {
-                console.error("EmailJS SDK no cargado.");
-                contactMessage.innerText = 'Error: El sistema de correos no cargó correctamente.';
-                contactMessage.style.color = 'red';
-                btn.innerText = originalText;
-                btn.disabled = false;
+                if (contactMsg) contactMsg.innerText = 'Error: Sistema de correos no disponible.';
+                if (btn) { btn.innerText = originalText; btn.disabled = false; }
                 return;
             }
 
+            const SERVICE_ID = 'service_payph79';
+            const TEMPLATE_ID = 'template_vsfa5g9';
+
             window.emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, contactForm)
-                .then((response) => {
-                    console.log('SUCCESS!', response.status, response.text);
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                    contactMessage.innerText = '¡Mensaje enviado con éxito!';
-                    contactMessage.style.color = 'green';
+                .then(() => {
+                    if (contactMsg) {
+                        contactMsg.innerText = '¡Mensaje enviado con éxito!';
+                        contactMsg.style.color = 'green';
+                    }
                     contactForm.reset();
-                }, (error) => {
-                    console.error('FAILED...', error);
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                    contactMessage.innerText = 'Error: ' + (error.text || 'No se pudo enviar el mensaje.');
-                    contactMessage.style.color = 'red';
+                })
+                .catch((err) => {
+                    console.error('Email error:', err);
+                    if (contactMsg) {
+                        contactMsg.innerText = 'Error al enviar mensaje.';
+                        contactMsg.style.color = 'red';
+                    }
+                })
+                .finally(() => {
+                    if (btn) {
+                        btn.innerText = originalText || 'Enviar';
+                        btn.disabled = false;
+                    }
                 });
         });
     }
