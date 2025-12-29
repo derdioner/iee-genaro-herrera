@@ -164,6 +164,7 @@
 
         onAuthStateChanged(auth, (user) => {
             if (user) {
+                console.log("Usuario autenticado en admin.html:", user.email);
                 if (user.email === '45446130@genaroherrera.edu.pe') {
                     document.body.style.display = 'block';
                 } else {

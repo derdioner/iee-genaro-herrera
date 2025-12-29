@@ -76,8 +76,11 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
 
             const userInput = document.getElementById('dniInput').value.trim();
-            const passwordInput = loginForm.querySelector('input[type="password"]').value;
+            const passwordInput = document.getElementById('pwdInput').value;
             const roleSelect = document.getElementById('loginRole').value;
+
+            console.log("Intentando login para:", userInput);
+            console.log("Rol seleccionado:", roleSelect);
 
             if (userInput.length !== 8) {
                 loginMessage.innerText = 'El DNI debe tener exactamente 8 cifras.';
@@ -100,14 +103,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     email = `${userInput}@genaroherrera.edu.pe`;
                 }
 
+                console.log("Correo procesado:", email);
                 loginMessage.innerText = 'Autenticando...';
                 await signInWithEmailAndPassword(auth, email, passwordInput);
+
+                console.log("Autenticación exitosa");
+                alert("LOGIN EXITOSO: Usted ha sido autenticado correctamente.");
 
                 loginMessage.innerText = 'Acceso concedido. Redirigiendo...';
                 loginMessage.style.color = 'green';
 
                 setTimeout(() => {
                     if (roleSelect === 'admin') {
+                        console.log("Redirigiendo a admin.html");
                         window.location.href = 'admin.html';
                     } else if (roleSelect === 'staff' || roleSelect === 'editor') {
                         // We check the actual role in Firestore later if needed, 
