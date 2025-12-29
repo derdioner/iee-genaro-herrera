@@ -1,5 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- Global Error Diagnostic ---
 window.addEventListener('error', (e) => {
@@ -67,6 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
         dniInputField.addEventListener('input', (e) => {
             e.target.value = e.target.value.replace(/\D/g, '');
         });
+    }
+
+    // --- Load Index News ---
+    if (document.getElementById('indexNewsContainer')) {
+        loadIndexNews();
     }
 
     if (loginForm) {
@@ -236,3 +242,54 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+async function loadIndexNews() {
+    const container = document.getElementById('indexNewsContainer');
+    if (!container) return;
+
+    try {
+        const q = query(collection(db, "news"), orderBy("timestamp", "desc"), limit(3));
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            container.innerHTML = '<p class="text-center col-span-full py-10 text-gray-500 italic">Próximamente más novedades...</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            const div = document.createElement('div');
+            div.className = "bg-white rounded-2xl shadow-lg border overflow-hidden w-full flex flex-col";
+
+            let contentHtml = '';
+            if (data.link && data.link.trim().startsWith('<iframe')) {
+                contentHtml = `
+                    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; width: 100%;">
+                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                            ${data.link.replace(/width="[^"]*"/, 'width="100%"').replace(/height="[^"]*"/, 'height="100%"')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                contentHtml = `
+                    <div class="p-8">
+                        <div class="flex items-center gap-3 mb-4 text-sky-600">
+                             <i class="fas ${data.type || 'fa-bullhorn'} text-2xl"></i>
+                             <span class="text-sm font-bold uppercase tracking-wider">${data.date}</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800 mb-3">${data.title}</h3>
+                        <p class="text-gray-600 mb-6 line-clamp-3">${data.description}</p>
+                        ${data.link ? `<a href="${data.link}" target="_blank" class="inline-flex items-center gap-2 text-sky-500 font-bold hover:gap-3 transition-all">Ver Más <i class="fas fa-arrow-right text-sm"></i></a>` : ''}
+                    </div>
+                `;
+            }
+
+            div.innerHTML = contentHtml;
+            container.appendChild(div);
+        });
+    } catch (err) {
+        console.error("Error loading index news:", err);
+        container.innerHTML = '<p class="text-center col-span-full text-red-400 py-10">Ocurrió un error al cargar las noticias.</p>';
+    }
+}
