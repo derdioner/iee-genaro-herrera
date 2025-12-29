@@ -262,27 +262,38 @@ async function loadIndexNews() {
             const div = document.createElement('div');
             div.className = "bg-white rounded-2xl shadow-lg border overflow-hidden w-full flex flex-col";
 
-            let contentHtml = '';
+            let contentHtml = `
+                <div class="p-8 pb-0">
+                    <div class="flex items-center gap-3 mb-4 text-sky-600">
+                         <i class="fas ${data.type || 'fa-bullhorn'} text-2xl"></i>
+                         <span class="text-sm font-bold uppercase tracking-wider">${data.date}</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-3">${data.title}</h3>
+                    <p class="text-gray-600 mb-4 line-clamp-3">${data.description}</p>
+                </div>
+            `;
+
             if (data.link && data.link.trim().startsWith('<iframe')) {
-                contentHtml = `
-                    <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; width: 100%;">
-                        <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
-                            ${data.link.replace(/width="[^"]*"/, 'width="100%"').replace(/height="[^"]*"/, 'height="100%"')}
+                contentHtml += `
+                    <div class="px-8 pb-8">
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                            <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                                ${data.link.replace(/width="[^"]*"/, 'width="100%"').replace(/height="[^"]*"/, 'height="100%"')}
+                            </div>
                         </div>
+                    </div>
+                `;
+            } else if (data.link) {
+                contentHtml += `
+                    <div class="px-8 pb-8 mt-auto">
+                        <a href="${data.link}" target="_blank" class="inline-flex items-center gap-2 text-sky-500 font-bold hover:gap-3 transition-all">
+                            Ver Más <i class="fas fa-arrow-right text-sm"></i>
+                        </a>
                     </div>
                 `;
             } else {
-                contentHtml = `
-                    <div class="p-8">
-                        <div class="flex items-center gap-3 mb-4 text-sky-600">
-                             <i class="fas ${data.type || 'fa-bullhorn'} text-2xl"></i>
-                             <span class="text-sm font-bold uppercase tracking-wider">${data.date}</span>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-800 mb-3">${data.title}</h3>
-                        <p class="text-gray-600 mb-6 line-clamp-3">${data.description}</p>
-                        ${data.link ? `<a href="${data.link}" target="_blank" class="inline-flex items-center gap-2 text-sky-500 font-bold hover:gap-3 transition-all">Ver Más <i class="fas fa-arrow-right text-sm"></i></a>` : ''}
-                    </div>
-                `;
+                // Add padding to satisfy flex-grow / layout if no link
+                contentHtml += `<div class="pb-8"></div>`;
             }
 
             div.innerHTML = contentHtml;
