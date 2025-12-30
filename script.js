@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, query, orderBy, limit, getDocs, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- Global Error Diagnostic ---
 window.addEventListener('error', (e) => {
@@ -73,6 +73,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Load Index News ---
     if (document.getElementById('indexNewsContainer')) {
         loadIndexNews();
+    }
+
+    // --- Load Level Teachers ---
+    if (document.querySelector('.teachers-section')) {
+        loadLevelTeachers();
     }
 
     if (loginForm) {
@@ -165,35 +170,50 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 4000);
     }
 
-    // --- Teacher Carousel ---
-    const track = document.querySelector('.carousel-track');
-    if (track) {
-        const nextButton = document.querySelector('.carousel-button--right');
-        const prevButton = document.querySelector('.carousel-button--left');
-        const slidesItems = Array.from(track.children);
+    // --- Teacher Carousel Initialization ---
+    window.initTeacherCarousel = () => {
+        const track = document.querySelector('.carousel-track');
+        if (track) {
+            const nextButton = document.querySelector('.carousel-button--right');
+            const prevButton = document.querySelector('.carousel-button--left');
+            const slidesItems = Array.from(track.children);
 
-        if (slidesItems.length > 0) {
-            let currentIndex = 0;
-            const updateCarousel = () => {
-                const stride = slidesItems[0].getBoundingClientRect().width + 20; // width + gap
-                track.style.transform = `translateX(-${currentIndex * stride}px)`;
-            };
+            if (slidesItems.length > 0) {
+                let currentIndex = 0;
+                const updateCarousel = () => {
+                    const slideWidth = slidesItems[0].getBoundingClientRect().width;
+                    const gap = 20; // Corrected gap value
+                    const stride = slideWidth + gap;
+                    track.style.transform = `translateX(-${currentIndex * stride}px)`;
+                };
 
-            nextButton?.addEventListener('click', () => {
-                const visible = window.innerWidth < 768 ? 1 : 3;
-                currentIndex = (currentIndex < slidesItems.length - visible) ? currentIndex + 1 : 0;
-                updateCarousel();
-            });
+                // Clear previous listeners to avoid double binding if called multiple times
+                nextButton?.replaceWith(nextButton.cloneNode(true));
+                prevButton?.replaceWith(prevButton.cloneNode(true));
 
-            prevButton?.addEventListener('click', () => {
-                const visible = window.innerWidth < 768 ? 1 : 3;
-                currentIndex = (currentIndex > 0) ? currentIndex - 1 : Math.max(0, slidesItems.length - visible);
-                updateCarousel();
-            });
+                const newNext = document.querySelector('.carousel-button--right');
+                const newPrev = document.querySelector('.carousel-button--left');
 
-            window.addEventListener('resize', updateCarousel);
+                newNext?.addEventListener('click', () => {
+                    const visible = window.innerWidth < 768 ? 1 : 3;
+                    currentIndex = (currentIndex < slidesItems.length - visible) ? currentIndex + 1 : 0;
+                    updateCarousel();
+                });
+
+                newPrev?.addEventListener('click', () => {
+                    const visible = window.innerWidth < 768 ? 1 : 3;
+                    currentIndex = (currentIndex > 0) ? currentIndex - 1 : Math.max(0, slidesItems.length - visible);
+                    updateCarousel();
+                });
+
+                window.removeEventListener('resize', updateCarousel);
+                window.addEventListener('resize', updateCarousel);
+                updateCarousel(); // Initial position
+            }
         }
-    }
+    };
+
+    // Note: initTeacherCarousel will be called after fetching data
 
     // --- Contact Form (EmailJS) ---
     const contactForm = document.getElementById('contactForm');
@@ -302,5 +322,59 @@ async function loadIndexNews() {
     } catch (err) {
         console.error("Error loading index news:", err);
         container.innerHTML = '<p class="text-center col-span-full text-red-400 py-10">Ocurrió un error al cargar las noticias.</p>';
+    }
+}
+
+async function loadLevelTeachers() {
+    const track = document.querySelector('.carousel-track');
+    if (!track) return;
+
+    // Determine current level from page title or URL
+    let level = "Primaria";
+    if (document.title.includes("Inicial")) level = "Inicial";
+    else if (document.title.includes("Secundaria")) level = "Secundaria";
+
+    console.log("Loading teachers for level:", level);
+
+    try {
+        // Query staff for this level, ordered by priority then name
+        const q = query(
+            collection(db, "staff"),
+            where("level", "==", level),
+            orderBy("priority", "asc"),
+            orderBy("name", "asc")
+        );
+        const snap = await getDocs(q);
+
+        if (snap.empty) {
+            track.innerHTML = '<p class="text-center w-full py-10 text-gray-400 italic">Próximamente... estamos completando la plana docente.</p>';
+            return;
+        }
+
+        track.innerHTML = '';
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            const li = document.createElement('li');
+            li.className = "carousel-slide";
+            li.innerHTML = `
+                <div class="teacher-card">
+                    <div class="teacher-img">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+                    <div class="role">${data.position || 'Docente'}</div>
+                    <h3 class="name font-bold text-lg">${data.name}</h3>
+                </div>
+            `;
+            track.appendChild(li);
+        });
+
+        // Initialize carousel logic after content is loaded
+        if (window.initTeacherCarousel) {
+            setTimeout(window.initTeacherCarousel, 100);
+        }
+
+    } catch (err) {
+        console.error("Error loading teachers:", err);
+        track.innerHTML = '<p class="text-center w-full text-red-400">Error al cargar la plana docente.</p>';
     }
 }

@@ -271,6 +271,19 @@
                     </div>
                 </div>
 
+                <!-- Specific Fields for Staff -->
+                <div id="staffOnlyFields"
+                    style="display: none; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label>Cargo / Especialidad:</label>
+                        <input type="text" id="uPosition" placeholder="Ej: Docente de Matemáticas">
+                    </div>
+                    <div class="form-group">
+                        <label>Prioridad (Orden):</label>
+                        <input type="number" id="uPriority" placeholder="Ej: 1 (Primero)" min="1" value="10">
+                    </div>
+                </div>
+
                 <!-- Specific field for students (DNI del hijo) -->
                 <div id="studentOnlyFields" class="form-group">
                     <label>DNI del Estudiante:</label>
@@ -398,6 +411,10 @@
             uGrade.required = !isNewsEditor;
             academicFields.style.opacity = isNewsEditor ? '0.5' : '1';
 
+            // Staff fields visibility
+            const isStaff = roleSelect.value === 'staff';
+            document.getElementById('staffOnlyFields').style.display = isStaff ? 'grid' : 'none';
+
             // Dinámicamente actualizamos las etiquetas para mayor claridad
             document.getElementById('labelDni').innerText = isParent ? "DNI del Padre (Usuario):" : "DNI del Usuario:";
             document.getElementById('labelName').innerText = isParent ? "Nombre del Estudiante:" : "Nombre del Usuario:";
@@ -469,6 +486,11 @@
                     section: document.getElementById('uSection').value,
                     timestamp: new Date()
                 };
+
+                if (role === 'staff') {
+                    userData.position = document.getElementById('uPosition').value || 'Docente';
+                    userData.priority = parseInt(document.getElementById('uPriority').value) || 10;
+                }
 
                 if (role === 'students') {
                     userData.studentName = name; // For students, uName is student's name
