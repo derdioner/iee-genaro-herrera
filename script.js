@@ -427,7 +427,11 @@ async function loadLevelTeachers() {
     };
 
     // Initial render
-    renderTeachers(allTeachers);
+    if (level === "Primaria") {
+        renderTeachers(allTeachers.filter(t => t.grade === "1"));
+    } else {
+        renderTeachers(allTeachers);
+    }
 
     // Setup filtering for Primaria
     if (level === "Primaria") {
@@ -440,12 +444,8 @@ async function loadLevelTeachers() {
 
                 // Logic
                 const filter = btn.getAttribute('data-filter');
-                if (filter === 'all') {
-                    renderTeachers(allTeachers);
-                } else {
-                    const filtered = allTeachers.filter(t => t.grade === filter);
-                    renderTeachers(filtered);
-                }
+                const filtered = allTeachers.filter(t => t.grade === filter);
+                renderTeachers(filtered);
             });
         });
     }
