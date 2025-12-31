@@ -1680,6 +1680,88 @@ footer {
     padding: 0;
 }
 
+/* Sub-Director Section Styling */
+.subdirector-section {
+    padding: 100px 0;
+    background: white;
+}
+
+.subdirector-img-card {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: var(--shadow-hover);
+    transition: var(--transition);
+}
+
+.subdirector-img-card:hover {
+    transform: translateY(-10px);
+}
+
+.subdirector-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+.img-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
+    color: white;
+    padding: 30px 20px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+}
+
+.img-badge i {
+    color: #ffd700;
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.img-badge span {
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.img-badge small {
+    font-size: 0.8rem;
+    opacity: 0.8;
+    font-style: italic;
+}
+
+.quote-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.quote-header i {
+    font-size: 3rem;
+    color: rgba(0, 191, 255, 0.2);
+}
+
+.quote-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    color: var(--primary-dark);
+}
+
+.subdirector-message p {
+    font-size: 1.1rem;
+    position: relative;
+    padding-left: 20px;
+    border-left: 3px solid var(--primary-color);
+}
+
 @keyframes text-glow {
 
     0%,
