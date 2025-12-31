@@ -346,14 +346,30 @@ async function loadLevelTeachers() {
         );
         const snap = await getDocs(q);
 
-        if (snap.empty) {
+        let teachersData = [];
+        snap.forEach(docSnap => {
+            teachersData.push(docSnap.data());
+        });
+
+        // Mock data fallback for "Inicial" to demonstrate carrousel with 6 teachers
+        if (teachersData.length === 0 && level === "Inicial") {
+            teachersData = [
+                { name: "Ana García", position: "Docente", grade: "3", section: "Gotitas de Miel", priority: 1 },
+                { name: "Lucía Torres", position: "Docente", grade: "3", section: "Ositos Cariñosos", priority: 2 },
+                { name: "Martha Ruiz", position: "Docente", grade: "4", section: "Abejitas Laboriosas", priority: 3 },
+                { name: "Elena Ramos", position: "Docente", grade: "4", section: "Delfines Azules", priority: 4 },
+                { name: "Silvia Luna", position: "Docente", grade: "5", section: "Luceritos de la Mañana", priority: 5 },
+                { name: "Carmen Paz", position: "Docente", grade: "5", section: "Soles Radiantes", priority: 6 }
+            ];
+        }
+
+        if (teachersData.length === 0) {
             track.innerHTML = '<p class="text-center w-full py-10 text-gray-400 italic">Próximamente... estamos completando la plana docente.</p>';
             return;
         }
 
         track.innerHTML = '';
-        snap.forEach(docSnap => {
-            const data = docSnap.data();
+        teachersData.forEach(data => {
             const li = document.createElement('li');
             li.className = "carousel-slide";
 
