@@ -356,13 +356,32 @@ async function loadLevelTeachers() {
             const data = docSnap.data();
             const li = document.createElement('li');
             li.className = "carousel-slide";
+
+            // Format year and section (only for Inicial or if they exist)
+            const yearInfo = data.grade ? `${data.grade} años` : 'No asignado';
+            const sectionInfo = data.section ? `Sección: ${data.section}` : '';
+
             li.innerHTML = `
-                <div class="teacher-card">
-                    <div class="teacher-img">
-                        <i class="fas fa-user-tie"></i>
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <!-- Front Side -->
+                        <div class="flip-card-front teacher-card">
+                            <div class="teacher-img">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="role">${data.position || 'Docente'}</div>
+                            <h3 class="name font-bold text-lg">${data.name}</h3>
+                        </div>
+                        <!-- Back Side -->
+                        <div class="flip-card-back">
+                            <i class="fas fa-graduation-cap mb-4 text-3xl"></i>
+                            <h3 class="font-bold text-xl mb-2">${yearInfo}</h3>
+                            <p class="text-lg opacity-90">${sectionInfo}</p>
+                            <div class="mt-4 border-t border-white/30 pt-4 w-full text-center text-sm italic">
+                                IEE Genaro Herrera
+                            </div>
+                        </div>
                     </div>
-                    <div class="role">${data.position || 'Docente'}</div>
-                    <h3 class="name font-bold text-lg">${data.name}</h3>
                 </div>
             `;
             track.appendChild(li);
