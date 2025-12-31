@@ -1140,11 +1140,58 @@ ul {
     right: 0;
 }
 
-/* Mobile Carousel */
+/* Filter Tabs */
+.filter-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 40px;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    border-radius: 30px;
+    border: 2px solid var(--primary-color);
+    background: transparent;
+    color: var(--primary-color);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    box-shadow: 0 5px 15px rgba(0, 191, 255, 0.3);
+}
+
+/* Teachers Grid */
+.teachers-grid-wrapper {
+    width: 100%;
+}
+
+.teachers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 30px;
+    list-style: none;
+    padding: 0;
+}
+
+.grid-item {
+    width: 100%;
+}
+
+/* Mobile Adjustments for Grid */
 @media (max-width: 768px) {
+    .teachers-grid {
+        grid-template-columns: 1fr;
+    }
+
     .carousel-slide {
         flex: 0 0 100%;
-        /* 1 card visible */
     }
 }
 

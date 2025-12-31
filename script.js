@@ -326,7 +326,7 @@ async function loadIndexNews() {
 }
 
 async function loadLevelTeachers() {
-    const track = document.querySelector('.carousel-track');
+    const track = document.querySelector('.carousel-track') || document.querySelector('.teachers-grid');
     if (!track) return;
 
     // Determine current level from page title or URL
@@ -336,10 +336,9 @@ async function loadLevelTeachers() {
 
     console.log("Loading teachers for level:", level);
 
-    let teachersData = [];
+    let allTeachers = [];
 
     try {
-        // Query staff for this level, ordered by priority then name
         const q = query(
             collection(db, "staff"),
             where("level", "==", level),
@@ -348,68 +347,106 @@ async function loadLevelTeachers() {
         );
         const snap = await getDocs(q);
         snap.forEach(docSnap => {
-            teachersData.push(docSnap.data());
+            allTeachers.push(docSnap.data());
         });
     } catch (err) {
         console.error("Error loading teachers from Firestore:", err);
-        // If it's a missing index error, it will be logged here
     }
 
-    // Mock data fallback for "Inicial" if database is empty OR failed
-    if (teachersData.length === 0 && level === "Inicial") {
-        console.log("Using mock data fallback for Inicial");
-        teachersData = [
-            { name: "Ana García", position: "Docente", grade: "3", section: "Gotitas de Miel", priority: 1 },
-            { name: "Lucía Torres", position: "Docente", grade: "3", section: "Ositos Cariñosos", priority: 2 },
-            { name: "Martha Ruiz", position: "Docente", grade: "4", section: "Abejitas Laboriosas", priority: 3 },
-            { name: "Elena Ramos", position: "Docente", grade: "4", section: "Delfines Azules", priority: 4 },
-            { name: "Silvia Luna", position: "Docente", grade: "5", section: "Luceritos de la Mañana", priority: 5 },
-            { name: "Carmen Paz", position: "Docente", grade: "5", section: "Soles Radiantes", priority: 6 }
-        ];
+    // Fallbacks for empty database
+    if (allTeachers.length === 0) {
+        if (level === "Inicial") {
+            allTeachers = [
+                { name: "Ana García", position: "Docente", grade: "3", section: "Gotitas de Miel", priority: 1 },
+                { name: "Lucía Torres", position: "Docente", grade: "3", section: "Ositos Cariñosos", priority: 2 },
+                { name: "Martha Ruiz", position: "Docente", grade: "4", section: "Abejitas Laboriosas", priority: 3 },
+                { name: "Elena Ramos", position: "Docente", grade: "4", section: "Delfines Azules", priority: 4 },
+                { name: "Silvia Luna", position: "Docente", grade: "5", section: "Luceritos de la Mañana", priority: 5 },
+                { name: "Carmen Paz", position: "Docente", grade: "5", section: "Soles Radiantes", priority: 6 }
+            ];
+        } else if (level === "Primaria") {
+            // Generate 30 mock teachers for Primaria (5 per grade)
+            for (let g = 1; g <= 6; g++) {
+                for (let s = 1; s <= 5; s++) {
+                    const sectionName = String.fromCharCode(64 + s); // A, B, C...
+                    allTeachers.push({
+                        name: `Prof. Primaria ${g}${sectionName}`,
+                        position: `Docente de ${g}º ${sectionName}`,
+                        grade: g.toString(),
+                        section: sectionName,
+                        priority: g * 10 + s
+                    });
+                }
+            }
+        }
     }
 
-    if (teachersData.length === 0) {
+    if (allTeachers.length === 0) {
         track.innerHTML = '<p class="text-center w-full py-10 text-gray-400 italic">Próximamente... estamos completando la plana docente.</p>';
         return;
     }
 
-    track.innerHTML = '';
-    teachersData.forEach(data => {
-        const li = document.createElement('li');
-        li.className = "carousel-slide";
+    const renderTeachers = (filteredList) => {
+        track.innerHTML = '';
+        filteredList.forEach(data => {
+            const li = document.createElement('li');
+            li.className = level === "Primaria" ? "grid-item" : "carousel-slide";
 
-        // Format year and section (only for Inicial or if they exist)
-        const yearInfo = data.grade ? `${data.grade} años` : 'No asignado';
-        const sectionInfo = data.section ? `Sección: ${data.section}` : '';
+            const yearLabel = level === "Inicial" ? "años" : "º Grado";
+            const yearInfo = data.grade ? `${data.grade}${yearLabel}` : 'No asignado';
+            const sectionInfo = data.section ? `Sección: ${data.section}` : '';
 
-        li.innerHTML = `
-            <div class="flip-card">
-                <div class="flip-card-inner">
-                    <!-- Front Side -->
-                    <div class="flip-card-front teacher-card">
-                        <div class="teacher-img">
-                            <i class="fas fa-user-tie"></i>
+            li.innerHTML = `
+                <div class="flip-card">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front teacher-card">
+                            <div class="teacher-img">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div class="role">${data.position || 'Docente'}</div>
+                            <h3 class="name font-bold text-lg">${data.name}</h3>
                         </div>
-                        <div class="role">${data.position || 'Docente'}</div>
-                        <h3 class="name font-bold text-lg">${data.name}</h3>
-                    </div>
-                    <!-- Back Side -->
-                    <div class="flip-card-back">
-                        <i class="fas fa-graduation-cap mb-4 text-3xl"></i>
-                        <h3 class="font-bold text-xl mb-2">${yearInfo}</h3>
-                        <p class="text-lg opacity-90">${sectionInfo}</p>
-                        <div class="mt-4 border-t border-white/30 pt-4 w-full text-center text-sm italic">
-                            IEE Genaro Herrera
+                        <div class="flip-card-back">
+                            <i class="fas fa-graduation-cap mb-4 text-3xl"></i>
+                            <h3 class="font-bold text-xl mb-2">${yearInfo}</h3>
+                            <p class="text-lg opacity-90">${sectionInfo}</p>
+                            <div class="mt-4 border-t border-white/30 pt-4 w-full text-center text-sm italic">
+                                IEE Genaro Herrera
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        `;
-        track.appendChild(li);
-    });
+            `;
+            track.appendChild(li);
+        });
 
-    // Initialize carousel logic after content is loaded
-    if (window.initTeacherCarousel) {
-        setTimeout(window.initTeacherCarousel, 100);
+        // Re-init carousel ONLY if it's NOT Primaria (which is a grid)
+        if (level !== "Primaria" && window.initTeacherCarousel) {
+            setTimeout(window.initTeacherCarousel, 100);
+        }
+    };
+
+    // Initial render
+    renderTeachers(allTeachers);
+
+    // Setup filtering for Primaria
+    if (level === "Primaria") {
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // UI Toggle
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Logic
+                const filter = btn.getAttribute('data-filter');
+                if (filter === 'all') {
+                    renderTeachers(allTeachers);
+                } else {
+                    const filtered = allTeachers.filter(t => t.grade === filter);
+                    renderTeachers(filtered);
+                }
+            });
+        });
     }
 }
