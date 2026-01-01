@@ -913,34 +913,59 @@
                     <td>${user.dni || '-'}</td>
                     <td>${location}</td>
                     <td>
-                        <button class="btn-delete" onclick="deleteUser('${user.collection}', '${user.id}')">Eliminar</button>
+                        <button class="btn-delete" onclick="deleteUser('${user.collection}', '${user.id}', this)">Eliminar</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
         };
 
-        window.deleteUser = async (coll, id) => {
-            const email = (coll === 'staff' || coll === 'staff_news') ? id : `${id.split('_')[0]}`; // id is email or email_studentDni
+        window.deleteUser = async (coll, id, btnEl) => {
+            const email = (coll === 'staff' || coll === 'staff_news') ? id : (id.includes('_') ? id.split('_')[0] : id);
 
             if (!confirm(`¿Está seguro de eliminar a este usuario?\n\nESTO ELIMINARÁ TAMBIÉN SU ACCESO AL SISTEMA (Firebase Auth).`)) return;
 
-            console.log(`Intentando eliminación total para: ${email}`);
+            console.log(`Iniciando proceso de eliminación para: ${email}`);
+
+            if (btnEl) {
+                btnEl.disabled = true;
+                btnEl.innerText = "Borrando...";
+                btnEl.style.opacity = "0.5";
+            }
 
             try {
                 // 1. Delete from Auth via Admin Bridge
-                await deleteAuthUser({ email });
-                console.log("Credenciales eliminadas de Auth via Cloud Functions.");
+                try {
+                    console.log("Llamando a Cloud Function deleteAuthUser...");
+                    await deleteAuthUser({ email });
+                    console.log("Credenciales eliminadas de Auth.");
+                } catch (authErr) {
+                    console.error("No se pudo borrar de Auth (posible bloqueo de red o permisos):", authErr);
+                    const proceed = confirm("No se pudo eliminar el ACCESO DE SEGURIDAD (posible bloqueo de red o adblocker). ¿Desea eliminar el PERFIL de la base de datos de todos modos?");
+                    if (!proceed) {
+                        if (btnEl) {
+                            btnEl.disabled = false;
+                            btnEl.innerText = "Eliminar";
+                            btnEl.style.opacity = "1";
+                        }
+                        return; // User cancelled
+                    }
+                }
 
                 // 2. Delete from Firestore
                 await deleteDoc(doc(db, coll, id));
                 console.log("Documento eliminado de Firestore.");
 
-                alert("Usuario y acceso eliminados correctamente.");
+                alert("Usuario eliminado correctamente.");
                 fetchUsers();
             } catch (err) {
-                console.error("Error en eliminación total:", err);
-                alert("Error técnico: " + err.message);
+                console.error("Error en eliminación:", err);
+                alert("Error: " + err.message);
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerText = "Eliminar";
+                    btnEl.style.opacity = "1";
+                }
             }
         };
 
