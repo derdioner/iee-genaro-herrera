@@ -896,15 +896,21 @@
 
             for (const file of files) {
                 try {
-                    // 1. Extract DNI from SIAGIE format
-                    // Filename: "NAME - 000000DNI.pdf"
-                    // Regex searches for any string of 8 digits. Grab the last one.
-                    const matches = file.name.match(/\d{8}/g);
-                    if (!matches) {
-                        throw new Error("No se encontró un DNI de 8 dígitos en el nombre.");
+                    // 1. Extract DNI from SIAGIE format (robust version)
+                    // Filename example: "NAME - 00000045446130.pdf"
+                    // We extract all numeric sequences and take the last 8 digits of the most significant one.
+                    const allNumericMatches = file.name.match(/\d+/g);
+                    if (!allNumericMatches) {
+                        throw new Error("No se encontró ningún número en el nombre del archivo.");
                     }
-                    const dni = matches[matches.length - 1];
-                    console.log(`Processing file: ${file.name} -> Detected DNI: ${dni}`);
+
+                    // Take the last match (often the DNI/Code) and extract the last 8 digits
+                    const lastMatch = allNumericMatches[allNumericMatches.length - 1];
+                    if (lastMatch.length < 8) {
+                        throw new Error(`El código encontrado (${lastMatch}) es demasiado corto para ser un DNI.`);
+                    }
+                    const dni = lastMatch.slice(-8);
+                    console.log(`Processing file: ${file.name} -> Raw match: ${lastMatch} -> Final DNI: ${dni}`);
 
                     // 2. Find student in Firestore
                     // Try studentDni field first, then fallback to dni
