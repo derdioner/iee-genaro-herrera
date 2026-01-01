@@ -462,6 +462,7 @@
         import { db, storage } from './firebase-config.js';
         import { doc, setDoc, addDoc, collection, query, where, getDocs, limit, deleteDoc, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+        import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
         import { qrDb } from './firebase-qr-config.js';
 
         // Secondary App for user creation (doesn't sign out current admin)
@@ -475,6 +476,10 @@
         };
         const secondaryApp = initializeApp(secondaryConfig, "secondary");
         const secondaryAuth = getAuth(secondaryApp);
+
+        // --- PROYECTO 2: ADMIN BRIDGE ---
+        const functions = getFunctions();
+        const deleteAuthUser = httpsCallable(functions, 'deleteAuthUser');
 
         const userForm = document.getElementById('userForm');
         const roleSelect = document.getElementById('uRole');
@@ -647,7 +652,18 @@
                 } catch (authErr) {
                     if (authErr.code === 'auth/email-already-in-use') {
                         userAlreadyExists = true;
-                        console.log("Auth user already exists, proceeding to update Firestore...");
+
+                        // AUTO-FIX: If recreating with NEW password, delete old auth and create again
+                        const shouldReset = confirm("El usuario ya existe en el sistema de seguridad. ¿Desea RESETEAR su acceso para asignar esta nueva contraseña?");
+                        if (shouldReset) {
+                            btn.innerText = 'Reseteando Acceso...';
+                            await deleteAuthUser({ email });
+                            await createUserWithEmailAndPassword(secondaryAuth, email, pass);
+                            await signOut(secondaryAuth);
+                            userAlreadyExists = false; // It's "new" now
+                        } else {
+                            console.log("Auth user already exists, proceeding to update Firestore...");
+                        }
                     } else {
                         throw new Error("Error de Seguridad (Auth): " + authErr.message);
                     }
@@ -905,18 +921,26 @@
         };
 
         window.deleteUser = async (coll, id) => {
-            if (!confirm("¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.\n\nNota: Esto eliminará su perfil de la base de datos, pero NO su acceso de seguridad por políticas de Firebase. Deberá contactar al soporte técnico para una eliminación completa de credenciales.")) return;
+            const email = (coll === 'staff' || coll === 'staff_news') ? id : `${id.split('_')[0]}`; // id is email or email_studentDni
 
-            console.log(`Intentando eliminar: Colección=${coll}, ID=${id}`);
+            if (!confirm(`¿Está seguro de eliminar a este usuario?\n\nESTO ELIMINARÁ TAMBIÉN SU ACCESO AL SISTEMA (Firebase Auth).`)) return;
+
+            console.log(`Intentando eliminación total para: ${email}`);
 
             try {
+                // 1. Delete from Auth via Admin Bridge
+                await deleteAuthUser({ email });
+                console.log("Credenciales eliminadas de Auth via Cloud Functions.");
+
+                // 2. Delete from Firestore
                 await deleteDoc(doc(db, coll, id));
-                console.log("Documento eliminado de Firestore con éxito.");
-                alert("Usuario eliminado correctamente de la base de datos.");
+                console.log("Documento eliminado de Firestore.");
+
+                alert("Usuario y acceso eliminados correctamente.");
                 fetchUsers();
             } catch (err) {
-                console.error("Error en deleteDoc:", err);
-                alert("Error técnico al eliminar: " + err.message);
+                console.error("Error en eliminación total:", err);
+                alert("Error técnico: " + err.message);
             }
         };
 

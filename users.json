@@ -1,0 +1,102 @@
+{"users": [
+{
+  "localId": "HkIkwr7vnjUrIrmBac10xSMdWun2",
+  "email": "05921213@genaroherrera.edu.pe",
+  "emailVerified": false,
+  "passwordHash": "9jc9+PiCdE4WzgwhHg3McGVQ+E/dAy7RFX75bA08odm16qOBWnninImIQZ3BlSZtDAJcoBHHSwGZ+aPcsLbi/w==",
+  "salt": "QW1CkLbCt6h33g==",
+  "lastSignedInAt": "1767033916098",
+  "createdAt": "1767032700529",
+  "providerUserInfo": []
+},
+{
+  "localId": "LBuZcchB1SbY5IDOMJU9y4sYZa73",
+  "email": "70232941@genaroherrera.edu.pe",
+  "emailVerified": false,
+  "passwordHash": "+OChcB3+9xceyjQ1cfffEao4CMqmqy9ncf5nL4s6uNm9zIvffVRPb1CGwe3fBF2GnYC7mBTGG9nXNm6WSeHAWw==",
+  "salt": "zJn7VF0q+V7KRw==",
+  "lastSignedInAt": "1767105644801",
+  "createdAt": "1766086952627",
+  "providerUserInfo": []
+},
+{
+  "localId": "P7hshyNNd4WsICPRU8PND3zbBk22",
+  "email": "12345678@genaroherrera.edu.pe",
+  "emailVerified": false,
+  "passwordHash": "zKa4OtgeOrgjj30ukMmfTvbrDeb9/1/DTnZplw4/oR7FeCT0vHCNy4NQz3ntLZgTSGLBOdWR0IGmiQD0EiWWOA==",
+  "salt": "xE39z8F9QKFpmQ==",
+  "lastSignedInAt": "1767229901088",
+  "createdAt": "1767229901088",
+  "providerUserInfo": []
+},
+{
+  "localId": "QatULvHrgGbbKv4iNBwCOJMZiQE2",
+  "email": "admin@genaroherrera.edu.pe",
+  "emailVerified": false,
+  "passwordHash": "H44dNe/MA9qyCr094Pui07TcvW3LKhY2EDQzNPnH7ArbdKGxvY1KxBGWiYBZU70hCCbhpVq7IBCMsRYQ4uEGWA==",
+  "salt": "GNuddB6V2B3rIA==",
+  "lastSignedInAt": "1766084056699",
+  "createdAt": "1766084056699",
+  "providerUserInfo": []
+},
+{
+  "localId": "XJ5VFBP6AkWC1olxMHjXyWnaRxR2",
+  "email": "77777777@genaroherrera.edu.pe",
+  "emailVerified": false,
+  "passwordHash": "tNgFtKQkwzRQ4rtXTiM+lSSLxjb2J01mhFzaE9bM7qFvz6qxxCfnDUanjQkR9BwxeolCdxYPuNc47vVo2hH0FA==",
+  "salt": "sQG7MooMzXMzBg==",
+  "lastSignedInAt": "1766151740047",
+  "createdAt": "1766091095048",
+  "providerUserInfo": []
+},
+{
+  "localId": "XJvOfFanqfdds5PuKz9QPd3RpQl2",
+  "email": "88888888@genaroherrera.edu.pe",
+  "emailVerified": false,
+  "passwordHash": "8P4Hnwshz4mZeSYTdHSpr222KtFRV6boDZqUsDKAcGv88KTO2+tCvhchcCKGf71pV+jsJeSGu9XvUrQ3NTMHkQ==",
+  "salt": "MlMjEKbzczhnog==",
+  "lastSignedInAt": "1766090936823",
+  "createdAt": "1766090936823",
+  "providerUserInfo": []
+},
+{
+  "localId": "ghyTB9uYFWW687dyuUIg099xOdF3",
+  "email": "45446130@genaroherrera.edu.pe",
+  "emailVerified": false,
+  "passwordHash": "PFOT5oRoHCpjGTF52Y9hD8hyv6hxKjgRlbe78fdt5iameskq0dWnKQcze+8p/KPrswCA0cpqDZXIVsQwLT6NSg==",
+  "salt": "uS9nhNKnuxZkmw==",
+  "lastSignedInAt": "1767230398442",
+  "createdAt": "1766084274064",
+  "providerUserInfo": []
+},
+{
+  "localId": "nMl0uwe4YlMqpTbnjg65IBvw8M92",
+  "email": "derdazero@gmail.com",
+  "emailVerified": false,
+  "passwordHash": "LEK/YFeNao3mf39cK9cDlfD9S5xILKKpA3dJ+W2b4Pgn0b/veGg4XEqwotuxTWgOCT/InWoMJ9G/8XJy75r1fQ==",
+  "salt": "PLnCOHGN2jpNfg==",
+  "lastSignedInAt": "1765984716039",
+  "createdAt": "1765821159668",
+  "disabled": false,
+  "providerUserInfo": []
+},
+{
+  "localId": "p7RCggBvrUfyOqwoFKPxsGhq9Do2",
+  "email": "99999999@genaroherrera.edu.pe",
+  "emailVerified": false,
+  "passwordHash": "w5a7uOosWR/cJI3KTDwcanRzSQpHYRxZS2LuRTDtgC8SJlWL9nrcvFb5Yc24AZntGRi1pSN9mNwWwfOGFncYBQ==",
+  "salt": "yTM1+6NX3pjWIA==",
+  "lastSignedInAt": "1766088752546",
+  "createdAt": "1766087087840",
+  "providerUserInfo": []
+},
+{
+  "localId": "z0tl09sfxWWsrX7WTzu01BOIqKh2",
+  "email": "18903381@genaroherrera.edu.pe",
+  "emailVerified": false,
+  "passwordHash": "3au2JBaqByyD4rxA8W0DY71xGpb1EbjzqwrEWsU9MJXC3HiDpGYVJzUp1FztYlGEba3a7OswmmqsH59RlxWIMQ==",
+  "salt": "fA2JlBMSKOfyow==",
+  "lastSignedInAt": "1767147432750",
+  "createdAt": "1767097895573",
+  "providerUserInfo": []
+}]}
