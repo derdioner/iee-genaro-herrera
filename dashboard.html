@@ -114,6 +114,12 @@
         .logout-btn:hover {
             background: #ff6b81;
         }
+
+        .boleta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4) !important;
+            filter: brightness(1.1);
+        }
     </style>
 </head>
 
@@ -163,12 +169,30 @@
 
         <!-- Data Display -->
         <div class="student-info">
-            <div class="info-card">
+            <div class="info-card" style="position: relative;">
                 <h4><i class="fas fa-user-graduate"></i> Estudiante</h4>
                 <p><strong id="studentName">Cargando...</strong></p>
-                <p>DNI: <span id="studentDni">--</span></p>
-                <p>Grado: <span id="studentGrade">--</span></p>
-                <p>Sección: <span id="studentSection">--</span></p>
+                <div style="margin-top: 10px; font-size: 0.95rem; line-height: 1.6;">
+                    <p><i class="fas fa-id-card" style="color: #3498db; width: 20px;"></i> DNI: <span
+                            id="studentDni">--</span></p>
+                    <p><i class="fas fa-graduation-cap" style="color: #3498db; width: 20px;"></i> Grado: <span
+                            id="studentGrade">--</span></p>
+                    <p><i class="fas fa-chalkboard-teacher" style="color: #3498db; width: 20px;"></i> Sección: <span
+                            id="studentSection">--</span></p>
+                </div>
+
+                <!-- NEW: Integrated Report Card Option -->
+                <div id="reportCardBadge"
+                    style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd;">
+                    <a href="#" id="reportCardLink" target="_blank" class="boleta-btn"
+                        style="display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3); transition: 0.3s; font-size: 0.9rem;">
+                        <i class="fas fa-file-pdf" style="font-size: 1.2rem;"></i>
+                        VER BOLETA DE NOTAS
+                    </a>
+                </div>
+                <div id="noReportCardMsg" style="margin-top: 15px; font-size: 0.8rem; color: #999; font-style: italic;">
+                    * Boleta aún no disponible para este periodo.
+                </div>
             </div>
             <div class="info-card">
                 <h4><i class="fas fa-clipboard-check"></i> Asistencia Anual</h4>
@@ -191,13 +215,6 @@
                 <p id="progressDate" style="font-size: 0.8rem; color: #546e7a; margin-top: 10px;"></p>
             </div>
 
-            <!-- Report Card Button -->
-            <div class="info-card" id="reportCardContainer"
-                style="display: none; grid-column: 1 / -1; text-align: center; border-left: none;">
-                <h4><i class="fas fa-file-pdf"></i> Boleta de Notas</h4>
-                <a href="#" id="reportCardLink" target="_blank" class="btn btn-primary"
-                    style="text-decoration: none; color: white;">Ver / Descargar Boleta</a>
-            </div>
 
             <!-- Real-time QR Attendance -->
             <div class="info-card" style="grid-column: 1 / -1;">
@@ -349,10 +366,12 @@
             else { statusSpan.textContent = 'Crítico'; statusSpan.style.color = 'red'; }
 
             if (data.reportCardUrl) {
-                document.getElementById('reportCardContainer').style.display = 'block';
+                document.getElementById('reportCardBadge').style.display = 'block';
+                document.getElementById('noReportCardMsg').style.display = 'none';
                 document.getElementById('reportCardLink').href = data.reportCardUrl;
             } else {
-                document.getElementById('reportCardContainer').style.display = 'none';
+                document.getElementById('reportCardBadge').style.display = 'none';
+                document.getElementById('noReportCardMsg').style.display = 'block';
             }
 
             // --- NEW: PROGRESS COMMENT HANDLING ---
