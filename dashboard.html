@@ -289,21 +289,30 @@
         const userEmailSpan = document.getElementById('userEmail');
         const logoutBtn = document.getElementById('logoutBtn');
 
+        // DEBUG HELPER
+        function logDebug(msg) {
+            const out = document.getElementById('debugOutput');
+            if (out) out.innerHTML += msg + "<br>";
+        }
+
         // Check Authentication Status
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userEmailSpan.textContent = user.email;
+                logDebug("Auth OK: " + user.email);
 
                 // Real-time listener for Student Data
                 try {
                     const qStudents = query(collection(db, "students"), where("email", "==", user.email));
 
                     onSnapshot(qStudents, (snapStudents) => {
+                        logDebug("Snapshot Rx. Empty? " + snapStudents.empty + ". Size: " + snapStudents.size);
+
                         let cachedStudents = [];
-                        console.log(`Actualización en tiempo real: ${snapStudents.size} estudiantes encontrados.`);
 
                         if (snapStudents.empty) {
                             document.querySelector('.student-info').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay datos registrados. Comuníquese con administración.</p>';
+                            logDebug("No students found for this email.");
                             return;
                         }
 
@@ -311,17 +320,16 @@
                             cachedStudents.push({ id: doc.id, ...doc.data() });
                         });
 
-                        // If previously viewing a specific student, try to maintain that view
-                        // For MVP: If >1, show selector again? Or just update current if ID matches?
-                        // Simple approach: Always reload based on cache logic
+                        logDebug("Students in cache: " + cachedStudents.length);
+
                         if (cachedStudents.length > 1) {
+                            logDebug("Multi-student mode.");
                             const changeBtn = document.getElementById('changeStudentBtn');
                             if (changeBtn) {
                                 changeBtn.style.display = 'inline-block';
                                 changeBtn.onclick = () => showStudentSelector(cachedStudents);
                             }
-                            // Only show selector if we haven't selected yet, OR if we want to force refresh.
-                            // Better: Update the UI for the currently selected student if they exist in the new cache.
+
                             const currentDni = document.getElementById('studentDni').innerText;
                             if (currentDni !== '--') {
                                 const current = cachedStudents.find(s => s.dni === currentDni || s.studentDni === currentDni);
@@ -330,14 +338,17 @@
                                 showStudentSelector(cachedStudents);
                             }
                         } else {
+                            logDebug("Single student mode. Loading...");
                             loadStudentData(cachedStudents[0]);
                         }
                     }, (error) => {
                         console.error("Error getting students real-time:", error);
+                        logDebug("Snapshot Error: " + error.message);
                     });
 
                 } catch (error) {
                     console.error("Error setting up listener:", error);
+                    logDebug("Setup Error: " + error.message);
                 }
             } else {
                 window.location.href = 'index.html';
