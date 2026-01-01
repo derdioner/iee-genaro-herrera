@@ -621,14 +621,21 @@
 
         async function fetchMaterials(grade, section) {
             const list = document.getElementById('materialsList');
+            // Reset list to loading state if called again
+            list.innerHTML = '<li style="padding: 10px; text-align: center; color: #666;">Cargando materiales...</li>';
+
             try {
-                // Query materials matching student's grade and section
+                // FORCE String type for grade to match teacher upload format
+                const strGrade = String(grade);
+
+                console.log(`Fetching materials for Grade: "${strGrade}" Section: "${section}"`);
+
+                // SIMPLIFIED QUERY: No orderBy/limit to avoid Index Requirements
+                // We fetch all for this class and sort client-side.
                 const q = query(
                     collection(db, "materials"),
-                    where("grade", "==", grade),
-                    where("section", "==", section),
-                    orderBy("timestamp", "desc"),
-                    limit(20)
+                    where("grade", "==", strGrade),
+                    where("section", "==", section)
                 );
 
                 const snap = await getDocs(q);
@@ -638,9 +645,22 @@
                     return;
                 }
 
-                list.innerHTML = '';
+                // Client-side extraction and sorting
+                const materials = [];
                 snap.forEach(doc => {
-                    const data = doc.data();
+                    materials.push({ id: doc.id, ...doc.data() });
+                });
+
+                // Sort by timestamp desc (newest first)
+                materials.sort((a, b) => {
+                    const tA = a.timestamp ? a.timestamp.seconds : 0;
+                    const tB = b.timestamp ? b.timestamp.seconds : 0;
+                    return tB - tA;
+                });
+
+                // Render (optional: limit to 20 recent)
+                list.innerHTML = '';
+                materials.slice(0, 50).forEach(data => {
                     const ts = data.timestamp ? new Date(data.timestamp.seconds * 1000) : new Date();
                     const dateFmt = `${ts.getDate().toString().padStart(2, '0')}/${(ts.getMonth() + 1).toString().padStart(2, '0')}/${ts.getFullYear()}`;
 
@@ -667,28 +687,7 @@
 
             } catch (error) {
                 console.error("Error fetching materials:", error);
-                // Fallback for missing index
-                if (error.message.includes("index")) {
-                    const q2 = query(collection(db, "materials"), where("grade", "==", grade), where("section", "==", section), limit(20));
-                    const snap2 = await getDocs(q2);
-                    if (snap2.empty) {
-                        list.innerHTML = '<li style="padding: 10px; text-align: center;">No hay materiales disponibles.</li>';
-                        return;
-                    }
-                    list.innerHTML = '';
-                    snap2.forEach(doc => {
-                        const data = doc.data();
-                        const li = document.createElement('li');
-                        li.style.padding = '10px';
-                        li.style.borderBottom = '1px solid #eee';
-                        li.style.display = 'flex';
-                        li.style.justifyContent = 'space-between';
-                        li.innerHTML = `<span>📂 ${data.title}</span> <a href="${data.fileUrl}" target="_blank">Ver</a>`;
-                        list.appendChild(li);
-                    });
-                } else {
-                    list.innerHTML = `<li style="color:red; text-align:center;">Error al cargar materiales.</li>`;
-                }
+                list.innerHTML = `<li style="color:red; text-align:center;">Error al cargar materiales: ${error.message}</li>`;
             }
         }
 
