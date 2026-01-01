@@ -625,7 +625,7 @@
             // Generamos el correo institucional interno basado en el DNI del PADRE
             const email = `${dni}@genaroherrera.edu.pe`;
 
-            const btn = userForm.querySelector('button');
+            const btn = userForm.querySelector('button[type="submit"]');
             btn.disabled = true;
             btn.innerText = 'Registrando...';
 
@@ -901,14 +901,18 @@
         };
 
         window.deleteUser = async (coll, id) => {
-            if (!confirm("¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.")) return;
+            if (!confirm("¿Está seguro de eliminar este usuario? Esta acción no se puede deshacer.\n\nNota: Esto eliminará su perfil de la base de datos, pero NO su acceso de seguridad por políticas de Firebase. Deberá contactar al soporte técnico para una eliminación completa de credenciales.")) return;
+
+            console.log(`Intentando eliminar: Colección=${coll}, ID=${id}`);
 
             try {
                 await deleteDoc(doc(db, coll, id));
-                alert("Usuario eliminado correctamente.");
+                console.log("Documento eliminado de Firestore con éxito.");
+                alert("Usuario eliminado correctamente de la base de datos.");
                 fetchUsers();
             } catch (err) {
-                alert("Error al eliminar: " + err.message);
+                console.error("Error en deleteDoc:", err);
+                alert("Error técnico al eliminar: " + err.message);
             }
         };
 
