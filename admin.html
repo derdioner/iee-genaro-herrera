@@ -640,13 +640,13 @@
                 }
 
                 // --- STEP 1: CREATE USER IN FIREBASE AUTH (Security Key) ---
+                let userAlreadyExists = false;
                 try {
                     await createUserWithEmailAndPassword(secondaryAuth, email, pass);
-                    // Critical: Sign out from the secondary app instance immediately 
-                    // so it doesn't try to persist a session that might conflict
                     await signOut(secondaryAuth);
                 } catch (authErr) {
                     if (authErr.code === 'auth/email-already-in-use') {
+                        userAlreadyExists = true;
                         console.log("Auth user already exists, proceeding to update Firestore...");
                     } else {
                         throw new Error("Error de Seguridad (Auth): " + authErr.message);
@@ -699,7 +699,11 @@
                 const collectionPath = role === 'staff_news' ? 'staff' : role;
                 await setDoc(doc(db, collectionPath, docId), userData);
 
-                alert("¡Usuario registrado exitosamente!");
+                if (userAlreadyExists) {
+                    alert("¡AVISO IMPORTANTE!\n\nEl perfil se actualizó, pero el usuario ya tenía una cuenta de seguridad previa.\n\nSi la contraseña no funciona, el usuario debe usar su contraseña antigua o usted debe borrar la cuenta desde la Consola de Firebase -> Authentication para asignarle una nueva.");
+                } else {
+                    alert("¡Usuario registrado exitosamente!");
+                }
                 userForm.reset();
                 currentAssignments = [];
                 currentSpecialties = [];
