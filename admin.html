@@ -153,6 +153,48 @@
             color: white;
             border-color: #3498db;
         }
+
+        /* Proyecto 2: Secondary assignments and specialties */
+        .secondary-setup-box {
+            background: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .assignment-item,
+        .specialty-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border: 1px solid #eee;
+        }
+
+        .btn-add-small {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+
+        .btn-remove-small {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+        }
     </style>
 </head>
 
@@ -275,12 +317,68 @@
                 <div id="staffOnlyFields"
                     style="display: none; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
                     <div class="form-group">
-                        <label>Cargo / Especialidad:</label>
-                        <input type="text" id="uPosition" placeholder="Ej: Docente de Matemáticas">
+                        <label>Cargo / Cargo Principal:</label>
+                        <input type="text" id="uPosition" placeholder="Ej: Docente">
                     </div>
                     <div class="form-group">
                         <label>Prioridad (Orden):</label>
                         <input type="number" id="uPriority" placeholder="Ej: 1 (Primero)" min="1" value="10">
+                    </div>
+                </div>
+
+                <!-- Proyecto 2: Secondary Teacher Assignments & Specialties -->
+                <div id="secondaryTeacherFields" class="secondary-setup-box">
+                    <h4
+                        style="margin: 0 0 15px 0; color: #2c3e50; border-bottom: 2px solid #3498db; display: inline-block;">
+                        Configuración de Secundaria (Proyecto 2)</h4>
+
+                    <div class="form-group">
+                        <label>Especialidades / Áreas (Máx 2):</label>
+                        <div id="specialtiesList"></div>
+                        <div style="display: flex; gap: 8px; margin-top: 5px;">
+                            <select id="uSpecialtyInput">
+                                <option value="">Seleccionar Área...</option>
+                                <option value="Matemáticas">Matemáticas</option>
+                                <option value="Comunicación">Comunicación</option>
+                                <option value="Ciencia y Tecnología">Ciencia y Tecnología</option>
+                                <option value="Ciencias Sociales">Ciencias Sociales</option>
+                                <option value="Desarrollo Personal, Ciudadanía y Cívica">DPCC</option>
+                                <option value="Educación Física">Educación Física</option>
+                                <option value="Educación Religiosa">Educación Religiosa</option>
+                                <option value="Arte y Cultura">Arte y Cultura</option>
+                                <option value="Inglés">Inglés</option>
+                                <option value="Educación para el Trabajo">Educación para el Trabajo</option>
+                                <option value="Tutoría">Tutoría</option>
+                            </select>
+                            <button type="button" class="btn-add-small" onclick="addSpecialty()">Añadir</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Aulas Asignadas (Grados y Secciones):</label>
+                        <div id="assignmentsList"></div>
+                        <div style="display: flex; gap: 8px; margin-top: 5px;">
+                            <select id="uAssignGrade" style="flex: 1;">
+                                <option value="">Grado</option>
+                                <option value="1">1ero</option>
+                                <option value="2">2do</option>
+                                <option value="3">3ero</option>
+                                <option value="4">4to</option>
+                                <option value="5">5to</option>
+                                <option value="6">6to</option>
+                            </select>
+                            <select id="uAssignSection" style="flex: 1;">
+                                <option value="">Sec</option>
+                                <option value="A">A</option>
+                                <option value="B">B</option>
+                                <option value="C">C</option>
+                                <option value="D">D</option>
+                                <option value="E">E</option>
+                                <option value="F">F</option>
+                                <option value="G">G</option>
+                            </select>
+                            <button type="button" class="btn-add-small" onclick="addAssignment()">Añadir Aula</button>
+                        </div>
                     </div>
                 </div>
 
@@ -399,6 +497,8 @@
         // Toggle fields based on role
         roleSelect.addEventListener('change', () => {
             const isParent = roleSelect.value === 'students';
+            const isStaff = roleSelect.value === 'staff';
+            const level = uLevel.value;
 
             // studentOnlyFields visibility and requirement
             studentOnlyFields.style.display = isParent ? 'block' : 'none';
@@ -408,12 +508,21 @@
             // Logic for news editor: academic fields might not be required
             const isNewsEditor = roleSelect.value === 'staff_news';
             uLevel.required = !isNewsEditor;
-            uGrade.required = !isNewsEditor;
+            uGrade.required = !isNewsEditor && level !== 'Secundaria';
             academicFields.style.opacity = isNewsEditor ? '0.5' : '1';
 
             // Staff fields visibility
-            const isStaff = roleSelect.value === 'staff';
             document.getElementById('staffOnlyFields').style.display = isStaff ? 'grid' : 'none';
+
+            // Proyecto 2: Toggle secondary fields
+            const isSecondaryStaff = isStaff && level === 'Secundaria';
+            document.getElementById('secondaryTeacherFields').style.display = isSecondaryStaff ? 'block' : 'none';
+
+            // Hide standard grade/section for secondary staff
+            document.getElementById('uGrade').parentElement.style.display = isSecondaryStaff ? 'none' : 'block';
+            document.getElementById('uSection').parentElement.style.display = isSecondaryStaff ? 'none' : 'block';
+            document.getElementById('uGrade').required = !isNewsEditor && !isSecondaryStaff;
+            document.getElementById('uSection').required = !isNewsEditor && !isSecondaryStaff;
 
             // Dinámicamente actualizamos las etiquetas para mayor claridad
             document.getElementById('labelDni').innerText = isParent ? "DNI del Padre (Usuario):" : "DNI del Usuario:";
@@ -425,6 +534,8 @@
         if (uLevel && uGrade) {
             uLevel.addEventListener('change', () => {
                 const level = uLevel.value;
+                const isStaff = roleSelect.value === 'staff';
+
                 const maxGrade = level === 'Primaria' ? 6 : 5;
                 uGrade.innerHTML = '<option value="">--</option>';
                 for (let i = 1; i <= maxGrade; i++) {
@@ -433,7 +544,74 @@
                     opt.textContent = `${i}${i === 1 ? 'ero' : i === 2 ? 'do' : i === 3 ? 'ero' : i === 4 ? 'to' : i === 5 ? 'to' : 'to'}`;
                     uGrade.appendChild(opt);
                 }
+
+                // Proyecto 2: Trigger role change logic to update visibility
+                roleSelect.dispatchEvent(new Event('change'));
             });
+        }
+
+        // --- Proyecto 2: Dynamic Assignments & Specialties Logic ---
+        let currentAssignments = [];
+        let currentSpecialties = [];
+
+        window.addSpecialty = () => {
+            const input = document.getElementById('uSpecialtyInput');
+            const val = input.value;
+            if (!val) return;
+            if (currentSpecialties.length >= 2) {
+                alert("Solo se permiten hasta 2 especialidades.");
+                return;
+            }
+            if (currentSpecialties.includes(val)) return;
+
+            currentSpecialties.push(val);
+            renderSpecialties();
+            input.value = "";
+        };
+
+        window.removeSpecialty = (idx) => {
+            currentSpecialties.splice(idx, 1);
+            renderSpecialties();
+        };
+
+        function renderSpecialties() {
+            const list = document.getElementById('specialtiesList');
+            list.innerHTML = currentSpecialties.map((s, idx) => `
+                <div class="specialty-item">
+                    <span>${s}</span>
+                    <button type="button" class="btn-remove-small" onclick="removeSpecialty(${idx})">&times;</button>
+                </div>
+            `).join('');
+        }
+
+        window.addAssignment = () => {
+            const grade = document.getElementById('uAssignGrade').value;
+            const section = document.getElementById('uAssignSection').value;
+            if (!grade || !section) {
+                alert("Seleccione grado y sección.");
+                return;
+            }
+
+            const exists = currentAssignments.find(a => a.grade === grade && a.section === section);
+            if (exists) return;
+
+            currentAssignments.push({ grade, section });
+            renderAssignments();
+        };
+
+        window.removeAssignment = (idx) => {
+            currentAssignments.splice(idx, 1);
+            renderAssignments();
+        };
+
+        function renderAssignments() {
+            const list = document.getElementById('assignmentsList');
+            list.innerHTML = currentAssignments.map((a, idx) => `
+                <div class="assignment-item">
+                    <span>${a.grade}° "${a.section}"</span>
+                    <button type="button" class="btn-remove-small" onclick="removeAssignment(${idx})">&times;</button>
+                </div>
+            `).join('');
         }
 
         userForm.addEventListener('submit', async (e) => {
@@ -490,6 +668,16 @@
                 if (role === 'staff') {
                     userData.position = document.getElementById('uPosition').value || 'Docente';
                     userData.priority = parseInt(document.getElementById('uPriority').value) || 10;
+
+                    // Proyecto 2: Secondary specific data
+                    if (userData.level === 'Secundaria') {
+                        if (currentAssignments.length === 0) throw new Error("Debe asignar al menos un aula para Secundaria.");
+                        if (currentSpecialties.length === 0) throw new Error("Debe asignar al menos una especialidad.");
+
+                        userData.assignments = currentAssignments;
+                        userData.specialties = currentSpecialties;
+                        userData.specialty = currentSpecialties.join(' y '); // For legacy compatibility
+                    }
                 }
 
                 if (role === 'students') {
@@ -513,6 +701,10 @@
 
                 alert("¡Usuario registrado exitosamente!");
                 userForm.reset();
+                currentAssignments = [];
+                currentSpecialties = [];
+                renderAssignments();
+                renderSpecialties();
                 studentOnlyFields.style.display = 'block';
                 uStudentDniInput.required = true;
                 uStudentDniInput.disabled = false;

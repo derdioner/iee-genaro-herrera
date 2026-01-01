@@ -392,9 +392,16 @@ async function loadLevelTeachers() {
             const li = document.createElement('li');
             li.className = level === "Primaria" ? "grid-item" : "carousel-slide";
 
-            const yearLabel = level === "Inicial" ? "años" : "º Grado";
-            const yearInfo = data.grade ? `${data.grade}${yearLabel}` : 'No asignado';
-            const sectionInfo = data.section ? `Sección: ${data.section}` : '';
+            let yearInfo = data.grade ? `${data.grade}${yearLabel}` : 'No asignado';
+            let sectionInfo = data.section ? `Sección: ${data.section}` : '';
+
+            // Proyecto 2: Handling multiple assignments for Secondary
+            if (data.assignments && data.assignments.length > 0) {
+                yearInfo = "Asignado a:";
+                // Group by grade or show a list
+                const assList = data.assignments.map(a => `${a.grade}°${a.section}`).join(', ');
+                sectionInfo = assList;
+            }
 
             li.innerHTML = `
                 <div class="flip-card">
@@ -403,7 +410,7 @@ async function loadLevelTeachers() {
                             <div class="teacher-img">
                                 <i class="fas fa-user-tie"></i>
                             </div>
-                            <div class="role">${data.position || 'Docente'}</div>
+                            <div class="role">${data.specialties ? data.specialties.join(' / ') : (data.position || 'Docente')}</div>
                             <h3 class="name font-bold text-lg">${data.name}</h3>
                         </div>
                         <div class="flip-card-back">

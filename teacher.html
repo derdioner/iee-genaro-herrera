@@ -370,13 +370,33 @@
 
                         // Logic refinement: Hide selectors if teacher is Primaria or has fully assigned data
                         const isPrimaria = currentTeacherData.level === 'Primaria';
+                        const isSecundaria = currentTeacherData.level === 'Secundaria';
 
-                        if (isPrimaria || (currentTeacherData.level && currentTeacherData.grade && currentTeacherData.section)) {
+                        if (isPrimaria) {
                             document.getElementById('academicSelectGroup').style.display = 'none';
                             const infoBox = document.getElementById('assignedInfo');
                             const label = document.getElementById('assignedLabel');
                             infoBox.style.display = 'block';
                             label.innerText = `${currentTeacherData.level} - ${currentTeacherData.grade}° Grado "${currentTeacherData.section}"`;
+                        } else if (isSecundaria && currentTeacherData.assignments) {
+                            // Proyecto 2: For Secondary, we populate the selectors with only assigned classrooms
+                            const levelSel = document.getElementById('mLevel');
+                            const gradeSel = document.getElementById('mGrade');
+                            const sectionSel = document.getElementById('mSection');
+
+                            levelSel.value = 'Secundaria';
+                            levelSel.disabled = true; // Level is locked
+
+                            // Filter grades and sections based on assignments
+                            updateSecondarySelectors(currentTeacherData.assignments);
+
+                            const infoBox = document.getElementById('assignedInfo');
+                            const label = document.getElementById('assignedLabel');
+                            infoBox.style.display = 'block';
+                            infoBox.style.background = '#e3f2fd';
+                            infoBox.style.borderColor = '#bbdefb';
+                            infoBox.style.color = '#1976d2';
+                            label.innerText = `Panel de Secundaria - Especialidad: ${currentTeacherData.specialties ? currentTeacherData.specialties.join(' / ') : currentTeacherData.specialty}`;
                         }
 
                         console.log("Academic fields handled for teacher.");
@@ -409,6 +429,42 @@
                 }
             }
         });
+
+        // Proyecto 2: Helper to update selectors for Secondary teachers
+        function updateSecondarySelectors(assignments) {
+            const gradeSel = document.getElementById('mGrade');
+            const sectionSel = document.getElementById('mSection');
+
+            // Get unique grades from assignments
+            const uniqueGrades = [...new Set(assignments.map(a => a.grade))].sort();
+
+            gradeSel.innerHTML = '';
+            uniqueGrades.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g;
+                opt.textContent = `${g}${g === '1' ? 'ero' : g === '2' ? 'do' : g === '3' ? 'ero' : 'to'} Grado`;
+                gradeSel.appendChild(opt);
+            });
+
+            const updateSections = () => {
+                const selectedGrade = gradeSel.value;
+                const relevantSections = assignments
+                    .filter(a => a.grade === selectedGrade)
+                    .map(a => a.section)
+                    .sort();
+
+                sectionSel.innerHTML = '';
+                relevantSections.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s;
+                    opt.textContent = `Sección ${s}`;
+                    sectionSel.appendChild(opt);
+                });
+            };
+
+            gradeSel.onchange = updateSections;
+            updateSections(); // Initial call
+        }
 
         const fileInput = document.getElementById('mFile');
         const fileDisplay = document.getElementById('fileNameDisplay');
