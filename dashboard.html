@@ -180,19 +180,6 @@
                     <p><i class="fas fa-chalkboard-teacher" style="color: #3498db; width: 20px;"></i> Sección: <span
                             id="studentSection">--</span></p>
                 </div>
-
-                <!-- NEW: Integrated Report Card Option -->
-                <div id="reportCardBadge"
-                    style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd;">
-                    <a href="#" id="reportCardLink" target="_blank" class="boleta-btn"
-                        style="display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3); transition: 0.3s; font-size: 0.9rem;">
-                        <i class="fas fa-file-pdf" style="font-size: 1.2rem;"></i>
-                        VER BOLETA DE NOTAS
-                    </a>
-                </div>
-                <div id="noReportCardMsg" style="margin-top: 15px; font-size: 0.8rem; color: #999; font-style: italic;">
-                    * Boleta aún no disponible para este periodo.
-                </div>
             </div>
             <div class="info-card">
                 <h4><i class="fas fa-clipboard-check"></i> Asistencia Anual</h4>
@@ -203,6 +190,19 @@
                 <h4><i class="fas fa-star"></i> Rendimiento</h4>
                 <p>Promedio General: <strong id="studentAverage">--</strong></p>
                 <p>Puesto en clase: <span id="studentRank">--</span></p>
+
+                <!-- Integrated Report Card Option (MOVED HERE) -->
+                <div id="reportCardBadge"
+                    style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ddd;">
+                    <a href="#" id="reportCardLink" target="_blank" class="boleta-btn"
+                        style="display: flex; align-items: center; justify-content: center; gap: 10px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 600; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3); transition: 0.3s; font-size: 0.9rem;">
+                        <i class="fas fa-file-pdf" style="font-size: 1.2rem;"></i>
+                        VER BOLETA DE NOTAS
+                    </a>
+                </div>
+                <div id="noReportCardMsg" style="margin-top: 15px; font-size: 0.8rem; color: #999; font-style: italic;">
+                    * Boleta aún no disponible.
+                </div>
             </div>
             <!-- Progress Comments Section -->
             <div class="info-card" id="progressContainer"
