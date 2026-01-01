@@ -320,10 +320,13 @@
                             cachedStudents.push({ id: doc.id, ...doc.data() });
                         });
 
-                        logDebug("Students in cache: " + cachedStudents.length);
-
                         if (cachedStudents.length > 1) {
                             logDebug("Multi-student mode.");
+                            // DEBUG: Show details for all
+                            cachedStudents.forEach((s, i) => {
+                                logDebug(`[${i}] ${s.studentName} URL:${!!s.reportCardUrl}`);
+                            });
+
                             const changeBtn = document.getElementById('changeStudentBtn');
                             if (changeBtn) {
                                 changeBtn.style.display = 'inline-block';
