@@ -173,6 +173,31 @@
         import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         onAuthStateChanged(auth, async (user) => {
+
+            // --- GLOBAL TOAST SYSTEM ---
+            window.showStatus = (message, type = 'success', duration = 3000) => {
+                let container = document.getElementById('toast-container');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toast-container';
+                    document.body.appendChild(container);
+                }
+                const toast = document.createElement('div');
+                toast.className = `toast-msg ${type}`;
+                const icons = {
+                    success: '<i class="fas fa-check-circle toast-icon"></i>',
+                    error: '<i class="fas fa-exclamation-circle toast-icon"></i>',
+                    info: '<i class="fas fa-info-circle toast-icon"></i>'
+                };
+                toast.innerHTML = `${icons[type] || icons.info}<span>${message}</span>`;
+                container.appendChild(toast);
+                setTimeout(() => toast.classList.add('show'), 100);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 400);
+                }, duration);
+            };
+
             if (user) {
                 // Verify role
                 const docRef = doc(db, "staff", user.email);
@@ -182,8 +207,8 @@
                     document.body.style.display = 'block';
                     fetchNews();
                 } else {
-                    alert("Acceso denegado. Se requiere cuenta de Editor de Noticias.");
-                    window.location.href = 'index.html';
+                    showStatus("Acceso denegado. Redirigiendo...", "error");
+                    setTimeout(() => window.location.href = 'index.html', 3000);
                 }
             } else {
                 window.location.href = 'index.html';
@@ -213,11 +238,11 @@
                 };
 
                 await addDoc(collection(db, "news"), payload);
-                alert("¡Noticia publicada con éxito!");
+                showStatus("¡Noticia publicada con éxito!", "success");
                 newsForm.reset();
                 fetchNews();
             } catch (err) {
-                alert("Error: " + err.message);
+                showStatus("Error: " + err.message, "error", 5000);
             } finally {
                 btn.disabled = false;
                 btn.innerText = "Publicar Noticia";
@@ -265,7 +290,7 @@
                 await deleteDoc(doc(db, "news", id));
                 fetchNews();
             } catch (err) {
-                alert("Error al eliminar.");
+                showStatus("Error al eliminar.", "error");
             }
         };
     </script>

@@ -2,12 +2,43 @@ import { auth, db } from './firebase-config.js';
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { collection, query, orderBy, limit, getDocs, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// --- GLOBAL TOAST SYSTEM ---
+window.showStatus = (message, type = 'success', duration = 3000) => {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast-msg ${type}`;
+
+    const icons = {
+        success: '<i class="fas fa-check-circle toast-icon"></i>',
+        error: '<i class="fas fa-exclamation-circle toast-icon"></i>',
+        info: '<i class="fas fa-info-circle toast-icon"></i>'
+    };
+
+    toast.innerHTML = `
+        ${icons[type] || icons.info}
+        <span>${message}</span>
+    `;
+
+    container.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, duration);
+};
+
 // --- Global Error Diagnostic ---
 window.addEventListener('error', (e) => {
     console.error("Critical System Error:", e);
-    // Only alert if it's likely related to our login logic
+    // Only notify if it's likely related to our login logic
     if (e.message.includes('auth') || e.message.includes('pwdInput') || e.message.includes('dniInput')) {
-        alert("Error de Sistema detectado: " + e.message + "\nArchivo: " + e.filename + "\nLínea: " + e.lineno);
+        showStatus("Error de Sistema: " + e.message, "error", 5000);
     }
 });
 

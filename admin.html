@@ -210,8 +210,8 @@
                 if (user.email === '45446130@genaroherrera.edu.pe') {
                     document.body.style.display = 'block';
                 } else {
-                    alert("Acceso denegado. Se requiere cuenta de Administrador Maestro.");
-                    window.location.href = 'index.html';
+                    showStatus("Acceso denegado. Redirigiendo...", "error");
+                    setTimeout(() => window.location.href = 'index.html', 3000);
                 }
             } else {
                 // No hay usuario (logout o expiró sesión), salir en silencio
@@ -271,6 +271,24 @@
                         <small>Esta será la clave que usará el usuario para su primer ingreso.</small>
                     </div>
                 </div>
+
+                <!-- Specific field for students (DNI del hijo) - MOVED UP AS REQUESTED -->
+                <div id="studentOnlyFields" class="form-group"
+                    style="display: none; background: #f0f7ff; padding: 15px; border-radius: 8px; border: 1px solid #d1e9ff; margin-bottom: 20px;">
+                    <label style="color: #0056b3; font-weight: bold;">🔍 Búsqueda Automática de Estudiante:</label>
+                    <div style="display: flex; gap: 10px; margin-top: 5px;">
+                        <input type="text" id="uStudentDni" maxlength="8" placeholder="Ingrese DNI del hijo..."
+                            style="flex: 1; border: 1px solid #3498db;">
+                        <button type="button" id="btnLookupStudent" class="btn"
+                            style="width: auto; padding: 0 15px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;"
+                            title="Buscar Alumno">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <small style="color: #666;">Al completar los 8 dígitos, se buscarán los datos del alumno
+                        automáticamente.</small>
+                </div>
+
                 <div class="form-group">
                     <label id="labelName">Nombre del Estudiante:</label>
                     <input type="text" id="uName" placeholder="Ej: Juan Pérez Lopez" required>
@@ -382,11 +400,6 @@
                     </div>
                 </div>
 
-                <!-- Specific field for students (DNI del hijo) -->
-                <div id="studentOnlyFields" class="form-group">
-                    <label>DNI del Estudiante:</label>
-                    <input type="text" id="uStudentDni" maxlength="8" placeholder="8 cifras" required>
-                </div>
 
                 <button type="submit" class="btn btn-full"
                     style="background: #3498db; border: none; font-weight: bold; width: 100%; padding: 12px; color: white; border-radius: 5px; cursor: pointer; margin-top: 15px;">Registrar
@@ -464,6 +477,30 @@
         import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
         import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-functions.js";
         import { qrDb } from './firebase-qr-config.js';
+
+        // --- GLOBAL TOAST SYSTEM ---
+        window.showStatus = (message, type = 'success', duration = 3000) => {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast-msg ${type}`;
+            const icons = {
+                success: '<i class="fas fa-check-circle toast-icon"></i>',
+                error: '<i class="fas fa-exclamation-circle toast-icon"></i>',
+                info: '<i class="fas fa-info-circle toast-icon"></i>'
+            };
+            toast.innerHTML = `${icons[type] || icons.info}<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, duration);
+        };
 
         // Secondary App for user creation (doesn't sign out current admin)
         const secondaryConfig = {
@@ -550,10 +587,55 @@
                     uGrade.appendChild(opt);
                 }
 
-                // Proyecto 2: Trigger role change logic to update visibility
-                roleSelect.dispatchEvent(new Event('change'));
             });
         }
+
+        // --- NEW: STUDENT AUTO-LOOKUP LOGIC ---
+        const btnLookup = document.getElementById('btnLookupStudent');
+
+        const lookupStudent = async () => {
+            const dni = uStudentDniInput.value.trim();
+            if (dni.length !== 8) return;
+
+            btnLookup.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btnLookup.disabled = true;
+
+            try {
+                console.log("Searching for student in QR database:", dni);
+                const q = query(collection(qrDb, "students"), where("id", "==", dni), limit(1));
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    showStatus("DNI no encontrado en el sistema de asistencia. Ingrese los datos manualmente.", "info");
+                } else {
+                    const student = snap.docs[0].data();
+                    console.log("Student found:", student);
+
+                    document.getElementById('uName').value = student.n || '';
+                    if (student.g) {
+                        const level = uLevel.value; // Keep current level if selected
+                        document.getElementById('uGrade').value = student.g;
+                    }
+                    if (student.s) document.getElementById('uSection').value = student.s;
+
+                    showStatus(`¡Alumno encontrado: ${student.n}! Datos cargados.`, "success");
+                }
+            } catch (err) {
+                console.error("Lookup error:", err);
+                showStatus("Error al buscar estudiante: " + err.message, "error");
+            } finally {
+                btnLookup.innerHTML = '<i class="fas fa-search"></i>';
+                btnLookup.disabled = false;
+            }
+        };
+
+        uStudentDniInput.addEventListener('input', (e) => {
+            if (e.target.value.length === 8) {
+                lookupStudent();
+            }
+        });
+
+        btnLookup.addEventListener('click', lookupStudent);
 
         // --- Proyecto 2: Dynamic Assignments & Specialties Logic ---
         let currentAssignments = [];
@@ -564,7 +646,7 @@
             const val = input.value;
             if (!val) return;
             if (currentSpecialties.length >= 2) {
-                alert("Solo se permiten hasta 2 especialidades.");
+                showStatus("Solo se permiten hasta 2 especialidades.", "info");
                 return;
             }
             if (currentSpecialties.includes(val)) return;
@@ -593,7 +675,7 @@
             const grade = document.getElementById('uAssignGrade').value;
             const section = document.getElementById('uAssignSection').value;
             if (!grade || !section) {
-                alert("Seleccione grado y sección.");
+                showStatus("Seleccione grado y sección.", "info");
                 return;
             }
 
@@ -716,9 +798,9 @@
                 await setDoc(doc(db, collectionPath, docId), userData);
 
                 if (userAlreadyExists) {
-                    alert("¡AVISO IMPORTANTE!\n\nEl perfil se actualizó, pero el usuario ya tenía una cuenta de seguridad previa.\n\nSi la contraseña no funciona, el usuario debe usar su contraseña antigua o usted debe borrar la cuenta desde la Consola de Firebase -> Authentication para asignarle una nueva.");
+                    showStatus("¡AVISO IMPORTANTE!\n\nEl perfil se actualizó, pero se detectó una cuenta previa. Si la contraseña no funciona, use la anterior.", "info", 10000);
                 } else {
-                    alert("¡Usuario registrado exitosamente!");
+                    showStatus("¡Usuario registrado exitosamente!", "success");
                 }
                 userForm.reset();
                 currentAssignments = [];
@@ -729,7 +811,7 @@
                 uStudentDniInput.required = true;
                 uStudentDniInput.disabled = false;
             } catch (err) {
-                alert("Error: " + err.message);
+                showStatus("Error: " + err.message, "error", 5000);
             } finally {
                 btn.disabled = false;
                 btn.innerText = 'Registrar Usuario';
@@ -773,7 +855,7 @@
         btnUploadBoletas.onclick = async () => {
             const files = boletaFilesInput.files;
             if (files.length === 0) {
-                alert("Por favor seleccione al menos un archivo PDF.");
+                showStatus("Por favor seleccione al menos un archivo PDF.", "info");
                 return;
             }
 
@@ -838,7 +920,7 @@
 
             btnUploadBoletas.disabled = false;
             btnUploadBoletas.innerText = "Iniciar Vinculación Masiva";
-            alert(`Proceso terminado.\nÉxito: ${successCount}\nFallos: ${failureCount}`);
+            showStatus(`Proceso terminado. Éxito: ${successCount}, Fallos: ${failureCount}`, successCount > 0 ? "success" : "error", 6000);
         };
 
         window.fetchUsers = async () => {
@@ -956,11 +1038,11 @@
                 await deleteDoc(doc(db, coll, id));
                 console.log("Documento eliminado de Firestore.");
 
-                alert("Usuario eliminado correctamente.");
+                showStatus("Usuario eliminado correctamente.", "success");
                 fetchUsers();
             } catch (err) {
                 console.error("Error en eliminación:", err);
-                alert("Error: " + err.message);
+                showStatus("Error: " + err.message, "error", 5000);
                 if (btnEl) {
                     btnEl.disabled = false;
                     btnEl.innerText = "Eliminar";

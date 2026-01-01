@@ -347,6 +347,30 @@
         import { collection, addDoc, serverTimestamp, getDoc, doc, updateDoc, query, where, getDocs, orderBy, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+        // --- GLOBAL TOAST SYSTEM ---
+        window.showStatus = (message, type = 'success', duration = 3000) => {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                document.body.appendChild(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = `toast-msg ${type}`;
+            const icons = {
+                success: '<i class="fas fa-check-circle toast-icon"></i>',
+                error: '<i class="fas fa-exclamation-circle toast-icon"></i>',
+                info: '<i class="fas fa-info-circle toast-icon"></i>'
+            };
+            toast.innerHTML = `${icons[type] || icons.info}<span>${message}</span>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 400);
+            }, duration);
+        };
+
         let currentTeacherData = null;
 
         onAuthStateChanged(auth, async (user) => {
@@ -489,7 +513,7 @@
             const section = document.getElementById('mSection').value;
 
             if (!file) {
-                alert("Por favor selecciona un archivo.");
+                showStatus("Por favor selecciona un archivo.", "info");
                 return;
             }
 
@@ -521,7 +545,7 @@
                     },
                     (error) => {
                         console.error("Storage error:", error);
-                        alert("Error al subir archivo: " + error.message);
+                        showStatus("Error al subir archivo: " + error.message, "error", 5000);
                         btn.disabled = false;
                         btn.innerText = "Publicar Material";
                     },
@@ -548,7 +572,7 @@
                             await addDoc(collection(db, "materials"), payload);
                             fetchTeacherHistory();
 
-                            alert("¡Material publicado con éxito!");
+                            showStatus("¡Material publicado con éxito!", "success");
                             form.reset();
                             fileDisplay.innerText = "Haz clic para seleccionar un archivo";
                             fileDisplay.style.color = "#666";
@@ -557,7 +581,7 @@
                             btn.innerText = "Publicar Material";
                         } catch (fsErr) {
                             console.error("Firestore error:", fsErr);
-                            alert("Error al guardar datos: " + fsErr.message);
+                            showStatus("Error al guardar: " + fsErr.message, "error", 5000);
                             btn.disabled = false;
                             btn.innerText = "Publicar Material";
                         }
@@ -566,7 +590,7 @@
 
             } catch (err) {
                 console.error("Critical error:", err);
-                alert("Error crítico: " + err.message);
+                showStatus("Error crítico: " + err.message, "error", 6000);
                 btn.disabled = false;
                 btn.innerText = "Publicar Material";
             }
@@ -671,16 +695,16 @@
                         }
                     }
 
-                    const finalMsg = `Proceso terminado.\n\n- Actualizados: ${updatedCount}\n- No encontrados/Error: ${errorCount}\n- Filas omitidas: ${skipCount}`;
-                    alert(finalMsg);
-                    excelStatus.innerText = `Resultado: ${updatedCount} exitosos, ${errorCount} fallidos.`;
+                    const finalMsg = `Proceso completado.\n✅ Actualizados: ${updatedCount}\n❌ Fallos: ${errorCount}\n⚠️ Omitidos: ${skipCount}`;
+                    showStatus(finalMsg, errorCount === 0 && skipCount === 0 ? "success" : "info", 6000);
+                    excelStatus.innerText = `Resultado: ${updatedCount} exitosos, ${errorCount} fallidos, ${skipCount} omitidos.`;
                     excelStatus.style.color = updatedCount > 0 ? "#28a745" : "orange";
                     excelInput.value = ""; // Clear for next upload
 
                 } catch (err) {
-                    console.error("Excel processing error:", err);
-                    alert("Error al procesar el archivo: " + err.message);
-                    excelStatus.innerText = "Error en la última carga.";
+                    console.error("Reader error:", err);
+                    showStatus("Error al procesar el archivo: " + err.message, "error", 5000);
+                    excelStatus.innerText = "Error al procesar archivo.";
                     excelStatus.style.color = "red";
                 }
             };
@@ -690,7 +714,7 @@
         // --- NEW: EXCEL TEMPLATE DOWNLOAD LOGIC (WITH AUTOMATIC STUDENT LIST) ---
         window.downloadTemplate = async () => {
             if (!currentTeacherData) {
-                alert("Error: No se ha detectado su información académica. Por favor, recargue la página o verifique su perfil.");
+                showStatus("Error: No se ha detectado su información académica. Por favor, recargue la página o verifique su perfil.", "error", 6000);
                 return;
             }
 
@@ -706,17 +730,17 @@
                     where("section", "==", section)
                 );
 
-                const snap = await getDocs(q);
+                const studentsSnap = await getDocs(q); // Renamed snap to studentsSnap for clarity
 
                 // BOM for Excel UTF-8 compatibility
                 const BOM = "\uFEFF";
                 let csvContent = "DNI_ESTUDIANTE;NOMBRE_ESTUDIANTE;COMENTARIO_AVANCE_EDUCATIVO;FECHA_REFERENCIA\n";
 
-                if (snap.empty) {
+                if (studentsSnap.empty) {
+                    showStatus("Aviso: No se encontraron alumnos registrados en tu aula. Se descargará una plantilla con un ejemplo.", "info", 6000);
                     csvContent += "00000000;Sin Estudiantes Registrados;Escribe aquí el comentario;2025-12-19\n";
-                    alert("Aviso: No se encontraron alumnos registrados en tu aula. Se descargará una plantilla con un ejemplo.");
                 } else {
-                    snap.forEach(doc => {
+                    studentsSnap.forEach(doc => {
                         const s = doc.data();
                         const dni = s.studentDni || s.dni || "";
                         const name = s.studentName || s.name || "";
@@ -736,8 +760,8 @@
 
                 console.log("Template generated successfully.");
             } catch (err) {
-                console.error("Error generating student template:", err);
-                alert("Error al generar la plantilla: " + err.message);
+                console.error("Template error:", err);
+                showStatus("Error al generar la plantilla: " + err.message, "error", 5000);
             }
         };
 
@@ -835,11 +859,11 @@
                     console.warn("Storage deletion failed (it might not be a direct storage URL or already deleted):", stErr);
                 }
 
-                alert("Material eliminado correctamente.");
+                showStatus("Material eliminado correctamente.", "success");
                 fetchTeacherHistory();
             } catch (err) {
                 console.error("Error deleting material:", err);
-                alert("Error al eliminar: " + err.message);
+                showStatus("Error al eliminar: " + err.message, "error", 5000);
             }
         };
     </script>
