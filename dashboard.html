@@ -165,12 +165,6 @@
             <p>Bienvenido a la plataforma de seguimiento académico.</p>
         </div>
 
-        <!-- DEBUG BLOCK: REMOVE AFTER FIXING -->
-        <div
-            style="background: #333; color: #0f0; padding: 10px; margin-bottom: 20px; border-radius: 5px; font-family: monospace; font-size: 12px; overflow-wrap: break-word;">
-            <strong>DEBUG INFO:</strong><br>
-            <span id="debugOutput">Esperando datos...</span>
-        </div>
 
         <h3 style="margin-bottom: 20px; color: var(--primary-dark);">Información del Estudiante</h3>
 
@@ -289,17 +283,10 @@
         const userEmailSpan = document.getElementById('userEmail');
         const logoutBtn = document.getElementById('logoutBtn');
 
-        // DEBUG HELPER
-        function logDebug(msg) {
-            const out = document.getElementById('debugOutput');
-            if (out) out.innerHTML += msg + "<br>";
-        }
-
         // Check Authentication Status
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 userEmailSpan.textContent = user.email;
-                logDebug("Auth OK: " + user.email);
 
                 // Real-time listener for Student Data
                 try {
@@ -390,15 +377,6 @@
             document.getElementById('studentAttendance').textContent = data.attendance + '%';
             // REMOVED Average and Rank as elements were deleted from HTML
 
-            // DEBUG POPULATION
-            const debugOut = document.getElementById('debugOutput');
-            debugOut.innerHTML = `
-                ID: ${data.id}<br>
-                DNI: ${data.dni || data.studentDni || 'N/A'} (Type: ${typeof (data.dni || data.studentDni)})<br>
-                Grade: "${data.grade}" (Type: ${typeof data.grade})<br>
-                Section: "${data.section}" (Type: ${typeof data.section})<br>
-                ReportUrl: ${data.reportCardUrl ? data.reportCardUrl.substring(0, 30) + '...' : 'UNDEFINED'}
-            `;
 
             const att = parseInt(data.attendance);
             const statusSpan = document.getElementById('attendanceStatus');
