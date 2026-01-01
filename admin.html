@@ -275,7 +275,7 @@
 
                 <!-- Specific field for students (DNI del hijo) - MOVED UP AS REQUESTED -->
                 <div id="studentOnlyFields" class="form-group"
-                    style="display: none; background: #f0f7ff; padding: 15px; border-radius: 8px; border: 1px solid #d1e9ff; margin-bottom: 20px;">
+                    style="display: block; background: #f0f7ff; padding: 15px; border-radius: 8px; border: 1px solid #d1e9ff; margin-bottom: 20px;">
                     <label style="color: #0056b3; font-weight: bold;">🔍 Búsqueda Automática de Estudiante:</label>
                     <div style="display: flex; gap: 10px; margin-top: 5px;">
                         <input type="text" id="uStudentDni" maxlength="8" placeholder="Ingrese DNI del hijo..."
@@ -614,10 +614,32 @@
 
                     document.getElementById('uName').value = student.n || '';
                     if (student.g) {
-                        const level = uLevel.value; // Keep current level if selected
-                        document.getElementById('uGrade').value = student.g;
+                        // Set level first to populate grade options
+                        // If grade is 6, it's definitely Primaria.
+                        if (student.g == '6') {
+                            uLevel.value = 'Primaria';
+                        } else if (!uLevel.value) {
+                            // Default to Secundaria for 1-5 if not selected? 
+                            // Or stay at default. Let's try to keep current or default to Secundaria.
+                            uLevel.value = 'Secundaria';
+                        }
+
+                        // Populate grades dropdown
+                        const maxGrade = uLevel.value === 'Primaria' ? 6 : 5;
+                        uGrade.innerHTML = '<option value="">--</option>';
+                        for (let i = 1; i <= maxGrade; i++) {
+                            const opt = document.createElement('option');
+                            opt.value = i;
+                            opt.textContent = `${i}${i === 1 ? 'ero' : i === 2 ? 'do' : i === 3 ? 'ero' : i === 4 ? 'to' : i === 5 ? 'to' : 'to'}`;
+                            uGrade.appendChild(opt);
+                        }
+
+                        uGrade.value = student.g;
                     }
-                    if (student.s) document.getElementById('uSection').value = student.s;
+                    if (student.s) {
+                        // Ensure section exists in options or add it
+                        document.getElementById('uSection').value = student.s;
+                    }
 
                     showStatus(`¡Alumno encontrado: ${student.n}! Datos cargados.`, "success");
                 }
@@ -637,6 +659,11 @@
         });
 
         btnLookup.addEventListener('click', lookupStudent);
+
+        // Initial triggers to show/hide fields on load
+        setTimeout(() => {
+            roleSelect.dispatchEvent(new Event('change'));
+        }, 500);
 
         // --- Proyecto 2: Dynamic Assignments & Specialties Logic ---
         let currentAssignments = [];

@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await signInWithEmailAndPassword(auth, email, pwdVal);
 
                 console.log("Debug: Login Successful");
-                alert("LOGIN EXITOSO: Usted ha sido autenticado correctamente.");
+                showStatus("LOGIN EXITOSO: Usted ha sido autenticado correctamente.", "success");
 
                 if (loginMessage) {
                     loginMessage.innerText = 'Acceso concedido. Redirigiendo...';
