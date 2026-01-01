@@ -293,13 +293,10 @@
                     const qStudents = query(collection(db, "students"), where("email", "==", user.email));
 
                     onSnapshot(qStudents, (snapStudents) => {
-                        logDebug("Snapshot Rx. Empty? " + snapStudents.empty + ". Size: " + snapStudents.size);
-
                         let cachedStudents = [];
 
                         if (snapStudents.empty) {
                             document.querySelector('.student-info').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay datos registrados. Comuníquese con administración.</p>';
-                            logDebug("No students found for this email.");
                             return;
                         }
 
@@ -308,12 +305,6 @@
                         });
 
                         if (cachedStudents.length > 1) {
-                            logDebug("Multi-student mode.");
-                            // DEBUG: Show details for all
-                            cachedStudents.forEach((s, i) => {
-                                logDebug(`[${i}] ${s.studentName} URL:${!!s.reportCardUrl}`);
-                            });
-
                             const changeBtn = document.getElementById('changeStudentBtn');
                             if (changeBtn) {
                                 changeBtn.style.display = 'inline-block';
@@ -328,17 +319,14 @@
                                 showStudentSelector(cachedStudents);
                             }
                         } else {
-                            logDebug("Single student mode. Loading...");
                             loadStudentData(cachedStudents[0]);
                         }
                     }, (error) => {
                         console.error("Error getting students real-time:", error);
-                        logDebug("Snapshot Error: " + error.message);
                     });
 
                 } catch (error) {
                     console.error("Error setting up listener:", error);
-                    logDebug("Setup Error: " + error.message);
                 }
             } else {
                 window.location.href = 'index.html';
