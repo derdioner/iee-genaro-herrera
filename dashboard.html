@@ -276,7 +276,7 @@
         import { auth, db } from './firebase-config.js';
         import { qrDb } from './firebase-qr-config.js';
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { collection, query, where, getDocs, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const userEmailSpan = document.getElementById('userEmail');
@@ -287,37 +287,50 @@
             if (user) {
                 userEmailSpan.textContent = user.email;
 
-                // Fetch Student Data
+                // Real-time listener for Student Data
                 try {
                     const qStudents = query(collection(db, "students"), where("email", "==", user.email));
-                    const snapStudents = await getDocs(qStudents);
-                    let cachedStudents = [];
 
-                    console.log(`Buscando hijos para ${user.email}. Encontrados: ${snapStudents.size}`);
+                    onSnapshot(qStudents, (snapStudents) => {
+                        let cachedStudents = [];
+                        console.log(`Actualización en tiempo real: ${snapStudents.size} estudiantes encontrados.`);
 
-                    if (snapStudents.empty) {
-                        console.log("No students found!");
-                        document.querySelector('.student-info').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay datos registrados. Comuníquese con administración.</p>';
-                        return;
-                    }
+                        if (snapStudents.empty) {
+                            document.querySelector('.student-info').innerHTML = '<p style="grid-column: 1/-1; text-align: center;">No hay datos registrados. Comuníquese con administración.</p>';
+                            return;
+                        }
 
-                    snapStudents.forEach(doc => {
-                        cachedStudents.push({ id: doc.id, ...doc.data() });
+                        snapStudents.forEach(doc => {
+                            cachedStudents.push({ id: doc.id, ...doc.data() });
+                        });
+
+                        // If previously viewing a specific student, try to maintain that view
+                        // For MVP: If >1, show selector again? Or just update current if ID matches?
+                        // Simple approach: Always reload based on cache logic
+                        if (cachedStudents.length > 1) {
+                            const changeBtn = document.getElementById('changeStudentBtn');
+                            if (changeBtn) {
+                                changeBtn.style.display = 'inline-block';
+                                changeBtn.onclick = () => showStudentSelector(cachedStudents);
+                            }
+                            // Only show selector if we haven't selected yet, OR if we want to force refresh.
+                            // Better: Update the UI for the currently selected student if they exist in the new cache.
+                            const currentDni = document.getElementById('studentDni').innerText;
+                            if (currentDni !== '--') {
+                                const current = cachedStudents.find(s => s.dni === currentDni || s.studentDni === currentDni);
+                                if (current) loadStudentData(current);
+                            } else {
+                                showStudentSelector(cachedStudents);
+                            }
+                        } else {
+                            loadStudentData(cachedStudents[0]);
+                        }
+                    }, (error) => {
+                        console.error("Error getting students real-time:", error);
                     });
 
-                    if (cachedStudents.length > 1) {
-                        const changeBtn = document.getElementById('changeStudentBtn');
-                        if (changeBtn) {
-                            changeBtn.style.display = 'inline-block';
-                            changeBtn.onclick = () => showStudentSelector(cachedStudents);
-                        }
-                        showStudentSelector(cachedStudents);
-                    } else {
-                        loadStudentData(cachedStudents[0]);
-                    }
-
                 } catch (error) {
-                    console.error("Error getting students:", error);
+                    console.error("Error setting up listener:", error);
                 }
             } else {
                 window.location.href = 'index.html';
