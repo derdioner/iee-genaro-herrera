@@ -167,13 +167,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 let realRole = 'parent';
 
                 try {
-                    const docRef = doc(db, "staff", email);
-                    const docSnap = await getDoc(docRef);
+                    // ROBUST FIX: Query by 'email' field instead of assuming doc ID is the email.
+                    const qStaff = query(collection(db, "staff"), where("email", "==", email));
+                    const snapStaff = await getDocs(qStaff);
 
-                    if (docSnap.exists()) {
-                        const userData = docSnap.data();
+                    if (!snapStaff.empty) {
+                        const userData = snapStaff.docs[0].data();
                         realRole = userData.role;
-                        console.log("Debug: Usuario es personal. Rol real:", realRole);
+                        console.log("Debug: Usuario verificado en staff (Query). Rol real:", realRole);
 
                         if (realRole === 'admin') finalPath = 'admin.html';
                         else if (realRole === 'news_editor' || realRole === 'editor') finalPath = 'noticias_admin.html';
@@ -182,21 +183,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         // User is not in staff collection -> Assume Parent/Student
                         console.log("Debug: Usuario no encontrado en staff. Asumiendo rol Padre/Alumno.");
 
-                        // Optional: If user selected 'staff' or 'editor' but is not in DB, deny access?
-                        // For now, we allow them to go to dashboard if they are not staff.
-                        // But if they selected 'editor' and are not in staff, we should probably warn them?
-                        // Let's stick to the request: "Editor entering as Parent". 
-                        // The fix above (finding them in staff and forcing their path) solves the "entering as parent" issue for staff.
-
                         if (roleSelect !== 'parent') {
                             console.warn("Usuario intentó ingresar como personal pero no figura en la BD.");
-                            // If they are not in staff, they go to dashboard.
                         }
                     }
 
                 } catch (roleErr) {
                     console.error("Error verificando rol:", roleErr);
-                    // Fallback to dashboard or stay (safer to stay or show error)
                 }
 
                 if (loginMessage) {
