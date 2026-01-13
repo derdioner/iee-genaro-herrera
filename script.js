@@ -193,11 +193,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         } else {
                             // Validar si intentó entrar como staff sin serlo
                             if (roleSelect !== 'parent') {
-                                console.warn("Usuario intentó ingresar como personal pero no figura en la BD.");
+                                console.warn("ACCESO DENEGADO: Intento de acceso no autorizado como personal.");
+                                await signOut(auth); // Log out immediately
+                                throw new Error("No tienes permisos de " + roleSelect.toUpperCase() + ". Verifica tu rol.");
                             }
                         }
                     } catch (roleErr) {
                         console.error("Error verificando rol:", roleErr);
+                        throw roleErr; // Re-throw to stop redirection and show error in main catch
                     }
                 }
                 if (loginMessage) {
