@@ -1,6 +1,6 @@
 import { auth, db } from './firebase-config.js';
 import { signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { collection, query, orderBy, limit, getDocs, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { collection, query, orderBy, limit, getDocs, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 // --- GLOBAL TOAST SYSTEM ---
 window.showStatus = (message, type = 'success', duration = 3000) => {
@@ -156,16 +156,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 showStatus("LOGIN EXITOSO: Usted ha sido autenticado correctamente.", "success");
 
                 if (loginMessage) {
+                    loginMessage.innerText = 'Verificando rol de usuario...';
+                    loginMessage.style.color = 'blue';
+                }
+
+                // --- SECURITY CHECK: VERIFY ROLE IN FIRESTORE ---
+                // Do not trust roleSelect blindly. Check real role in DB.
+
+                let finalPath = 'dashboard.html'; // Default for parents
+                let realRole = 'parent';
+
+                try {
+                    const docRef = doc(db, "staff", email);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        const userData = docSnap.data();
+                        realRole = userData.role;
+                        console.log("Debug: Usuario es personal. Rol real:", realRole);
+
+                        if (realRole === 'admin') finalPath = 'admin.html';
+                        else if (realRole === 'news_editor' || realRole === 'editor') finalPath = 'noticias_admin.html';
+                        else finalPath = 'teacher.html';
+                    } else {
+                        // User is not in staff collection -> Assume Parent/Student
+                        console.log("Debug: Usuario no encontrado en staff. Asumiendo rol Padre/Alumno.");
+
+                        // Optional: If user selected 'staff' or 'editor' but is not in DB, deny access?
+                        // For now, we allow them to go to dashboard if they are not staff.
+                        // But if they selected 'editor' and are not in staff, we should probably warn them?
+                        // Let's stick to the request: "Editor entering as Parent". 
+                        // The fix above (finding them in staff and forcing their path) solves the "entering as parent" issue for staff.
+
+                        if (roleSelect !== 'parent') {
+                            console.warn("Usuario intentó ingresar como personal pero no figura en la BD.");
+                            // If they are not in staff, they go to dashboard.
+                        }
+                    }
+
+                } catch (roleErr) {
+                    console.error("Error verificando rol:", roleErr);
+                    // Fallback to dashboard or stay (safer to stay or show error)
+                }
+
+                if (loginMessage) {
                     loginMessage.innerText = 'Acceso concedido. Redirigiendo...';
                     loginMessage.style.color = 'green';
                 }
 
                 setTimeout(() => {
-                    let finalPath = 'dashboard.html';
-                    if (roleSelect === 'admin') finalPath = 'admin.html';
-                    else if (roleSelect === 'editor') finalPath = 'noticias_admin.html';
-                    else if (roleSelect === 'staff') finalPath = 'teacher.html';
-
                     console.log("Redirigiendo a:", finalPath);
                     window.location.href = finalPath;
                 }, 800);
