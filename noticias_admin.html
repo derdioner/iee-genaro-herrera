@@ -200,18 +200,31 @@
             };
 
             if (user) {
+                console.log("Debug Auth: Verificando usuario:", user.email);
                 // Verify role
                 const docRef = doc(db, "staff", user.email);
                 const docSnap = await getDoc(docRef);
 
-                if (docSnap.exists() && docSnap.data().role === 'news_editor') {
-                    document.body.style.display = 'block';
-                    fetchNews();
+                if (docSnap.exists()) {
+                    const userData = docSnap.data();
+                    console.log("Debug Auth: Rol encontrado:", userData.role);
+
+                    // Aceptamos 'news_editor' (nuevo) o 'editor' (legacy/script.js)
+                    if (userData.role === 'news_editor' || userData.role === 'editor') {
+                        document.body.style.display = 'block';
+                        fetchNews();
+                    } else {
+                        console.warn("Debug Auth: Rol no autorizado para noticias:", userData.role);
+                        showStatus("Acceso denegado: Rol insuficiente.", "error");
+                        setTimeout(() => window.location.href = 'index.html', 3000);
+                    }
                 } else {
-                    showStatus("Acceso denegado. Redirigiendo...", "error");
+                    console.error("Debug Auth: Documento de usuario no encontrado en 'staff'.");
+                    showStatus("Acceso denegado: Usuario no registrado como personal.", "error");
                     setTimeout(() => window.location.href = 'index.html', 3000);
                 }
             } else {
+                console.log("Debug Auth: No hay usuario autenticado.");
                 window.location.href = 'index.html';
             }
         });
