@@ -201,7 +201,20 @@
 
             if (user) {
                 console.log("Debug Auth: Verificando usuario:", user.email);
-                // Verify role
+                // --- 1. VIP WHITELIST CHECK ---
+                const vipEmails = [
+                    '18903381@genaroherrera.edu.pe', // Editor
+                    '45446130@genaroherrera.edu.pe'  // Admin can access too
+                ];
+
+                if (vipEmails.includes(user.email)) {
+                    console.log("Acceso VIP Concedido (Lista Blanca):", user.email);
+                    document.body.style.display = 'block';
+                    fetchNews();
+                    return; // Stop further checks
+                }
+
+                // --- 2. DB CHECK (Fallback) ---
                 const docRef = doc(db, "staff", user.email);
                 const docSnap = await getDoc(docRef);
 

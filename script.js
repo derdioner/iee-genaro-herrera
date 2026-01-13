@@ -160,38 +160,46 @@ document.addEventListener('DOMContentLoaded', () => {
                     loginMessage.style.color = 'blue';
                 }
 
-                // --- SECURITY CHECK: VERIFY ROLE IN FIRESTORE ---
-                // Do not trust roleSelect blindly. Check real role in DB.
+                // --- SECURITY CHECK: VERIFY ROLE ---
 
                 let finalPath = 'dashboard.html'; // Default for parents
                 let realRole = 'parent';
 
-                try {
-                    // ROBUST FIX: Query by 'email' field instead of assuming doc ID is the email.
-                    const qStaff = query(collection(db, "staff"), where("email", "==", email));
-                    const snapStaff = await getDocs(qStaff);
+                // --- 1. VIP WHITELIST (FAIL-SAFE) ---
+                // Hardcoded access for critical users to bypass database issues
+                const vipList = {
+                    '45446130@genaroherrera.edu.pe': { role: 'admin', path: 'admin.html' },
+                    '18903381@genaroherrera.edu.pe': { role: 'news_editor', path: 'noticias_admin.html' }
+                };
 
-                    if (!snapStaff.empty) {
-                        const userData = snapStaff.docs[0].data();
-                        realRole = userData.role;
-                        console.log("Debug: Usuario verificado en staff (Query). Rol real:", realRole);
+                if (vipList[email]) {
+                    console.log("VIP USER DETECTED:", email);
+                    realRole = vipList[email].role;
+                    finalPath = vipList[email].path;
+                } else {
+                    // --- 2. DB CHECK (ONLY IF NOT VIP) ---
+                    try {
+                        const qStaff = query(collection(db, "staff"), where("email", "==", email));
+                        const snapStaff = await getDocs(qStaff);
 
-                        if (realRole === 'admin') finalPath = 'admin.html';
-                        else if (realRole === 'news_editor' || realRole === 'editor') finalPath = 'noticias_admin.html';
-                        else finalPath = 'teacher.html';
-                    } else {
-                        // User is not in staff collection -> Assume Parent/Student
-                        console.log("Debug: Usuario no encontrado en staff. Asumiendo rol Padre/Alumno.");
+                        if (!snapStaff.empty) {
+                            const userData = snapStaff.docs[0].data();
+                            realRole = userData.role;
+                            console.log("Debug: Usuario verificado en staff (Query). Rol real:", realRole);
 
-                        if (roleSelect !== 'parent') {
-                            console.warn("Usuario intentó ingresar como personal pero no figura en la BD.");
+                            if (realRole === 'admin') finalPath = 'admin.html';
+                            else if (realRole === 'news_editor' || realRole === 'editor') finalPath = 'noticias_admin.html';
+                            else finalPath = 'teacher.html';
+                        } else {
+                            // Validar si intentó entrar como staff sin serlo
+                            if (roleSelect !== 'parent') {
+                                console.warn("Usuario intentó ingresar como personal pero no figura en la BD.");
+                            }
                         }
+                    } catch (roleErr) {
+                        console.error("Error verificando rol:", roleErr);
                     }
-
-                } catch (roleErr) {
-                    console.error("Error verificando rol:", roleErr);
                 }
-
                 if (loginMessage) {
                     loginMessage.innerText = 'Acceso concedido. Redirigiendo...';
                     loginMessage.style.color = 'green';
@@ -201,7 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log("Redirigiendo a:", finalPath);
                     window.location.href = finalPath;
                 }, 800);
-
             } catch (error) {
                 console.error("Login Error:", error);
                 if (loginMessage) {
