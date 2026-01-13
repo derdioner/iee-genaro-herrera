@@ -160,49 +160,61 @@ document.addEventListener('DOMContentLoaded', () => {
                     loginMessage.style.color = 'blue';
                 }
 
-                // --- SECURITY CHECK: VERIFY ROLE ---
+                // --- SECURITY CHECK: STRICT 1-TO-1 ROLE VALIDATION ---
 
-                let finalPath = 'dashboard.html'; // Default for parents
-                let realRole = 'parent';
+                let realRole = 'parent'; // Default assumption
 
-                // --- 1. VIP WHITELIST (FAIL-SAFE) ---
-                // Hardcoded access for critical users to bypass database issues
+                // 1. DETERMINE REAL ROLE (VIP or DB)
                 const vipList = {
-                    '45446130@genaroherrera.edu.pe': { role: 'admin', path: 'admin.html' },
-                    '18903381@genaroherrera.edu.pe': { role: 'news_editor', path: 'noticias_admin.html' }
+                    '45446130@genaroherrera.edu.pe': 'admin',
+                    '18903381@genaroherrera.edu.pe': 'news_editor'
                 };
 
                 if (vipList[email]) {
                     console.log("VIP USER DETECTED:", email);
-                    realRole = vipList[email].role;
-                    finalPath = vipList[email].path;
+                    realRole = vipList[email];
                 } else {
-                    // --- 2. DB CHECK (ONLY IF NOT VIP) ---
+                    // DB Check
                     try {
                         const qStaff = query(collection(db, "staff"), where("email", "==", email));
                         const snapStaff = await getDocs(qStaff);
 
                         if (!snapStaff.empty) {
                             const userData = snapStaff.docs[0].data();
-                            realRole = userData.role;
-                            console.log("Debug: Usuario verificado en staff (Query). Rol real:", realRole);
-
-                            if (realRole === 'admin') finalPath = 'admin.html';
-                            else if (realRole === 'news_editor' || realRole === 'editor') finalPath = 'noticias_admin.html';
-                            else finalPath = 'teacher.html';
-                        } else {
-                            // Validar si intentó entrar como staff sin serlo
-                            if (roleSelect !== 'parent') {
-                                console.warn("ACCESO DENEGADO: Intento de acceso no autorizado como personal.");
-                                await signOut(auth); // Log out immediately
-                                throw new Error("No tienes permisos de " + roleSelect.toUpperCase() + ". Verifica tu rol.");
-                            }
+                            realRole = userData.role; // e.g., 'admin', 'teacher', 'news_editor'
+                            console.log("Debug: Usuario verificado en staff. Rol real:", realRole);
                         }
                     } catch (roleErr) {
                         console.error("Error verificando rol:", roleErr);
-                        throw roleErr; // Re-throw to stop redirection and show error in main catch
+                        // If DB fails, we stay as 'parent'. Validation below will catch if they tried 'staff'.
                     }
                 }
+
+                // 2. NORMALIZE & VALIDATE (STRICT MATCH)
+                let expectedSelect = 'parent';
+                if (realRole === 'admin') expectedSelect = 'admin';
+                else if (realRole === 'news_editor' || realRole === 'editor') expectedSelect = 'editor';
+                else if (realRole === 'teacher' || realRole === 'staff') expectedSelect = 'staff';
+
+                // Compare what they ARE vs what they CHOSE
+                if (roleSelect !== expectedSelect) {
+                    console.warn(`SECURITY BLOCK: RealRole (${realRole}) vs Selected (${roleSelect})`);
+                    await signOut(auth);
+
+                    let msgRole = "PADRE DE FAMILIA";
+                    if (realRole === 'admin') msgRole = "ADMINISTRADOR";
+                    if (realRole === 'teacher' || realRole === 'staff') msgRole = "DOCENTE";
+                    if (realRole === 'news_editor' || realRole === 'editor') msgRole = "EDITOR DE NOTICIAS";
+
+                    throw new Error(`Tu rol asignado es ${msgRole}. Por favor, selecciona la opción correcta en el menú e intenta de nuevo.`);
+                }
+
+                // 3. SET REDIRECT PATH (Only if passed validation)
+                let finalPath = 'dashboard.html';
+                if (realRole === 'admin') finalPath = 'admin.html';
+                else if (realRole === 'news_editor' || realRole === 'editor') finalPath = 'noticias_admin.html';
+                else if (realRole === 'teacher' || realRole === 'staff') finalPath = 'teacher.html';
+
                 if (loginMessage) {
                     loginMessage.innerText = 'Acceso concedido. Redirigiendo...';
                     loginMessage.style.color = 'green';
