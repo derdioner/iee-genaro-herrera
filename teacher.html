@@ -719,8 +719,18 @@
                 return;
             }
 
-            const { level, grade, section } = currentTeacherData;
-            console.log(`Generating template for: ${level} ${grade}° "${section}"`);
+            // FIX: Read from the UI Selectors instead of the static profile
+            // This allows Secondary teachers (who have multiple classrooms) to download templates for the selected room.
+            const level = document.getElementById('mLevel').value;
+            const grade = document.getElementById('mGrade').value;
+            const section = document.getElementById('mSection').value;
+
+            if (!level || !grade || !section) {
+                showStatus("Por favor, seleccione Nivel, Grado y Sección antes de descargar.", "error");
+                return;
+            }
+
+            console.log(`Generating template for UI Selection: ${level} ${grade}° "${section}"`);
 
             try {
                 // ATTEMPT 1: Standard Query (Strict)
