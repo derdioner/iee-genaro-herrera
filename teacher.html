@@ -777,8 +777,19 @@
                     const ashlySnap = await getDocs(ashlyCheck);
                     if (!ashlySnap.empty) {
                         const ashData = ashlySnap.docs[0].data();
-                        console.error("DIAGNOSTIC: Found Ashly (62456851) but filters failed. Her data:", ashData);
-                        // We could forcefully add her here, but better to just log for now or show a toast
+                        console.error("DIAGNOSTIC: Found Ashly (62456851). Her data:", ashData);
+
+                        // VISIBLE ALERT FOR USER
+                        const debugMsg = `DIAGNÓSTICO: La alumna Ashly EXISTE pero tiene datos diferentes:
+                         Nivel: "${ashData.level}" (Buscamos: "${level}")
+                         Grado: "${ashData.grade}" (Buscamos: "${grade}")
+                         Sección: "${ashData.section}" (Buscamos: "${section}")`;
+                        alert(debugMsg);
+
+                        csvContent += `DEBUG_MATCH;${ashData.studentDni};${ashData.level} ${ashData.grade} ${ashData.section};DATOS REALES EN BD\n`;
+                    } else {
+                        // Check by Parent DNI? Or Generic search?
+                        console.log("Ashly not found even by direct DNI query.");
                     }
                 }
 
