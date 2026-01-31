@@ -712,7 +712,7 @@
             reader.readAsBinaryString(file);
         };
 
-        // --- NEW: EXCEL TEMPLATE DOWNLOAD LOGIC (WITH AUTOMATIC STUDENT LIST) ---
+        // --- NEW: EXCEL TEMPLATE DOWNLOAD LOGIC (WITH AUTOMATIC STUDENT LIST & FALLBACKS) ---
         window.downloadTemplate = async () => {
             if (!currentTeacherData) {
                 showStatus("Error: No se ha detectado su información académica. Por favor, recargue la página o verifique su perfil.", "error", 6000);
@@ -723,29 +723,87 @@
             console.log(`Generating template for: ${level} ${grade}° "${section}"`);
 
             try {
-                // Fetch students matching the teacher's assigned level, grade, and section
-                const q = query(
+                // ATTEMPT 1: Standard Query (Strict)
+                let q = query(
                     collection(db, "students"),
                     where("level", "==", level),
                     where("grade", "==", String(grade)),
                     where("section", "==", section)
                 );
+                let studentsSnap = await getDocs(q);
+                console.log(`Attempt 1 (Strict): Found ${studentsSnap.size} students.`);
 
-                const studentsSnap = await getDocs(q); // Renamed snap to studentsSnap for clarity
+                // ATTEMPT 2: Numeric Grade (Some records might store grade as Number)
+                if (studentsSnap.empty && !isNaN(grade)) {
+                    console.warn("Attempt 1 empty. Retrying with NUMERIC grade...");
+                    q = query(
+                        collection(db, "students"),
+                        where("level", "==", level),
+                        where("grade", "==", Number(grade)),
+                        where("section", "==", section)
+                    );
+                    studentsSnap = await getDocs(q);
+                    console.log(`Attempt 2 (Numeric Grade): Found ${studentsSnap.size} students.`);
+                }
+
+                // ATTEMPT 3: Ignore Level (In case student has wrong/missing level but correct grade/section)
+                if (studentsSnap.empty) {
+                    console.warn("Attempt 2 empty. Retrying without LEVEL filter...");
+                    // Try String Grade first
+                    q = query(
+                        collection(db, "students"),
+                        where("grade", "==", String(grade)),
+                        where("section", "==", section)
+                    );
+                    studentsSnap = await getDocs(q);
+
+                    // If that fails, try Numeric Grade without Level
+                    if (studentsSnap.empty && !isNaN(grade)) {
+                        q = query(
+                            collection(db, "students"),
+                            where("grade", "==", Number(grade)),
+                            where("section", "==", section)
+                        );
+                        studentsSnap = await getDocs(q);
+                    }
+                    console.log(`Attempt 3 (No Level): Found ${studentsSnap.size} students.`);
+                }
+
+                // ATTEMPT 4: Special diagnostic for known missing student (Ashly - 62456851)
+                // This helps us debug if she exists but has totally different data
+                if (studentsSnap.empty) {
+                    console.log("Running final diagnostic check for known problematic records...");
+                    const ashlyCheck = query(collection(db, "students"), where("studentDni", "==", "62456851"));
+                    const ashlySnap = await getDocs(ashlyCheck);
+                    if (!ashlySnap.empty) {
+                        const ashData = ashlySnap.docs[0].data();
+                        console.error("DIAGNOSTIC: Found Ashly (62456851) but filters failed. Her data:", ashData);
+                        // We could forcefully add her here, but better to just log for now or show a toast
+                    }
+                }
 
                 // BOM for Excel UTF-8 compatibility
                 const BOM = "\uFEFF";
                 let csvContent = "DNI_ESTUDIANTE;NOMBRE_ESTUDIANTE;COMENTARIO_AVANCE_EDUCATIVO;FECHA_REFERENCIA\n";
 
                 if (studentsSnap.empty) {
-                    showStatus("Aviso: No se encontraron alumnos registrados en tu aula. Se descargará una plantilla con un ejemplo.", "info", 6000);
-                    csvContent += "00000000;Sin Estudiantes Registrados;Escribe aquí el comentario;2025-12-19\n";
+                    showStatus("⚠️ No se encontraron alumnos (incluso probando variantes). Se descargará plantilla de ejemplo.", "info", 8000);
+                    csvContent += "00000000;Sin Estudiantes Registrados (Verifique Nivel/Grado);Escribe aquí el comentario;2025-12-19\n";
+
+                    // Add debug info row to CSV so user can send it to us
+                    csvContent += `DEBUG_INFO;Buscamos: Nivel=${level}, Grado=${grade}, Seccion=${section};Intentos fallidos;--\n`;
                 } else {
+                    if (studentsSnap.size > 0) {
+                        showStatus(`✅ Plantilla generada con ${studentsSnap.size} estudiantes encontrados.`, "success", 4000);
+                    }
+
                     studentsSnap.forEach(doc => {
                         const s = doc.data();
                         const dni = s.studentDni || s.dni || "";
-                        const name = s.studentName || s.name || "";
-                        csvContent += `${dni};${name};;\n`;
+                        const name = s.studentName || s.name || "Nombre Desconocido";
+                        // Sanitize name to avoid CSV breaking
+                        const cleanName = name.replace(/;/g, " ");
+                        csvContent += `${dni};${cleanName};;\n`;
                     });
                 }
 
