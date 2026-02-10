@@ -243,6 +243,7 @@
             <div class="nav-link active" onclick="switchTab('register')">Registrar Usuario</div>
             <div class="nav-link" onclick="switchTab('list')">Ver Usuarios</div>
             <div class="nav-link" onclick="switchTab('boletas')">Subir Boletas (SIAGIE)</div>
+            <div class="nav-link" onclick="switchTab('qrDelivery')">Entrega de QR</div>
         </div>
 
         <!-- User Management Section (Registration) -->
@@ -429,6 +430,58 @@
                 <div id="boletaStatus"
                     style="margin-top: 15px; font-size: 0.9rem; max-height: 200px; overflow-y: auto;">
                     <!-- Progress list -->
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Delivery Section -->
+        <div id="qrDeliverySection" style="display: none;">
+            <div
+                style="background: #e8f4fd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #3498db;">
+                <h3 style="margin-top: 0; color: #1565c0;"><i class="fas fa-qrcode"></i> Entrega de Carnets / QR</h3>
+                <p style="font-size: 0.9rem; color: #555;">Busque al estudiante por DNI para registrar la entrega del
+                    carnet QR.</p>
+
+                <div class="form-group" style="display: flex; gap: 10px; align-items: flex-end;">
+                    <div style="flex: 1;">
+                        <label>DNI del Estudiante:</label>
+                        <input type="text" id="qrSearchDni" placeholder="Ingrese 8 dígitos" maxlength="8">
+                    </div>
+                    <button id="btnSearchQrStudent" class="btn"
+                        style="background: #3498db; color: white; padding: 12px 20px; border: none; border-radius: 5px; height: 46px; cursor: pointer;">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+            </div>
+
+            <div id="qrStudentResult"
+                style="display: none; background: white; border: 1px solid #ddd; padding: 20px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h2 id="qrResName" style="margin: 0 0 5px 0; text-align: left; color: #2c3e50;"></h2>
+                        <p id="qrResInfo" style="margin: 0; color: #666; font-size: 0.95rem;"></p>
+                    </div>
+                    <div id="qrResStatus"
+                        style="font-weight: bold; padding: 5px 15px; border-radius: 20px; font-size: 0.85rem;"></div>
+                </div>
+
+                <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
+
+                <div id="qrDeliveryActions">
+                    <div class="form-group">
+                        <label>DNI de quien recoge (Padre/Apoderado/Alumno):</label>
+                        <input type="text" id="qrPickerDni" placeholder="DNI de la persona que recibe" maxlength="8">
+                    </div>
+                    <button id="btnConfirmDelivery" class="btn"
+                        style="background: #27ae60; color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <i class="fas fa-check-circle"></i> CONFIRMAR ENTREGA
+                    </button>
+                </div>
+                <div id="qrAlreadyDeliveredMsg"
+                    style="display: none; text-align: center; color: #27ae60; font-weight: bold; font-size: 1.1rem; padding: 20px; background: #eafaf1; border-radius: 8px;">
+                    <i class="fas fa-check-double"></i> Este carnet ya fue entregado.
+                    <div id="qrDeliveryDetails"
+                        style="font-size: 0.85rem; color: #666; margin-top: 5px; font-weight: normal;"></div>
                 </div>
             </div>
         </div>
@@ -854,12 +907,14 @@
             const regSection = document.getElementById('registrationSection');
             const listSection = document.getElementById('userListSection');
             const boletasSection = document.getElementById('boletasSection');
+            const qrSection = document.getElementById('qrDeliverySection');
             const tabs = document.querySelectorAll('.nav-link');
 
             // Hide all
             regSection.style.display = 'none';
             listSection.style.display = 'none';
             boletasSection.style.display = 'none';
+            qrSection.style.display = 'none';
             tabs.forEach(t => t.classList.remove('active'));
 
             if (tab === 'register') {
@@ -872,6 +927,9 @@
             } else if (tab === 'boletas') {
                 boletasSection.style.display = 'block';
                 tabs[2].classList.add('active');
+            } else if (tab === 'qrDelivery') {
+                qrSection.style.display = 'block';
+                tabs[3].classList.add('active');
             }
         };
 
@@ -1084,6 +1142,141 @@
                 }
             }
         };
+
+        // --- NEW: QR DELIVERY LOGIC ---
+        const btnSearchQr = document.getElementById('btnSearchQrStudent');
+        const inpSearchQr = document.getElementById('qrSearchDni');
+        const resContainer = document.getElementById('qrStudentResult');
+        const btnConfirmDel = document.getElementById('btnConfirmDelivery');
+        const inpPickerDni = document.getElementById('qrPickerDni');
+        let currentQrStudent = null;
+
+        // Numeric filter
+        [inpSearchQr, inpPickerDni].forEach(inp => {
+            if (inp) inp.addEventListener('input', (e) => e.target.value = e.target.value.replace(/\D/g, ''));
+        });
+
+        if (inpSearchQr) {
+            inpSearchQr.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') btnSearchQr.click();
+            });
+        }
+
+        if (btnSearchQr) {
+            btnSearchQr.onclick = async () => {
+                const dni = inpSearchQr.value.trim();
+                if (dni.length !== 8) {
+                    showStatus("Ingrese un DNI válido de 8 dígitos", "info");
+                    return;
+                }
+
+                btnSearchQr.disabled = true;
+                btnSearchQr.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+                resContainer.style.display = 'none';
+                currentQrStudent = null;
+
+                try {
+                    // Search in qrDb -> students collection
+                    const q = query(collection(qrDb, "students"), where("id", "==", dni), limit(1));
+                    const snap = await getDocs(q);
+
+                    if (snap.empty) {
+                        showStatus("Estudiante no encontrado en el padrón.", "error");
+                    } else {
+                        const student = snap.docs[0].data();
+                        currentQrStudent = { ref: snap.docs[0].ref, ...student };
+                        renderQrStudent(currentQrStudent);
+                    }
+                } catch (err) {
+                    console.error("QR Search Error:", err);
+                    showStatus("Error al buscar: " + err.message, "error");
+                } finally {
+                    btnSearchQr.disabled = false;
+                    btnSearchQr.innerHTML = '<i class="fas fa-search"></i> Buscar';
+                }
+            };
+        }
+
+        function renderQrStudent(student) {
+            resContainer.style.display = 'block';
+            document.getElementById('qrResName').textContent = student.n || 'Sin Nombre';
+            document.getElementById('qrResInfo').textContent = `${student.g || '?'}° Grado "${student.s || '?'}" - DNI: ${student.id}`;
+
+            // Check delivery status
+            const statusBadge = document.getElementById('qrResStatus');
+            const actionsDiv = document.getElementById('qrDeliveryActions');
+            const msgDiv = document.getElementById('qrAlreadyDeliveredMsg');
+            const detailsDiv = document.getElementById('qrDeliveryDetails');
+
+            if (student.qr_delivered) {
+                // Already delivered
+                statusBadge.textContent = "ENTREGADO";
+                statusBadge.style.backgroundColor = "#d4edda";
+                statusBadge.style.color = "#155724";
+
+                actionsDiv.style.display = 'none';
+                msgDiv.style.display = 'block';
+
+                // Format timestamp
+                let dateStr = "Fecha desconocida";
+                if (student.qr_delivered_at) {
+                    const d = student.qr_delivered_at.toDate ? student.qr_delivered_at.toDate() : new Date(student.qr_delivered_at);
+                    dateStr = d.toLocaleString();
+                }
+                detailsDiv.innerText = `Entregado el: ${dateStr}\nRecogido por DNI: ${student.qr_delivered_to_dni || 'No registrado'}`;
+
+            } else {
+                // Pending
+                statusBadge.textContent = "PENDIENTE DE ENTREGA";
+                statusBadge.style.backgroundColor = "#fff3cd";
+                statusBadge.style.color = "#856404";
+
+                actionsDiv.style.display = 'block';
+                msgDiv.style.display = 'none';
+                inpPickerDni.value = ""; // Reset picker
+            }
+        }
+
+        if (btnConfirmDel) {
+            btnConfirmDel.onclick = async () => {
+                if (!currentQrStudent) return;
+
+                const picker = inpPickerDni.value.trim();
+                if (picker.length < 8) {
+                    showStatus("Ingrese el DNI de la persona que recoge el carnet.", "info");
+                    return;
+                }
+
+                if (!confirm(`¿Confirmar entrega del carnet para ${currentQrStudent.n}?\n\nRecoge DNI: ${picker}`)) return;
+
+                btnConfirmDel.disabled = true;
+                btnConfirmDel.innerText = "Registrando...";
+
+                try {
+                    const updateData = {
+                        qr_delivered: true,
+                        qr_delivered_at: new Date(),
+                        qr_delivered_to_dni: picker,
+                        qr_delivered_by: auth.currentUser ? auth.currentUser.email : 'admin_unknown'
+                    };
+
+                    await setDoc(currentQrStudent.ref, updateData, { merge: true });
+
+                    showStatus("¡Entrega registrada correctamente!", "success");
+
+                    // Update local view
+                    currentQrStudent = { ...currentQrStudent, ...updateData };
+                    renderQrStudent(currentQrStudent);
+
+                } catch (err) {
+                    console.error("Delivery Error:", err);
+                    showStatus("Error al guardar entrega: " + err.message, "error");
+                } finally {
+                    btnConfirmDel.disabled = false;
+                    btnConfirmDel.innerHTML = '<i class="fas fa-check-circle"></i> CONFIRMAR ENTREGA';
+                }
+            };
+        }
 
     </script>
 </body>
