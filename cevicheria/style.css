@@ -222,7 +222,10 @@ h1 {
 
 /* Dashboard & Stats */
 .dashboard-stats {
-    gap: 25px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
 .stat-card {
