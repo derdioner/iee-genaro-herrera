@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mesero - Cevichería 21</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>📱 Mesero</h1>
+        <a href="index.html" class="btn-secondary"
+            style="padding: 10px; text-decoration: none; text-align: center;">Salir</a>
+    </header>
+
+    <div class="grid-mesas" id="gridMesas">
+        <!-- JS generates tables here -->
+    </div>
+
+    <!-- ORDER MODAL -->
+    <div id="orderModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Mesa X</h2>
+
+            <div class="product-grid" id="productGrid">
+                <!-- JS generates products here -->
+            </div>
+
+            <div class="order-summary">
+                <h3>Resumen:</h3>
+                <div id="orderList">
+                    <p style="text-align:center; color:#999;">Nada agregado aún</p>
+                </div>
+                <h3 style="text-align: right; margin-top: 10px;">Total: <span id="modalTotal">S/ 0.00</span></h3>
+            </div>
+
+            <div class="order-actions">
+                <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn-primary" onclick="confirmOrder()">✅ ENVIAR PEDIDO</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        const grid = document.getElementById('gridMesas');
+        const modal = document.getElementById('orderModal');
+        let currentMesaId = null;
+        let currentOrderItems = [];
+
+        function renderTables() {
+            const db = getDB();
+            grid.innerHTML = '';
+            for (let i = 1; i <= 20; i++) {
+                const key = `mesa_${i}`;
+                const mesa = db[key];
+                const card = document.createElement('div');
+                card.className = `card-mesa ${mesa.status}`;
+                card.innerHTML = `
+                    <div style="font-size: 30px;">🍽️</div>
+                    MESA ${i}
+                    <div style="font-size: 14px; margin-top: 5px;">${mesa.status === 'free' ? 'Libre' : formatMoney(mesa.total)}</div>
+                `;
+                card.onclick = () => openTable(i);
+                grid.appendChild(card);
+            }
+        }
+
+        function openTable(id) {
+            currentMesaId = id;
+            const db = getDB();
+            const mesa = db[`mesa_${id}`];
+
+            // Load existing items if any
+            currentOrderItems = [...mesa.items];
+
+            document.getElementById('modalTitle').innerText = `Pedido Mesa ${id}`;
+            renderProductGrid();
+            renderOrderSummary();
+            modal.style.display = 'flex';
+        }
+
+        function renderProductGrid() {
+            const container = document.getElementById('productGrid');
+
+            // Get unique categories
+            const categories = [...new Set(MENU.map(p => p.category))];
+
+            container.innerHTML = categories.map((cat, index) => {
+                const items = MENU.filter(p => p.category === cat);
+
+                return `
+                    <div class="category-block">
+                        <div class="category-header" onclick="toggleCategory('cat_${index}', this)">
+                            ${cat}
+                        </div>
+                        <div id="cat_${index}" class="items-container">
+                            ${items.map(p => `
+                                <div class="product-btn" onclick="addToOrder(${p.id})">
+                                    <h4>${p.name}</h4>
+                                    <span>${formatMoney(p.price)}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleCategory(id, headerElement) {
+            // Close all others
+            document.querySelectorAll('.items-container').forEach(el => {
+                if (el.id !== id) el.classList.remove('active');
+            });
+            document.querySelectorAll('.category-header').forEach(el => {
+                if (el !== headerElement) el.classList.remove('active');
+            });
+
+            // Toggle current
+            const target = document.getElementById(id);
+            if (target) {
+                target.classList.toggle('active');
+                headerElement.classList.toggle('active');
+            }
+        }
+
+        function addToOrder(productId) {
+            const product = MENU.find(p => p.id === productId);
+            currentOrderItems.push(product);
+            renderOrderSummary();
+        }
+
+        function renderOrderSummary() {
+            const list = document.getElementById('orderList');
+            const totalEl = document.getElementById('modalTotal');
+
+            if (currentOrderItems.length === 0) {
+                list.innerHTML = '<p style="text-align:center; color:#999;">Nada agregado aún</p>';
+                totalEl.innerText = formatMoney(0);
+                return;
+            }
+
+            let total = 0;
+            list.innerHTML = currentOrderItems.map((item, index) => {
+                total += item.price;
+                return `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:5px;">
+                    <span>${item.name}</span>
+                    <span>${formatMoney(item.price)}</span>
+                </div>`;
+            }).join('');
+
+            totalEl.innerText = formatMoney(total);
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            currentOrderItems = [];
+            renderTables();
+        }
+
+        function confirmOrder() {
+            const db = getDB();
+            const key = `mesa_${currentMesaId}`;
+
+            db[key].items = currentOrderItems;
+            db[key].status = currentOrderItems.length > 0 ? 'occupied' : 'free';
+
+            // Recalculate total
+            db[key].total = currentOrderItems.reduce((sum, item) => sum + item.price, 0);
+
+            saveDB(db);
+            closeModal();
+            renderTables();
+        }
+
+        // Init
+        renderTables();
+    </script>
+</body>
+
+</html>

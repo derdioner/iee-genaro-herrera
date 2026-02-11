@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cevichería 21</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0D47A1">
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js')
+                .then(() => console.log('Service Worker Registered'))
+                .catch((err) => console.log('SW Error:', err));
+        }
+    </script>
+</head>
+
+<body>
+
+    <div class="landing-container">
+        <h1 style="font-size: 40px; text-transform: uppercase; letter-spacing: 2px;">🐟 Cevichería 21</h1>
+        <p>Sistema de Comandas Local</p>
+
+        <button class="role-btn btn-mesero" onclick="window.location.href='mesero.html'">
+            📱 SOY MESERO
+            <span style="font-size: 14px; font-weight: normal;">Tomar Pedidos</span>
+        </button>
+
+        <button class="role-btn btn-caja" onclick="window.location.href='caja.html'">
+            💻 SOY CAJA
+            <span style="font-size: 14px; font-weight: normal;">Cobrar e Imprimir</span>
+        </button>
+
+        <div style="margin-top: 30px; padding: 10px; background: white; border-radius: 10px; text-align: center;">
+            <p><strong>MODO DEMOSTRACIÓN</strong></p>
+            <p style="font-size: 12px; color: #666;">
+                1. Abre "Soy Mesero" en una pestaña.<br>
+                2. Abre "Soy Caja" en OTRA pestaña.<br>
+                3. Haz un pedido y mira cómo se actualiza la caja.
+            </p>
+        </div>
+    </div>
+
+</body>
+
+</html>
