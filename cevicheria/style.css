@@ -176,10 +176,16 @@ h1 {
 }
 
 .items-container {
+    display: none;
+    grid-template-columns: repeat(2, 1fr);
     background: #FAFAFA;
     padding: 15px;
     gap: 15px;
     border-top: 1px solid #EEE;
+}
+
+.items-container.active {
+    display: grid;
 }
 
 .product-btn {

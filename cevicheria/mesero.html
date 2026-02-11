@@ -16,38 +16,51 @@
             style="padding: 10px; text-decoration: none; text-align: center;">Salir</a>
     </header>
 
-    <div class="grid-mesas" id="gridMesas">
-        <!-- JS generates tables here -->
+    <!-- VISTA: MESAS -->
+    <div id="tablesView">
+        <div class="grid-mesas" id="gridMesas">
+            <!-- JS generates tables here -->
+        </div>
+
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button onclick="forceUpdateSystem()"
+                style="background: transparent; border: 1px solid #ccc; padding: 10px; border-radius: 5px; cursor: pointer; color: #666;">
+                🔄 ACTUALIZAR SISTEMA
+            </button>
+        </div>
     </div>
 
-    <!-- ORDER MODAL -->
-    <div id="orderModal" class="modal">
-        <div class="modal-content">
-            <h2 id="modalTitle">Mesa X</h2>
+    <!-- VISTA: PEDIDO (Replaces Modal) -->
+    <div id="orderView" style="display: none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h2 id="orderTitle" style="margin:0; color: var(--primary);">Mesa X</h2>
+            <button class="btn-secondary" onclick="closeOrderView()">🔙 Volver</button>
+        </div>
 
-            <div class="product-grid" id="productGrid">
-                <!-- JS generates products here -->
-            </div>
+        <div class="product-grid" id="productGrid">
+            <!-- JS generates products here -->
+        </div>
 
-            <div class="order-summary">
-                <h3>Resumen:</h3>
-                <div id="orderList">
-                    <p style="text-align:center; color:#999;">Nada agregado aún</p>
-                </div>
-                <h3 style="text-align: right; margin-top: 10px;">Total: <span id="modalTotal">S/ 0.00</span></h3>
+        <div class="order-summary">
+            <h3>Resumen:</h3>
+            <div id="orderList">
+                <p style="text-align:center; color:#999;">Nada agregado aún</p>
             </div>
+            <h3 style="text-align: right; margin-top: 10px;">Total: <span id="modalTotal">S/ 0.00</span></h3>
+        </div>
 
-            <div class="order-actions">
-                <button class="btn-secondary" onclick="closeModal()">Cancelar</button>
-                <button class="btn-primary" onclick="confirmOrder()">✅ ENVIAR PEDIDO</button>
-            </div>
+        <div class="order-actions">
+            <button class="btn-secondary" onclick="closeOrderView()">Cancelar</button>
+            <button class="btn-primary" onclick="confirmOrder()">✅ ENVIAR PEDIDO</button>
         </div>
     </div>
 
     <script src="script.js"></script>
     <script>
         const grid = document.getElementById('gridMesas');
-        const modal = document.getElementById('orderModal');
+        const tablesView = document.getElementById('tablesView');
+        const orderView = document.getElementById('orderView');
+
         let currentMesaId = null;
         let currentOrderItems = [];
 
@@ -77,21 +90,22 @@
             // Load existing items if any
             currentOrderItems = [...mesa.items];
 
-            document.getElementById('modalTitle').innerText = `Pedido Mesa ${id}`;
+            document.getElementById('orderTitle').innerText = `Pedido Mesa ${id}`;
             renderProductGrid();
             renderOrderSummary();
-            modal.style.display = 'flex';
+
+            // SWITCH VIEW
+            tablesView.style.display = 'none';
+            orderView.style.display = 'block';
+            window.scrollTo(0, 0);
         }
 
         function renderProductGrid() {
             const container = document.getElementById('productGrid');
-
-            // Get unique categories
             const categories = [...new Set(MENU.map(p => p.category))];
 
             container.innerHTML = categories.map((cat, index) => {
                 const items = MENU.filter(p => p.category === cat);
-
                 return `
                     <div class="category-block">
                         <div class="category-header" onclick="toggleCategory('cat_${index}', this)">
@@ -111,7 +125,6 @@
         }
 
         function toggleCategory(id, headerElement) {
-            // Close all others
             document.querySelectorAll('.items-container').forEach(el => {
                 if (el.id !== id) el.classList.remove('active');
             });
@@ -119,7 +132,6 @@
                 if (el !== headerElement) el.classList.remove('active');
             });
 
-            // Toggle current
             const target = document.getElementById(id);
             if (target) {
                 target.classList.toggle('active');
@@ -129,7 +141,13 @@
 
         function addToOrder(productId) {
             const product = MENU.find(p => p.id === productId);
-            currentOrderItems.push(product);
+            // Add identifying info for tracking print status
+            const itemToAdd = {
+                ...product,
+                printed: false, // Default: not printed
+                addedAt: Date.now()
+            };
+            currentOrderItems.push(itemToAdd);
             renderOrderSummary();
         }
 
@@ -155,8 +173,9 @@
             totalEl.innerText = formatMoney(total);
         }
 
-        function closeModal() {
-            modal.style.display = 'none';
+        function closeOrderView() {
+            orderView.style.display = 'none';
+            tablesView.style.display = 'block'; // Or 'grid' if using grid directly on container, but block is fine for wrapper
             currentOrderItems = [];
             renderTables();
         }
@@ -167,13 +186,10 @@
 
             db[key].items = currentOrderItems;
             db[key].status = currentOrderItems.length > 0 ? 'occupied' : 'free';
-
-            // Recalculate total
             db[key].total = currentOrderItems.reduce((sum, item) => sum + item.price, 0);
 
             saveDB(db);
-            closeModal();
-            renderTables();
+            closeOrderView();
         }
 
         // Init

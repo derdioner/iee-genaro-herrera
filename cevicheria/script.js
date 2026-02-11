@@ -221,6 +221,35 @@ function formatMoney(amount) {
 }
 
 // Listen for updates across tabs
+// FORCE UPDATE SYSTEM
+window.forceUpdateSystem = async function () {
+    if (!confirm('¿Actualizar sistema a la última versión? Esto recargará la página.')) return;
+
+    try {
+        // 1. Unregister Service Worker
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+                await registration.unregister();
+            }
+        }
+
+        // 2. Clear Cache Storage
+        if ('caches' in window) {
+            const keys = await caches.keys();
+            for (const key of keys) {
+                await caches.delete(key);
+            }
+        }
+
+        // 3. Reload
+        window.location.reload(true);
+    } catch (e) {
+        alert('Error al actualizar: ' + e.message);
+        window.location.reload();
+    }
+};
+
 window.addEventListener('storage', () => {
     if (typeof renderTables === 'function') renderTables();
 });
