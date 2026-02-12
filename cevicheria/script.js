@@ -4,7 +4,17 @@ import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebas
 // DATA STORE (Firestore Wrapper)
 const DB_COLLECTION = 'cevicheria_21_data';
 const DB_DOC_ID = 'tables';
-let localData = {}; // Cache for synchronous access
+
+// Initialize with default structure immediately to prevent UI crash
+let localData = {};
+for (let i = 1; i <= 20; i++) {
+    localData[`mesa_${i}`] = {
+        id: i,
+        status: 'free',
+        items: [],
+        total: 0
+    };
+}
 
 // Initialize Data & Listen for Updates
 function initDB() {
