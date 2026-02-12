@@ -199,6 +199,8 @@ h1 {
     gap: 15px;
     overflow-y: auto;
     padding-right: 5px;
+    padding-bottom: 80px;
+    /* Prevent last items from being cut off */
 }
 
 .action-panel {
