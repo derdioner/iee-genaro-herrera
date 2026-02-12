@@ -232,14 +232,63 @@ function printComanda() {
     const db = getDB();
     const mesa = db[`mesa_${currentMesaId}`];
 
-    // Mark items as printed
-    if (mesa.items) {
-        mesa.items.forEach(item => item.printed = true);
+    if (!mesa.items || mesa.items.length === 0) {
+        alert("No hay productos para enviar a cocina.");
+        return;
     }
-    saveDB(db);
 
-    alert(`🖨️ ENVIADO A COCINA:\nMesa ${currentMesaId}\n${mesa.items ? mesa.items.length : 0} productos`);
+    // Filter items not yet printed (optional, but requested workflow implies printing new stuff)
+    // For now, print ALL specific to kitchen needs or just new ones? 
+    // User said "IMPRIMIR EL PEDIDO QUE LLEVARAN A COCINA", usually implies new items.
+    // Let's print everything but mark new ones.
+
+    const itemsToPrint = mesa.items.filter(i => !i.printed);
+    if (itemsToPrint.length === 0) {
+        if (!confirm("Todos los productos ya fueron enviados. ¿Imprimir todo de nuevo?")) return;
+    }
+
+    // Mark items as printed in DB
+    mesa.items.forEach(item => item.printed = true);
+    saveDB(db);
     if (typeof renderActionPanel === 'function') renderActionPanel(currentMesaId);
+
+    // Create Print Content
+    const printWindow = window.open('', '', 'width=300,height=600');
+    const itemsHtml = mesa.items.map(item => `
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-family:monospace; font-size:14px; border-bottom:1px dashed #ccc; padding-bottom:2px;">
+            <span>${item.name}</span>
+            <span>${formatMoney(item.price)}</span>
+        </div>
+    `).join('');
+
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Ticket Cocina - Mesa ${currentMesaId}</title>
+            <style>
+                body { font-family: monospace; width: 280px; margin: 0 auto; padding: 10px; }
+                h2, h3 { text-align: center; margin: 5px 0; }
+                .divider { border-top: 1px dashed #000; margin: 10px 0; }
+            </style>
+        </head>
+        <body>
+            <h2>CEVICHERIA 21</h2>
+            <h3>MESA ${currentMesaId}</h3>
+            <p style="text-align:center; font-size:12px;">${new Date().toLocaleString()}</p>
+            <div class="divider"></div>
+            ${itemsHtml}
+            <div class="divider"></div>
+            <p style="text-align:center; font-weight:bold;">TICKET DE COCINA</p>
+        </body>
+        </html>
+    `);
+
+    printWindow.document.close();
+    printWindow.focus();
+    setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+    }, 500);
 }
 
 function printBill() {

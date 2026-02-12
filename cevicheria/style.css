@@ -192,8 +192,8 @@ h1 {
     display: grid;
     grid-template-columns: 1fr 1.5fr 1fr;
     gap: 20px;
-    height: calc(100vh - 80px);
-    /* Increased height */
+    height: calc(100vh - 60px);
+    /* Tweak height to fit exactly */
     overflow: hidden;
     padding-bottom: 0;
 }
