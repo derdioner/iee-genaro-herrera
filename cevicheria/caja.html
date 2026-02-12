@@ -20,25 +20,25 @@
                 <p style="margin: 0; color: #666; font-size: 14px;">CEVICHERIA 21 • Panel de Control</p>
             </div>
         </div>
+
+        <!-- MOVED STATS HERE -->
+        <div class="dashboard-stats" style="margin: 0 20px;">
+            <div class="stat-card stat-blue">
+                <h3>Mesas Ocupadas</h3>
+                <div class="value" id="statOccupied">-</div>
+            </div>
+            <div class="stat-card stat-orange">
+                <h3>Ventas Hoy</h3>
+                <div class="value" id="statSales">S/ 0.00</div>
+            </div>
+        </div>
+
         <div style="display: flex; gap: 10px;">
             <button onclick="openReport()" class="btn-report">📊 VER REPORTE DEL DÍA</button>
             <a href="index.html" class="btn-secondary"
                 style="padding: 10px 20px; border-radius: 50px; text-decoration: none;">Salir</a>
         </div>
     </header>
-
-    <div class="dashboard-stats">
-        <div class="stat-card stat-blue">
-            <h3>Mesas Ocupadas</h3>
-            <div class="value" id="statOccupied">-</div>
-            <i style="font-style: normal;">🍽️</i>
-        </div>
-        <div class="stat-card stat-orange">
-            <h3>Ventas Hoy</h3>
-            <div class="value" id="statSales">S/ 0.00</div>
-            <i style="font-style: normal;">💰</i>
-        </div>
-    </div>
 
     <h3 style="margin-bottom: 15px; color: #444;">Estado de Mesas</h3>
     <div class="grid-mesas" id="gridMesas">
