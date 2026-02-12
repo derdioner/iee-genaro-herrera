@@ -180,6 +180,35 @@
             renderOrderSummary();
         }
 
+        function removeFromOrder(index) {
+            const itemToRemove = currentOrderItems[index];
+            if (!itemToRemove) return;
+
+            // Remove from array
+            currentOrderItems.splice(index, 1);
+
+            // Update Summary
+            renderOrderSummary();
+
+            // Update Badge Logic
+            const productId = itemToRemove.id;
+            const btn = document.getElementById(`btn_${productId}`);
+            if (btn) {
+                const badge = btn.querySelector('.qty-badge');
+                if (badge) {
+                    const count = currentOrderItems.filter(i => i.id === productId).length;
+                    if (count > 0) {
+                        badge.innerText = count;
+                        badge.classList.add('show');
+                        badge.style.display = '';
+                    } else {
+                        badge.classList.remove('show');
+                        badge.style.display = 'none';
+                    }
+                }
+            }
+        }
+
         function renderOrderSummary() {
             const list = document.getElementById('orderList');
             const totalEl = document.getElementById('modalTotal');
@@ -193,8 +222,11 @@
             let total = 0;
             list.innerHTML = currentOrderItems.map((item, index) => {
                 total += item.price;
-                return `<div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:5px;">
-                    <span>${item.name}</span>
+                return `<div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #eee; padding:5px;">
+                    <div style="display:flex; align-items:center;">
+                        <button onclick="removeFromOrder(${index})" style="background:transparent; border:none; color:red; font-weight:bold; cursor:pointer; margin-right:8px; font-size:16px;">❌</button>
+                        <span>${item.name}</span>
+                    </div>
                     <span>${formatMoney(item.price)}</span>
                 </div>`;
             }).join('');
