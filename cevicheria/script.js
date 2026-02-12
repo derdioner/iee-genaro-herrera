@@ -255,5 +255,15 @@ window.addEventListener('storage', () => {
     if (typeof renderTables === 'function') renderTables();
 });
 
+// EXPOSE TO WINDOW (Required because this is now a module)
+window.getDB = getDB;
+window.saveDB = saveDB;
+window.formatMoney = formatMoney;
+window.getDailyReport = getDailyReport;
+window.getHistory = getHistory;
+window.addToHistory = addToHistory;
+window.MENU = MENU;
+window.initDB = initDB;
+
 // Init on load
 initDB();
