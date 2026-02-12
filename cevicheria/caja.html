@@ -33,8 +33,12 @@
             </div>
         </div>
 
-        <div style="display: flex; gap: 10px;">
-            <button onclick="openReport()" class="btn-report">📊 VER REPORTE DEL DÍA</button>
+        <div style="display: flex; gap: 10px; align-items: center;">
+            <button onclick="forceUpdateSystem()" class="btn-secondary"
+                style="background:transparent; border:1px solid rgba(0,0,0,0.1); color:#546E7A; padding:8px 15px; border-radius:50px; font-size:12px; display:flex; gap:5px; align-items:center;">
+                🔄 ACTUALIZAR
+            </button>
+            <button onclick="openReport()" class="btn-report">📊 REPORTE</button>
             <a href="index.html" class="btn-secondary"
                 style="padding: 10px 20px; border-radius: 50px; text-decoration: none;">Salir</a>
         </div>
