@@ -240,10 +240,25 @@
                     <div style="font-size:40px; font-weight:800; color:#2E7D32; margin-top:5px;">
                         ${formatMoney(mesa.total)}
                     </div>
-                    <p style="color:#666; margin:0; font-size:14px;">Orden en curso</p>
+                </div>
+
+                <div class="action-footer" style="border-top:none; border-bottom:2px solid #f5f5f5; padding-top:0; padding-bottom:15px; margin-bottom:15px; display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button onclick="closeTable()" style="background:#D32F2F; color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
+                        🗑️ CERRAR MESA
+                    </button>
+                    <button onclick="currentMesaId = null; renderTables();" style="background:#ECEFF1; color:#333; border:1px solid #CFD8DC; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
+                        🚫 CANCELAR
+                    </button>
+                    <button onclick="printComanda()" style="background:#FBC02D; color:#333; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
+                        👨‍🍳 COMANDA
+                    </button>
+                    <button onclick="printBill()" style="background:#fff; color:#1976D2; border:2px solid #1976D2; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:14px; display:flex; align-items:center; justify-content:center; gap:5px;">
+                        🖨️ IMPRIMIR CUENTA
+                    </button>
                 </div>
 
                 <div class="action-body">
+                    ${mesa.items.length === 0 ? '<div style="text-align:center; padding:20px; color:#999;">Sin pedidos aún</div>' : ''}
                     ${mesa.items.map(item => `
                         <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:12px 0;">
                             <span>${item.name} 
@@ -254,18 +269,6 @@
                             <span style="font-weight:600;">${formatMoney(item.price)}</span>
                         </div>
                     `).join('')}
-                </div>
-
-                <div class="action-footer">
-                     <button onclick="printComanda()" style="background:#455A64; color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; gap:10px;">
-                        🔥 COCINA
-                    </button>
-                    <button onclick="printBill()" style="background:var(--primary); color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; gap:10px;">
-                        🖨️ PRE-CUENTA
-                    </button>
-                    <button onclick="closeTable()" style="grid-column: span 2; background:#43A047; color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:18px;">
-                        💰 COBRAR Y CERRAR
-                    </button>
                 </div>
             `;
         }
