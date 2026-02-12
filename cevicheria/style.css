@@ -224,10 +224,12 @@ h1 {
     gap: 15px;
     overflow-y: auto;
     padding-right: 5px;
-    padding-bottom: 120px;
-    /* Ensure 20 is seen */
-    height: 100%;
-    /* Fill parent */
+    padding-bottom: 50px;
+    /* Reducing slightly as flex:1 handles space better */
+    flex: 1;
+    /* Take REMAINING space, not 100% of parent */
+    min-height: 0;
+    /* Allow shrinking */
 }
 
 .action-panel {
