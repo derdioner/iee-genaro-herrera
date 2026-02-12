@@ -255,8 +255,12 @@
             closeOrderView();
         }
 
-        // Init
-        renderTables();
+        // Init (Wait for module)
+        window.onload = function () {
+            setTimeout(() => {
+                if (typeof renderTables === 'function') renderTables();
+            }, 1000);
+        };
     </script>
 </body>
 
