@@ -272,6 +272,9 @@ window.formatMoney = formatMoney;
 window.getDailyReport = getDailyReport;
 window.getHistory = getHistory;
 window.addToHistory = addToHistory;
+window.printComanda = printComanda;
+window.printBill = printBill;
+window.closeTable = closeTable;
 window.MENU = MENU;
 window.initDB = initDB;
 

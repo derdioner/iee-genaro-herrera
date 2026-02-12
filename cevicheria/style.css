@@ -192,10 +192,10 @@ h1 {
     display: grid;
     grid-template-columns: 1fr 1.5fr 1fr;
     gap: 20px;
-    height: calc(100vh - 100px);
-    /* Use more vertical space */
+    height: calc(100vh - 80px);
+    /* Increased height */
     overflow: hidden;
-    padding-bottom: 20px;
+    padding-bottom: 0;
 }
 
 .tables-column {
