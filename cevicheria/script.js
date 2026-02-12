@@ -227,44 +227,67 @@ const MENU = [
 ];
 
 // SHARED FUNCTIONS
+// Helper to print using hidden iframe
+function printContent(html) {
+    const iframeId = 'printFrame';
+    let iframe = document.getElementById(iframeId);
+
+    if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.id = iframeId;
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0'; // Hidden
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+    }
+
+    const doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+
+    iframe.contentWindow.focus();
+    setTimeout(() => {
+        iframe.contentWindow.print();
+        // Optional: Remove iframe after printing? Better to keep for reuse.
+    }, 500);
+}
+
 function printComanda() {
     if (!currentMesaId) return;
     const db = getDB();
     const mesa = db[`mesa_${currentMesaId}`];
 
     if (!mesa.items || mesa.items.length === 0) {
-        alert("No hay productos para enviar a cocina.");
+        // Use non-blocking toast instead of alert if possible, or just return
+        console.log("No items to print");
         return;
     }
 
-    // Filter items not yet printed (optional, but requested workflow implies printing new stuff)
-    // For now, print ALL specific to kitchen needs or just new ones? 
-    // User said "IMPRIMIR EL PEDIDO QUE LLEVARAN A COCINA", usually implies new items.
-    // Let's print everything but mark new ones.
-
     const itemsToPrint = mesa.items.filter(i => !i.printed);
-    if (itemsToPrint.length === 0) {
-        if (!confirm("Todos los productos ya fueron enviados. ¿Imprimir todo de nuevo?")) return;
-    }
+    // If everything is printed, ask to reprint ALL? 
+    // Using confirm might block, let's just print EVERYTHING if no new items, 
+    // or maybe just last items? Let's print everything for simplicity but mark logic.
+    let list = itemsToPrint.length > 0 ? itemsToPrint : mesa.items;
 
-    // Mark items as printed in DB
+    // Mark items as printed
     mesa.items.forEach(item => item.printed = true);
     saveDB(db);
     if (typeof renderActionPanel === 'function') renderActionPanel(currentMesaId);
 
-    // Create Print Content
-    const printWindow = window.open('', '', 'width=300,height=600');
-    const itemsHtml = mesa.items.map(item => `
+    const itemsHtml = list.map(item => `
         <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-family:monospace; font-size:14px; border-bottom:1px dashed #ccc; padding-bottom:2px;">
             <span>${item.name}</span>
             <span>${formatMoney(item.price)}</span>
         </div>
     `).join('');
 
-    printWindow.document.write(`
+    const ticketHtml = `
         <html>
         <head>
-            <title>Ticket Cocina - Mesa ${currentMesaId}</title>
             <style>
                 body { font-family: monospace; width: 280px; margin: 0 auto; padding: 10px; }
                 h2, h3 { text-align: center; margin: 5px 0; }
@@ -281,21 +304,47 @@ function printComanda() {
             <p style="text-align:center; font-weight:bold;">TICKET DE COCINA</p>
         </body>
         </html>
-    `);
+    `;
 
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-    }, 500);
+    printContent(ticketHtml);
 }
 
 function printBill() {
     if (!currentMesaId) return;
     const db = getDB();
     const mesa = db[`mesa_${currentMesaId}`];
-    alert(`🖨️ IMPRIMIENDO PRE-CUENTA:\nMesa ${currentMesaId}\nTotal: ${formatMoney(mesa.total)}`);
+
+    const itemsHtml = mesa.items.map(item => `
+        <div style="display:flex; justify-content:space-between; margin-bottom:5px; font-family:monospace; font-size:14px; border-bottom:1px dashed #ccc; padding-bottom:2px;">
+            <span>${item.name}</span>
+            <span>${formatMoney(item.price)}</span>
+        </div>
+    `).join('');
+
+    const billHtml = `
+        <html>
+        <head>
+            <style>
+                body { font-family: monospace; width: 280px; margin: 0 auto; padding: 10px; }
+                h2, h3 { text-align: center; margin: 5px 0; }
+                .divider { border-top: 1px dashed #000; margin: 10px 0; }
+                .total { font-size: 18px; font-weight: bold; text-align: right; margin-top: 10px; }
+            </style>
+        </head>
+        <body>
+            <h2>CEVICHERIA 21</h2>
+            <h3>PRE-CUENTA MESA ${currentMesaId}</h3>
+            <p style="text-align:center; font-size:12px;">${new Date().toLocaleString()}</p>
+            <div class="divider"></div>
+            ${itemsHtml}
+            <div class="divider"></div>
+            <div class="total">TOTAL: ${formatMoney(mesa.total)}</div>
+            <p style="text-align:center; margin-top:20px;">Gracias por su preferencia</p>
+        </body>
+        </html>
+    `;
+
+    printContent(billHtml);
 }
 
 function closeTable() {
