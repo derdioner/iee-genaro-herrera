@@ -59,7 +59,9 @@
         </div>
     </div>
 
-    <script src="script.js?v=force"></script>
+    <script type="module">
+        import './script.js?v=force';
+    </script>
     <script>
         const grid = document.getElementById('gridMesas');
         const tablesView = document.getElementById('tablesView');

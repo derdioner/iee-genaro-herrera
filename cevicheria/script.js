@@ -1,54 +1,55 @@
-// DATA STORE (LocalStorage wrapper)
-const DB_KEY = 'cevicheria_data';
+import { db } from './firebase-config.js';
+import { doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-// Initialize Data if empty
-// Initialize Data if empty or missing new tables
+// DATA STORE (Firestore Wrapper)
+const DB_COLLECTION = 'cevicheria_21_data';
+const DB_DOC_ID = 'tables';
+let localData = {}; // Cache for synchronous access
+
+// Initialize Data & Listen for Updates
 function initDB() {
-    let data = getDB();
-    let updated = false;
+    const docRef = doc(db, DB_COLLECTION, DB_DOC_ID);
 
-    // Check if empty
-    if (Object.keys(data).length === 0) {
-        for (let i = 1; i <= 20; i++) {
-            data[`mesa_${i}`] = {
-                id: i,
-                status: 'free',
-                items: [],
-                total: 0
-            };
-        }
-        updated = true;
-    } else {
-        // Migration: Check for missing tables (e.g., mesa_11 to mesa_20)
-        for (let i = 1; i <= 20; i++) {
-            if (!data[`mesa_${i}`]) {
-                data[`mesa_${i}`] = {
+    // Initial Load & Realtime Listener
+    onSnapshot(docRef, (docSnap) => {
+        if (docSnap.exists()) {
+            localData = docSnap.data();
+            console.log("Firestore Update Received:", localData);
+            // Trigger update UI
+            window.dispatchEvent(new Event('storage'));
+        } else {
+            // First time setup
+            console.log("Creating new DB structure in Firestore...");
+            const initialData = {};
+            for (let i = 1; i <= 20; i++) {
+                initialData[`mesa_${i}`] = {
                     id: i,
                     status: 'free',
                     items: [],
                     total: 0
                 };
-                updated = true;
             }
+            setDoc(docRef, initialData);
         }
-    }
-
-    if (updated) {
-        saveDB(data);
-    }
+    });
 }
 
 function getDB() {
-    return JSON.parse(localStorage.getItem(DB_KEY) || '{}');
+    return localData;
 }
 
 function saveDB(data) {
-    localStorage.setItem(DB_KEY, JSON.stringify(data));
-    // Trigger event for other tabs
-    window.dispatchEvent(new Event('storage'));
+    // Update local immediately for UI responsiveness
+    localData = data;
+
+    // Sync to Firestore
+    const docRef = doc(db, DB_COLLECTION, DB_DOC_ID);
+    setDoc(docRef, data)
+        .then(() => console.log("Data synced to Firestore"))
+        .catch((e) => console.error("Error syncing:", e));
 }
 
-// HISTORY FUNCTIONS
+// HISTORY FUNCTIONS (Local for now, can migrate if needed)
 const HIST_KEY = 'cevicheria_history';
 
 function getHistory() {
