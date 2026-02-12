@@ -171,7 +171,9 @@
                 if (badge) {
                     const count = currentOrderItems.filter(i => i.id === productId).length;
                     badge.innerText = count;
-                    badge.style.display = 'inline-block';
+                    badge.classList.add('show');
+                    // Remove inline display if any
+                    badge.style.display = '';
                 }
             }
 

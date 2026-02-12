@@ -236,24 +236,27 @@ h1 {
 }
 
 .qty-badge {
-    display: inline-flex;
-    /* Use flex for centering content */
+    display: none;
+    /* Hidden by default */
     align-items: center;
     justify-content: center;
     background: var(--accent);
-    color: white;
+    color: #FFFFFF !important;
     font-size: 14px;
-    /* Slightly larger */
-    padding: 4px 8px;
-    border-radius: 12px;
+    font-weight: 800;
+    min-width: 28px;
+    /* Bigger */
+    height: 28px;
+    /* Bigger */
+    border-radius: 50%;
+    /* Circle */
     margin-left: 10px;
-    font-weight: bold;
-    min-width: 20px;
-    /* Prevent collapsing */
-    height: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     flex-shrink: 0;
-    /* Prevent being squashed */
-    line-height: 1;
+}
+
+.qty-badge.show {
+    display: inline-flex !important;
 }
 
 .items-container {
