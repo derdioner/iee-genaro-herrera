@@ -175,12 +175,14 @@
                 if (currentMesaId === i) card.style.border = "3px solid var(--primary)";
 
                 card.innerHTML = `
-                    <div style="position: relative; display: inline-block;">
-                        <img src="${mesa.status === 'free' ? 'ceviche_plate_icon.png' : 'ceviche_plate_icon.png'}" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; opacity: ${mesa.status === 'free' ? '0.6' : '1'}; transition: opacity 0.3s;">
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-weight: 800; color: #333; text-shadow: 1px 1px 0 #FFF, -1px -1px 0 #FFF, 1px -1px 0 #FFF, -1px 1px 0 #FFF; font-size: 18px;">${i}</div>
+                    <div class="plate-icon ${mesa.status}">
+                        <div class="plate-inner">
+                            <span style="font-size: 24px;">${mesa.status === 'free' ? '🍽️' : '🥘'}</span>
+                        </div>
+                        <div class="plate-number">${i}</div>
                     </div>
-                    <div style="margin-top: 5px;">
-                        <span style="font-size: 11px; padding: 2px 6px; border-radius: 4px; background: ${mesa.status === 'free' ? '#E8F5E9' : '#FFEBEE'}; color: ${mesa.status === 'free' ? '#2E7D32' : '#C62828'}; font-weight: bold;">
+                    <div style="margin-top: 8px;">
+                        <span class="status-badge ${mesa.status}">
                             ${mesa.status === 'free' ? 'LIBRE' : formatMoney(mesa.total)}
                         </span>
                     </div>

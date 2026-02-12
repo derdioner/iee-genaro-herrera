@@ -228,9 +228,79 @@ h1 {
     transition: all 0.2s;
 }
 
-.card-mesa:hover img {
-    transform: scale(1.1);
-    transition: transform 0.2s;
+/* CSS Plate Design */
+.plate-icon {
+    width: 80px;
+    height: 80px;
+    background: white;
+    border-radius: 50%;
+    margin: 0 auto;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), inset 0 0 10px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 4px solid #f5f5f5;
+    transition: all 0.2s;
+}
+
+.plate-icon.occupied {
+    border-color: #ffcdd2;
+    /* Red accent for occupied */
+    background: #fff3e0;
+    /* Warm background */
+}
+
+.plate-icon.free {
+    border-color: #c8e6c9;
+    /* Green accent for free */
+}
+
+.plate-inner {
+    font-size: 20px;
+    opacity: 0.8;
+}
+
+.plate-number {
+    position: absolute;
+    bottom: -5px;
+    right: -5px;
+    background: var(--primary);
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+}
+
+.status-badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.status-badge.free {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #C8E6C9;
+}
+
+.status-badge.occupied {
+    background: #FFEBEE;
+    color: #C62828;
+    border: 1px solid #FFCDD2;
+}
+
+.card-mesa:hover .plate-icon {
+    transform: scale(1.05) rotate(5deg);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
 }
 
 
