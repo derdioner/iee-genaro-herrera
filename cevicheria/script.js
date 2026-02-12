@@ -227,6 +227,54 @@ const MENU = [
 ];
 
 // SHARED FUNCTIONS
+function printComanda() {
+    if (!currentMesaId) return;
+    const db = getDB();
+    const mesa = db[`mesa_${currentMesaId}`];
+
+    // Mark items as printed
+    if (mesa.items) {
+        mesa.items.forEach(item => item.printed = true);
+    }
+    saveDB(db);
+
+    alert(`🖨️ ENVIADO A COCINA:\nMesa ${currentMesaId}\n${mesa.items ? mesa.items.length : 0} productos`);
+    if (typeof renderActionPanel === 'function') renderActionPanel(currentMesaId);
+}
+
+function printBill() {
+    if (!currentMesaId) return;
+    const db = getDB();
+    const mesa = db[`mesa_${currentMesaId}`];
+    alert(`🖨️ IMPRIMIENDO PRE-CUENTA:\nMesa ${currentMesaId}\nTotal: ${formatMoney(mesa.total)}`);
+}
+
+function closeTable() {
+    if (!currentMesaId) return;
+    if (!confirm(`¿Cerrar Mesa ${currentMesaId} y liberar?`)) return;
+
+    const db = getDB();
+    // Add to history before clearing
+    addToHistory(db[`mesa_${currentMesaId}`]);
+
+    // Reset table
+    db[`mesa_${currentMesaId}`] = {
+        id: currentMesaId,
+        status: 'free',
+        items: [],
+        total: 0
+    };
+
+    saveDB(db);
+    currentMesaId = null;
+    if (typeof renderTables === 'function') renderTables();
+    document.getElementById('actionPanel').innerHTML = `
+        <div style="text-align:center; color:#999; margin-top: 50px;">
+            <p style="font-size: 40px; margin-bottom: 10px;">👈 👉</p>
+            <p>Seleccione una mesa<br>para ver el detalle</p>
+        </div>`;
+}
+
 function formatMoney(amount) {
     return `S/ ${amount.toFixed(2)}`;
 }
