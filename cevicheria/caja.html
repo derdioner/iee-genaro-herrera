@@ -40,9 +40,26 @@
         </div>
     </header>
 
-    <h3 style="margin-bottom: 15px; color: #444;">Estado de Mesas</h3>
-    <div class="grid-mesas" id="gridMesas">
-        <!-- JS generates tables here -->
+    <div class="cashier-dashboard">
+        <!-- LEFT: Tables 1-10 -->
+        <div class="tables-column">
+            <h3 style="margin-top:0; color:#546E7A;">Mesas 1 - 10</h3>
+            <div class="grid-mesas-split" id="tablesLeft"></div>
+        </div>
+
+        <!-- CENTER: Action Panel -->
+        <div class="action-panel" id="actionPanel">
+            <div style="text-align:center; color:#999; margin-top: 50px;">
+                <p style="font-size: 40px; margin-bottom: 10px;">👈 👉</p>
+                <p>Seleccione una mesa<br>para ver el detalle</p>
+            </div>
+        </div>
+
+        <!-- RIGHT: Tables 11-20 -->
+        <div class="tables-column">
+            <h3 style="margin-top:0; color:#546E7A;">Mesas 11 - 20</h3>
+            <div class="grid-mesas-split" id="tablesRight"></div>
+        </div>
     </div>
 
     <div style="text-align: center; margin-bottom: 30px;">
@@ -141,26 +158,41 @@
             const db = getDB();
             let occupiedCount = 0;
 
-            grid.innerHTML = '';
+            const leftContainer = document.getElementById('tablesLeft');
+            const rightContainer = document.getElementById('tablesRight');
+
+            if (!leftContainer || !rightContainer) return;
+
+            leftContainer.innerHTML = '';
+            rightContainer.innerHTML = '';
+
             for (let i = 1; i <= 20; i++) {
                 const key = `mesa_${i}`;
                 const mesa = db[key];
 
-                // Card UI
+                // Card UI - Compact
                 const card = document.createElement('div');
                 card.className = `card-mesa ${mesa.status}`;
+                if (currentMesaId === i) card.style.border = "3px solid var(--primary)";
+
                 card.innerHTML = `
-                    <div style="font-size: 30px;">${mesa.status === 'free' ? '✅' : '🔴'}</div>
+                    <div style="font-size: 24px;">${mesa.status === 'free' ? '✅' : '🔴'}</div>
                     MESA ${i}
-                    <div style="font-size: 14px; margin-top: 5px;">${mesa.status === 'free' ? 'Libre' : formatMoney(mesa.total)}</div>
+                    <div style="font-size: 12px; margin-top: 2px;">${mesa.status === 'free' ? 'Libre' : formatMoney(mesa.total)}</div>
                 `;
 
                 if (mesa.status === 'occupied') {
                     occupiedCount++;
                     card.onclick = () => openBill(i);
+                } else {
+                    card.style.opacity = "0.7"; // Dim free tables slightly
                 }
 
-                grid.appendChild(card);
+                if (i <= 10) {
+                    leftContainer.appendChild(card);
+                } else {
+                    rightContainer.appendChild(card);
+                }
             }
 
             // --- UPDATE STATS ---
@@ -170,24 +202,67 @@
             const report = getDailyReport();
             const statSales = document.getElementById('statSales');
             if (statSales) statSales.innerText = formatMoney(report.totalRevenue);
+
+            // Refresh detail view if open
+            if (currentMesaId && db[`mesa_${currentMesaId}`].status === 'occupied') {
+                renderActionPanel(currentMesaId);
+            } else if (currentMesaId && db[`mesa_${currentMesaId}`].status === 'free') {
+                document.getElementById('actionPanel').innerHTML = `
+                    <div style="text-align:center; color:#999; margin-top: 50px;">
+                        <p style="font-size: 40px; margin-bottom: 10px;">✅</p>
+                        <p>Mesa ${currentMesaId} liberada</p>
+                    </div>`;
+                currentMesaId = null;
+            }
         }
 
         function openBill(id) {
+            currentMesaId = id;
+            renderActionPanel(id);
+            renderTables(); // To highlight active border
+        }
+
+        function renderActionPanel(id) {
             const db = getDB();
             const mesa = db[`mesa_${id}`];
-            currentMesaId = id;
+            const panel = document.getElementById('actionPanel');
 
-            document.getElementById('modalTitle').innerText = `Cuenta Mesa ${id}`;
-            document.getElementById('billDetails').innerHTML = mesa.items.map(item => `
-                <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:10px 0;">
-                    <span>${item.name} ${item.printed ? '<span style="font-size:10px; color:green;">(En cocina)</span>' : '<span style="font-size:10px; color:red;">(NUEVO)</span>'}</span>
-                    <span>${formatMoney(item.price)}</span>
+            panel.innerHTML = `
+                <div class="action-header">
+                    <div>
+                        <h2 style="margin:0; color:var(--primary);">MESA ${id}</h2>
+                        <span style="color:#666; font-size:14px;">Orden en curso</span>
+                    </div>
+                    <div style="font-size:24px; font-weight:bold; color:var(--primary);">
+                        ${formatMoney(mesa.total)}
+                    </div>
                 </div>
-            `).join('');
-            document.getElementById('billTotal').innerText = `Total: ${formatMoney(mesa.total)}`;
 
+                <div class="action-body">
+                    ${mesa.items.map(item => `
+                        <div style="display:flex; justify-content:space-between; border-bottom:1px solid #eee; padding:12px 0;">
+                            <span>${item.name} 
+                                ${item.printed ?
+                    '<span style="font-size:11px; color:green; background:#e8f5e9; padding:2px 6px; border-radius:4px;">En cocina</span>' :
+                    '<span style="font-size:11px; color:red; background:#ffebee; padding:2px 6px; border-radius:4px;">NUEVO</span>'}
+                            </span>
+                            <span style="font-weight:600;">${formatMoney(item.price)}</span>
+                        </div>
+                    `).join('')}
+                </div>
 
-            modal.style.display = 'flex';
+                <div class="action-footer">
+                     <button onclick="printComanda()" style="background:#455A64; color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; gap:10px;">
+                        🔥 COCINA
+                    </button>
+                    <button onclick="printBill()" style="background:var(--primary); color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; gap:10px;">
+                        🖨️ PRE-CUENTA
+                    </button>
+                    <button onclick="closeTable()" style="grid-column: span 2; background:#43A047; color:white; border:none; padding:15px; border-radius:8px; font-weight:bold; cursor:pointer; font-size:18px;">
+                        💰 COBRAR Y CERRAR
+                    </button>
+                </div>
+            `;
         }
 
         function openReport() {
