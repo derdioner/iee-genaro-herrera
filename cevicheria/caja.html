@@ -227,14 +227,12 @@
             const panel = document.getElementById('actionPanel');
 
             panel.innerHTML = `
-                <div class="action-header">
-                    <div>
-                        <h2 style="margin:0; color:var(--primary);">MESA ${id}</h2>
-                        <span style="color:#666; font-size:14px;">Orden en curso</span>
-                    </div>
-                    <div style="font-size:24px; font-weight:bold; color:var(--primary);">
+                <div class="action-header" style="display:block; text-align:center;">
+                    <h1 style="margin:0; font-size: 36px; color:var(--primary); text-transform:uppercase;">CUENTA MESA ${id}</h1>
+                    <div style="font-size:40px; font-weight:800; color:#2E7D32; margin-top:5px;">
                         ${formatMoney(mesa.total)}
                     </div>
+                    <p style="color:#666; margin:0; font-size:14px;">Orden en curso</p>
                 </div>
 
                 <div class="action-body">
