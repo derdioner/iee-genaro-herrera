@@ -117,8 +117,11 @@
                         </div>
                         <div id="cat_${index}" class="items-container">
                             ${items.map(p => `
-                                <div class="product-btn" onclick="addToOrder(${p.id})">
-                                    <h4>${p.name}</h4>
+                                <div class="product-btn" id="btn_${p.id}" onclick="addToOrder(${p.id}, this)">
+                                    <div style="display:flex; justify-content:space-between;">
+                                        <h4>${p.name}</h4>
+                                        <span class="qty-badge" style="display:none">0</span>
+                                    </div>
                                     <span>${formatMoney(p.price)}</span>
                                 </div>
                             `).join('')}
@@ -129,6 +132,7 @@
         }
 
         function toggleCategory(id, headerElement) {
+            // Close others
             document.querySelectorAll('.items-container').forEach(el => {
                 if (el.id !== id) el.classList.remove('active');
             });
@@ -136,6 +140,7 @@
                 if (el !== headerElement) el.classList.remove('active');
             });
 
+            // Toggle current
             const target = document.getElementById(id);
             if (target) {
                 target.classList.toggle('active');
@@ -143,15 +148,33 @@
             }
         }
 
-        function addToOrder(productId) {
+        function addToOrder(productId, btnElement) {
             const product = MENU.find(p => p.id === productId);
-            // Add identifying info for tracking print status
+
+            // UI Feedback: Flash Green
+            if (btnElement) {
+                btnElement.classList.add('pressed');
+                setTimeout(() => btnElement.classList.remove('pressed'), 300);
+            }
+
+            // Add Logic
             const itemToAdd = {
                 ...product,
-                printed: false, // Default: not printed
+                printed: false,
                 addedAt: Date.now()
             };
             currentOrderItems.push(itemToAdd);
+
+            // UI Feedback: Update Counter
+            if (btnElement) {
+                const badge = btnElement.querySelector('.qty-badge');
+                if (badge) {
+                    const count = currentOrderItems.filter(i => i.id === productId).length;
+                    badge.innerText = count;
+                    badge.style.display = 'inline-block';
+                }
+            }
+
             renderOrderSummary();
         }
 

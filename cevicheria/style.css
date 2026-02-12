@@ -205,11 +205,45 @@ h1 {
     border-radius: 0;
     margin: 0;
     font-size: 16px;
+    transition: all 0.3s ease;
 }
 
 .category-header:hover {
     background: #F5F7FA;
     cursor: pointer;
+}
+
+.category-header.active {
+    background: var(--primary);
+    color: white;
+    border-left-color: white;
+}
+
+@keyframes flashGreen {
+    0% {
+        background-color: var(--success);
+        transform: scale(0.95);
+    }
+
+    100% {
+        background-color: var(--card);
+        transform: scale(1);
+    }
+}
+
+.product-btn.pressed {
+    animation: flashGreen 0.3s ease;
+}
+
+.qty-badge {
+    display: inline-block;
+    background: var(--accent);
+    color: white;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    margin-left: 5px;
+    font-weight: bold;
 }
 
 .items-container {
