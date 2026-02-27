@@ -867,11 +867,11 @@
         tForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const clientName = document.getElementById('clientName').value.trim();
-            const conceptSelect = document.getElementById('conceptSelect').value;
+            const conceptVal = document.getElementById('conceptSelect').value;
             const conceptDetail = document.getElementById('conceptDetail').value.trim();
 
             // Unir el select con el detalle si existe
-            const fullConcept = conceptDetail ? `${conceptSelect} - ${conceptDetail}` : conceptSelect;
+            const fullConcept = conceptDetail ? `${conceptVal} - ${conceptDetail}` : conceptVal;
 
             const amountVal = parseFloat(document.getElementById('amount').value);
             const typeVal = currentTxType; // Use global state instead of select
@@ -898,7 +898,7 @@
                 const treasuryDoc = await addDoc(collection(db, "treasury"), data);
 
                 // --- Sync Academic Recovery if applicable ---
-                if (currentAcademicRecord && conceptSelect.value === "Examen de Recuperación" && pendingSelection.length > 0) {
+                if (currentAcademicRecord && conceptVal === "Examen de Recuperación" && pendingSelection.length > 0) {
                     const academicDocRef = doc(db, "academic_recovery", currentAcademicRecord.id);
 
                     // Update the student record

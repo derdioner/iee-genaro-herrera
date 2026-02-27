@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tesoreria-gh-v2';
+const CACHE_NAME = 'tesoreria-gh-v3';
 const urlsToCache = [
     '/',
     '/treasury.html',
