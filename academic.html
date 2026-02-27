@@ -280,6 +280,66 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Subjects Grid Styles */
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+            margin-top: 5px;
+            padding: 10px;
+            background: #f1f5f9;
+            border-radius: 0.75rem;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .subject-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: white;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+            transition: 0.2s;
+            user-select: none;
+        }
+
+        .subject-item:hover {
+            border-color: var(--primary);
+            background: #f5f3ff;
+        }
+
+        .subject-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .subject-item span {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #475569;
+        }
+
+        .areas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .areas-counter {
+            background: var(--primary);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 800;
+        }
     </style>
 </head>
 
@@ -340,8 +400,13 @@
                         </div>
 
                         <div class="form-group">
-                            <label>Número de Áreas</label>
-                            <input type="number" id="areasCount" min="1" max="15" value="1" required>
+                            <div class="areas-header">
+                                <label style="margin-bottom:0;">Seleccionar Áreas</label>
+                                <span class="areas-counter" id="selectedCount">0 Seleccionadas</span>
+                            </div>
+                            <div class="subjects-grid" id="subjectsGrid">
+                                <!-- JS will populate this -->
+                            </div>
                         </div>
 
                         <div class="form-group">
@@ -415,11 +480,37 @@
         import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { consultarDNI } from './migo.js';
 
+        const subjects = [
+            "Matemática", "Comunicación", "Ciencia y Tecnología",
+            "Ciencias Sociales", "Desarrollo Personal, Ciudadanía y Cívica",
+            "Inglés", "Educación Física", "Arte y Cultura",
+            "Educación Religiosa", "Educación para el Trabajo", "Tutoría"
+        ];
+
         const academicForm = document.getElementById('academicForm');
         const dniInp = document.getElementById('dniSearch');
         const nameInp = document.getElementById('studentName');
         const btnSearch = document.getElementById('btnSearchMigo');
         const tableBody = document.getElementById('recoveryTableBody');
+        const subjectsGrid = document.getElementById('subjectsGrid');
+        const selectedCountLabel = document.getElementById('selectedCount');
+
+        // Populate Subjects
+        subjects.forEach(subject => {
+            const div = document.createElement('label');
+            div.className = 'subject-item';
+            div.innerHTML = `
+                <input type="checkbox" name="subject" value="${subject}">
+                <span>${subject}</span>
+            `;
+            subjectsGrid.appendChild(div);
+        });
+
+        // Update Counter
+        subjectsGrid.onchange = () => {
+            const checked = subjectsGrid.querySelectorAll('input:checked').length;
+            selectedCountLabel.innerText = `${checked} Seleccionadas`;
+        };
 
         // MIGO DNI Lookup
         const performSearch = async () => {
@@ -456,10 +547,13 @@
             e.preventDefault();
             const dni = dniInp.value.trim();
             const name = nameInp.value.trim();
-            const count = parseInt(document.getElementById('areasCount').value);
+            const checkedCheckboxes = Array.from(subjectsGrid.querySelectorAll('input:checked'));
+            const selectedAreas = checkedCheckboxes.map(cb => cb.value);
+            const count = selectedAreas.length;
             const period = document.getElementById('period').value;
 
             if (!name) return alert("Primero busca al estudiante por DNI.");
+            if (count === 0) return alert("Por favor selecciona al menos un área.");
 
             const btn = document.getElementById('btnSubmit');
             btn.disabled = true;
@@ -470,11 +564,13 @@
                     dni,
                     studentName: name,
                     areasCount: count,
+                    selectedAreas: selectedAreas,
                     period,
                     status: 'pending',
                     createdAt: serverTimestamp()
                 });
                 academicForm.reset();
+                selectedCountLabel.innerText = '0 Seleccionadas';
                 nameInp.placeholder = 'Nombres y Apellidos';
             } catch (err) {
                 alert("Error al guardar: " + err.message);
@@ -499,11 +595,18 @@
                     const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : '...';
 
                     const tr = document.createElement('tr');
+                    const areasDisplay = data.selectedAreas ?
+                        `<div style="font-size:0.7rem; color:#64748b; line-height:1.2;">
+                            <b style="color:var(--primary); font-size:0.8rem;">${data.areasCount}</b><br>
+                            ${data.selectedAreas.join(', ')}
+                         </div>` :
+                        `<span style="font-weight:700;">${data.areasCount}</span>`;
+
                     tr.innerHTML = `
                         <td>${date}</td>
                         <td style="font-weight:700;">${data.dni}</td>
                         <td>${data.studentName}</td>
-                        <td style="text-align:center;">${data.areasCount}</td>
+                        <td>${areasDisplay}</td>
                         <td><span class="badge badge-${data.status}">${data.status === 'pending' ? 'Pendiente' : 'Pagado'}</span></td>
                         <td>
                             <div style="display:flex; gap:5px;">
