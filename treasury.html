@@ -477,7 +477,19 @@
             <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
                 <i class="fas fa-graduation-cap"></i> Áreas a Recuperar
             </h2>
-            <div id="academicModalStudent" style="margin-bottom: 1rem;">
+            <div style="margin-bottom: 1.5rem; background: #f1f5f9; padding: 15px; border-radius: 12px;">
+                <label style="display:block; font-size:0.75rem; font-weight:800; margin-bottom:5px; color: #475569;">DNI
+                    DEL ESTUDIANTE</label>
+                <div style="display:flex; gap:5px;">
+                    <input type="text" id="studentDniModal" maxlength="8" placeholder="Ingrese DNI del Alumno">
+                    <button type="button" id="btnSearchStudentModal"
+                        style="padding:10px; background:var(--primary); color:white; border-radius: 8px;">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="academicModalStudent" style="margin-bottom: 1rem; display: none;">
                 <div id="modalStudentName" style="font-size: 1rem; color: #1e293b; font-weight: 800;"></div>
                 <div id="modalStudentGrade" style="font-size: 0.8rem; color: #64748b; font-weight: 700;"></div>
             </div>
@@ -619,73 +631,92 @@
 
         conceptSelect.onchange = async () => {
             if (conceptSelect.value === "Examen de Recuperación") {
-                const dni = dniSearch.value.trim();
-                if (dni.length !== 8) {
-                    alert("Por favor ingrese el DNI del alumno primero para buscar su registro académico.");
-                    conceptSelect.value = "Otros";
-                    return;
-                }
-
-                // Open and Load
+                // Open and Reset Modal
                 academicModal.classList.add('active');
-                document.getElementById('modalStudentName').innerText = clientNameInput.value || "Buscando...";
+
+                // Clear previous modal state
+                document.getElementById('studentDniModal').value = "";
+                document.getElementById('modalStudentName').innerText = "";
                 document.getElementById('modalStudentGrade').innerText = "";
-                document.getElementById('academicModalLoader').style.display = 'block';
+                document.getElementById('academicModalStudent').style.display = 'none';
+                document.getElementById('academicModalLoader').style.display = 'none';
                 document.getElementById('academicModalContent').style.display = 'none';
                 document.getElementById('academicModalEmpty').style.display = 'none';
 
-                try {
-                    const q = query(collection(db, "academic_recovery"), where("dni", "==", dni), limit(1));
-                    const snap = await getDocs(q);
+                currentAcademicRecord = null;
+                pendingSelection = [];
 
-                    if (snap.empty) {
-                        document.getElementById('academicModalLoader').style.display = 'none';
-                        document.getElementById('academicModalEmpty').style.display = 'block';
-                        currentAcademicRecord = null;
-                        return;
-                    }
-
-                    currentAcademicRecord = { id: snap.docs[0].id, ...snap.docs[0].data() };
-
-                    // Show subjects
-                    const subjectsList = document.getElementById('academicSubjectsList');
-                    subjectsList.innerHTML = '';
-
-                    document.getElementById('modalStudentName').innerText = currentAcademicRecord.studentName;
-                    document.getElementById('modalStudentGrade').innerText = `${currentAcademicRecord.grade || '-'} | Sección "${currentAcademicRecord.section || '-'}"`;
-
-                    const paid = currentAcademicRecord.paidAreas || [];
-                    const selected = currentAcademicRecord.selectedAreas || [];
-
-                    // Filter those NOT already paid
-                    const pending = selected.filter(s => !paid.includes(s));
-
-                    if (pending.length === 0) {
-                        document.getElementById('academicModalLoader').style.display = 'none';
-                        alert("Este alumno ya tiene todas sus áreas pagadas.");
-                        closeAcademicModal();
-                        return;
-                    }
-
-                    pending.forEach(area => {
-                        const div = document.createElement('label');
-                        div.className = 'subject-sel-item';
-                        div.innerHTML = `
-                            <input type="checkbox" name="academic_area" value="${area}">
-                            <span>${area}</span>
-                        `;
-                        subjectsList.appendChild(div);
-                    });
-
-                    document.getElementById('academicModalLoader').style.display = 'none';
-                    document.getElementById('academicModalContent').style.display = 'block';
-
-                } catch (err) {
-                    console.error("Academic Fetch Error:", err);
-                    alert("Error consultando el Módulo Académico.");
-                    closeAcademicModal();
-                }
+                setTimeout(() => document.getElementById('studentDniModal').focus(), 300);
             }
+        };
+
+        const performStudentSearchModal = async () => {
+            const dni = document.getElementById('studentDniModal').value.trim();
+            if (dni.length !== 8) {
+                alert("Por favor ingrese un DNI de 8 dígitos.");
+                return;
+            }
+
+            document.getElementById('academicModalLoader').style.display = 'block';
+            document.getElementById('academicModalContent').style.display = 'none';
+            document.getElementById('academicModalEmpty').style.display = 'none';
+            document.getElementById('academicModalStudent').style.display = 'none';
+
+            try {
+                const q = query(collection(db, "academic_recovery"), where("dni", "==", dni), limit(1));
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    document.getElementById('academicModalLoader').style.display = 'none';
+                    document.getElementById('academicModalEmpty').style.display = 'block';
+                    currentAcademicRecord = null;
+                    return;
+                }
+
+                currentAcademicRecord = { id: snap.docs[0].id, ...snap.docs[0].data() };
+
+                // Show subjects
+                const subjectsList = document.getElementById('academicSubjectsList');
+                subjectsList.innerHTML = '';
+
+                document.getElementById('modalStudentName').innerText = currentAcademicRecord.studentName;
+                document.getElementById('modalStudentGrade').innerText = `${currentAcademicRecord.grade || '-'} | Sección "${currentAcademicRecord.section || '-'}"`;
+                document.getElementById('academicModalStudent').style.display = 'block';
+
+                const paid = currentAcademicRecord.paidAreas || [];
+                const selected = currentAcademicRecord.selectedAreas || [];
+
+                // Filter those NOT already paid
+                const pending = selected.filter(s => !paid.includes(s));
+
+                if (pending.length === 0) {
+                    document.getElementById('academicModalLoader').style.display = 'none';
+                    alert("Este alumno ya tiene todas sus áreas pagadas.");
+                    return;
+                }
+
+                pending.forEach(area => {
+                    const div = document.createElement('label');
+                    div.className = 'subject-sel-item';
+                    div.innerHTML = `
+                        <input type="checkbox" name="academic_area" value="${area}">
+                        <span>${area}</span>
+                    `;
+                    subjectsList.appendChild(div);
+                });
+
+                document.getElementById('academicModalLoader').style.display = 'none';
+                document.getElementById('academicModalContent').style.display = 'block';
+
+            } catch (err) {
+                console.error("Academic Fetch Error:", err);
+                alert("Error consultando el Módulo Académico.");
+            }
+        };
+
+        document.getElementById('btnSearchStudentModal').onclick = performStudentSearchModal;
+        document.getElementById('studentDniModal').onkeypress = (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); performStudentSearchModal(); }
         };
 
         window.confirmAcademicSelection = () => {
@@ -697,10 +728,10 @@
 
             pendingSelection = checked.map(c => c.value);
             const detailInput = document.getElementById('conceptDetail');
-            detailInput.value = `Pago por: ${pendingSelection.join(', ')}`;
 
-            // Sugerir monto basado en cantidad (Ej: 20 soles por área)
-            // document.getElementById('amount').value = pendingSelection.length * 20; 
+            // Incluir nombre del estudiante en el detalle para el recibo
+            const studentName = currentAcademicRecord ? currentAcademicRecord.studentName : "";
+            detailInput.value = `Alumno: ${studentName} | Áreas: ${pendingSelection.join(', ')}`;
 
             closeAcademicModal();
         };
