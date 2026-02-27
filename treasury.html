@@ -269,6 +269,82 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1.5rem;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-card {
+            transform: translateY(0);
+        }
+
+        .subjects-sel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+            margin: 1.5rem 0;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .subject-sel-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .subject-sel-item:hover {
+            border-color: var(--primary);
+            background: #f0f7ff;
+        }
+
+        .subject-sel-item.selected {
+            background: #dbeafe;
+            border-color: var(--primary);
+        }
+
+        .subject-sel-item input {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+
+        .subject-sel-item span {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
     </style>
 </head>
 
@@ -395,10 +471,50 @@
         </div>
     </div>
 
+    <!-- Modal para Selección de Áreas de Recuperación -->
+    <div id="academicModal" class="modal-overlay">
+        <div class="modal-card">
+            <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
+                <i class="fas fa-graduation-cap"></i> Áreas a Recuperar
+            </h2>
+            <p id="academicModalStudent"
+                style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem; font-weight: 600;"></p>
+
+            <div id="academicModalLoader" style="text-align:center; padding: 2rem; display:none;">
+                <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
+                <p style="margin-top: 10px; font-weight: 600;">Buscando registro académico...</p>
+            </div>
+
+            <div id="academicModalEmpty" style="text-align:center; padding: 2rem; display:none;">
+                <i class="fas fa-exclamation-circle fa-2x" style="color: var(--error);"></i>
+                <p style="margin-top: 10px; font-weight: 600;">Este alumno no está registrado en el Módulo Académico.
+                </p>
+                <button type="button" onclick="closeAcademicModal()" class="tab-btn"
+                    style="margin-top: 15px;">Cerrar</button>
+            </div>
+
+            <div id="academicModalContent" style="display:none;">
+                <p style="font-size: 0.8rem; font-weight: 700; color: #1e293b;">Seleccione las áreas que el alumno está
+                    pagando hoy:</p>
+                <div class="subjects-sel-grid" id="academicSubjectsList">
+                    <!-- populated via js -->
+                </div>
+                <div style="display:flex; gap: 10px;">
+                    <button type="button" class="btn-primary" style="flex:1;" onclick="confirmAcademicSelection()">
+                        CONFIRMAR SELECCIÓN
+                    </button>
+                    <button type="button" class="btn-danger" style="width: auto;" onclick="closeAcademicModal()">
+                        CANCELAR
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         import { db } from './firebase-config.js';
         import { qrDb } from './firebase-qr-config.js';
-        import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp, where, getDocs, limit, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         import { consultarDNI, enviarWhatsApp, enviarWhatsAppMedia } from './migo.js';
 
         const PIN_CORRECTO = '202610';
@@ -483,6 +599,104 @@
                 btnSearchMigo.innerHTML = '<i class="fas fa-search"></i>';
                 clientNameInput.placeholder = 'Ej: Juan Perez';
             }
+        };
+
+        btnSearchMigo.addEventListener('click', performDNILookup);
+        dniSearch.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); performDNILookup(); } });
+
+        // --- NEW: ACADEMIC INTEGRATION LOGIC ---
+        const academicModal = document.getElementById('academicModal');
+        const conceptSelect = document.getElementById('conceptSelect');
+        let currentAcademicRecord = null; // Store fetched student academic data
+        let pendingSelection = []; // Areas selected for current payment
+
+        window.closeAcademicModal = () => {
+            academicModal.classList.remove('active');
+            // If they cancel and didn't select anything, maybe reset concept or keep it
+        };
+
+        conceptSelect.onchange = async () => {
+            if (conceptSelect.value === "Examen de Recuperación") {
+                const dni = dniSearch.value.trim();
+                if (dni.length !== 8) {
+                    alert("Por favor ingrese el DNI del alumno primero para buscar su registro académico.");
+                    conceptSelect.value = "Otros";
+                    return;
+                }
+
+                // Open and Load
+                academicModal.classList.add('active');
+                document.getElementById('academicModalStudent').innerText = clientNameInput.value || "Buscando...";
+                document.getElementById('academicModalLoader').style.display = 'block';
+                document.getElementById('academicModalContent').style.display = 'none';
+                document.getElementById('academicModalEmpty').style.display = 'none';
+
+                try {
+                    const q = query(collection(db, "academic_recovery"), where("dni", "==", dni), limit(1));
+                    const snap = await getDocs(q);
+
+                    if (snap.empty) {
+                        document.getElementById('academicModalLoader').style.display = 'none';
+                        document.getElementById('academicModalEmpty').style.display = 'block';
+                        currentAcademicRecord = null;
+                        return;
+                    }
+
+                    currentAcademicRecord = { id: snap.docs[0].id, ...snap.docs[0].data() };
+
+                    // Show subjects
+                    const subjectsList = document.getElementById('academicSubjectsList');
+                    subjectsList.innerHTML = '';
+
+                    const paid = currentAcademicRecord.paidAreas || [];
+                    const selected = currentAcademicRecord.selectedAreas || [];
+
+                    // Filter those NOT already paid
+                    const pending = selected.filter(s => !paid.includes(s));
+
+                    if (pending.length === 0) {
+                        document.getElementById('academicModalLoader').style.display = 'none';
+                        alert("Este alumno ya tiene todas sus áreas pagadas.");
+                        closeAcademicModal();
+                        return;
+                    }
+
+                    pending.forEach(area => {
+                        const div = document.createElement('label');
+                        div.className = 'subject-sel-item';
+                        div.innerHTML = `
+                            <input type="checkbox" name="academic_area" value="${area}">
+                            <span>${area}</span>
+                        `;
+                        subjectsList.appendChild(div);
+                    });
+
+                    document.getElementById('academicModalLoader').style.display = 'none';
+                    document.getElementById('academicModalContent').style.display = 'block';
+
+                } catch (err) {
+                    console.error("Academic Fetch Error:", err);
+                    alert("Error consultando el Módulo Académico.");
+                    closeAcademicModal();
+                }
+            }
+        };
+
+        window.confirmAcademicSelection = () => {
+            const checked = Array.from(document.querySelectorAll('input[name="academic_area"]:checked'));
+            if (checked.length === 0) {
+                alert("Seleccione al menos un área.");
+                return;
+            }
+
+            pendingSelection = checked.map(c => c.value);
+            const detailInput = document.getElementById('conceptDetail');
+            detailInput.value = `Pago por: ${pendingSelection.join(', ')}`;
+
+            // Sugerir monto basado en cantidad (Ej: 20 soles por área)
+            // document.getElementById('amount').value = pendingSelection.length * 20; 
+
+            closeAcademicModal();
         };
 
         btnSearchMigo.addEventListener('click', performDNILookup);
@@ -666,12 +880,49 @@
                 timestamp: serverTimestamp()
             };
 
+            // Include DNI if available for easier cross-ref
+            const dni = dniSearch.value.trim();
+            if (dni) data.dni = dni;
+
             const btn = tForm.querySelector('button[type="submit"]');
             btn.disabled = true;
             btn.innerText = 'Cargando...';
 
             try {
-                await addDoc(collection(db, "treasury"), data);
+                const treasuryDoc = await addDoc(collection(db, "treasury"), data);
+
+                // --- Sync Academic Recovery if applicable ---
+                if (currentAcademicRecord && conceptSelect.value === "Examen de Recuperación" && pendingSelection.length > 0) {
+                    const academicDocRef = doc(db, "academic_recovery", currentAcademicRecord.id);
+
+                    // Update the student record
+                    const currentlyPaid = currentAcademicRecord.paidAreas || [];
+                    const newPaidList = [...currentlyPaid, ...pendingSelection];
+
+                    const updateData = {
+                        paidAreas: arrayUnion(...pendingSelection),
+                        paymentHistory: arrayUnion({
+                            treasuryId: treasuryDoc.id,
+                            concepts: pendingSelection,
+                            amount: amountVal,
+                            date: new Date().toISOString()
+                        })
+                    };
+
+                    // If all areas are now in paid list, mark as 'paid' status
+                    const allSelected = currentAcademicRecord.selectedAreas || [];
+                    const isFullyPaid = allSelected.every(area => newPaidList.includes(area));
+
+                    if (isFullyPaid) {
+                        updateData.status = 'paid';
+                    }
+
+                    await updateDoc(academicDocRef, updateData);
+
+                    // Reset academic state
+                    currentAcademicRecord = null;
+                    pendingSelection = [];
+                }
 
                 // WhatsApp Logic
                 if (shouldSendWS && phoneVal) {

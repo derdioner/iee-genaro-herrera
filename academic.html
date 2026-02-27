@@ -595,22 +595,34 @@
                     const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : '...';
 
                     const tr = document.createElement('tr');
-                    const areasDisplay = data.selectedAreas ?
-                        `<div style="font-size:0.7rem; color:#64748b; line-height:1.2;">
-                            <b style="color:var(--primary); font-size:0.8rem;">${data.areasCount}</b><br>
-                            ${data.selectedAreas.join(', ')}
+
+                    // Logic to show paid vs pending areas
+                    const allSelected = data.selectedAreas || [];
+                    const paidList = data.paidAreas || [];
+
+                    const areasDisplay = allSelected.length > 0 ?
+                        `<div style="font-size:0.75rem; line-height:1.4;">
+                            ${allSelected.map(area => {
+                            const isPaid = paidList.includes(area);
+                            return `<span style="${isPaid ? 'color:#10b981; text-decoration:line-through; opacity:0.6;' : 'color:#1e293b; font-weight:700;'}">
+                                    ${isPaid ? '<i class="fas fa-check-circle"></i> ' : '<i class="fas fa-clock"></i> '} ${area}
+                                </span>`;
+                        }).join('<br>')}
                          </div>` :
-                        `<span style="font-weight:700;">${data.areasCount}</span>`;
+                        `<span style="font-weight:700;">${data.areasCount} (Sin detalle)</span>`;
 
                     tr.innerHTML = `
                         <td>${date}</td>
                         <td style="font-weight:700;">${data.dni}</td>
-                        <td>${data.studentName}</td>
+                        <td>
+                            <div style="font-weight:800; color:var(--text);">${data.studentName}</div>
+                            <div style="font-size:0.65rem; color:#64748b;">${data.period}</div>
+                        </td>
                         <td>${areasDisplay}</td>
                         <td><span class="badge badge-${data.status}">${data.status === 'pending' ? 'Pendiente' : 'Pagado'}</span></td>
                         <td>
                             <div style="display:flex; gap:5px;">
-                                <button onclick="toggleStatus('${dDoc.id}', '${data.status}')" class="btn-action" title="Cambiar Estado">
+                                <button onclick="toggleStatus('${dDoc.id}', '${data.status}')" class="btn-action" title="Cambiar Estado Final">
                                     <i class="fas ${data.status === 'pending' ? 'fa-check' : 'fa-clock'}"></i>
                                 </button>
                                 <button onclick="deleteRecord('${dDoc.id}')" class="btn-action btn-delete" title="Eliminar">
