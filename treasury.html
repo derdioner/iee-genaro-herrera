@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesorería | IEE Genaro Herrera</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --error: #ef4444;
+            --bg: #f8fafc;
+            --text: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        /* Access Overlay */
+        #accessOverlay {
+            position: fixed;
+            inset: 0;
+            background: #0f172a;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pin-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            width: 90%;
+            max-width: 350px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .pin-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 2rem;
+            text-align: center;
+            letter-spacing: 15px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            margin: 20px 0;
+            outline: none;
+            transition: 0.3s;
+            background: #f8fafc;
+        }
+
+        /* Ocultar el icono del "Ojo" (reveal password) en Microsoft Edge y Chrome */
+        .pin-input::-ms-reveal,
+        .pin-input::-ms-clear {
+            display: none;
+        }
+
+        .pin-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+
+        /* Main Layout */
+        #mainContent {
+            display: none;
+        }
+
+        header {
+            background: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+            border: 1px solid #f1f5f9;
+        }
+
+        .stat-card h3 {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .value {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .balance {
+            color: var(--primary);
+        }
+
+        .income {
+            color: var(--success);
+        }
+
+        .expense {
+            color: var(--error);
+        }
+
+        .form-card {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr 1fr 140px 100px 80px auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .half-width {
+            grid-column: span 3;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid transparent;
+            background: #f1f5f9;
+            color: #64748b;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .tab-btn.active.income {
+            background: #d1fae5;
+            color: #065f46;
+            border-color: #059669;
+        }
+
+        .tab-btn.active.expense {
+            background: #fee2e2;
+            color: #991b1b;
+            border-color: #dc2626;
+        }
+
+        input,
+        select {
+            padding: 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        button {
+            padding: 12px 25px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        th {
+            background: #f1f5f9;
+            padding: 15px;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        td {
+            padding: 15px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .bg-income {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .bg-expense {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="accessOverlay">
+        <div class="pin-card">
+            <img src="images/logo.png" alt="Logo" style="height: 60px; margin-bottom: 20px;">
+            <h2>Acceso Tesorería</h2>
+            <p style="color: #64748b; font-size: 0.9rem;">Ingrese el PIN de seguridad</p>
+            <input type="password" id="pinInput" class="pin-input" maxlength="6" placeholder="••••••">
+            <div id="pinError" style="color: var(--error); font-weight: 600; font-size: 0.85rem; height: 20px;"></div>
+        </div>
+    </div>
+
+    <div id="mainContent">
+        <header>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="images/logo.png" alt="Logo" style="height: 40px;">
+                <h1 style="font-size: 1.2rem; font-weight: 800;">Tesorería Hub</h1>
+            </div>
+            <button onclick="location.reload()" style="background: #f1f5f9; color: #475569;">Cerrar Sesión</button>
+        </header>
+
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Saldo Actual</h3>
+                    <div class="value balance" id="currentBalance">S/ 0.00</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Ingresos Totales</h3>
+                    <div class="value income" id="totalIncome">S/ 0.00</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Egresos Totales</h3>
+                    <div class="value expense" id="totalExpense">S/ 0.00</div>
+                </div>
+            </div>
+
+            <div class="form-card">
+                <div class="tabs">
+                    <button type="button" class="tab-btn active income" onclick="switchTab('income')"
+                        id="tabIncome">INGRESO</button>
+                    <button type="button" class="tab-btn expense" onclick="switchTab('expense')"
+                        id="tabExpense">EGRESO</button>
+                </div>
+
+                <h3 style="margin-bottom: 20px;" id="formTitle">Nuevo Ingreso</h3>
+                <form id="treasuryForm" class="form-grid">
+
+                    <!-- Fila 1: DNI y Nombre (Mitad de pantalla) -->
+                    <div style="grid-column: span 2;" id="dniContainer">
+                        <label style="display:block; font-size:0.75rem; font-weight:800; margin-bottom:5px;">DNI</label>
+                        <div style="display:flex; gap:5px;">
+                            <input type="text" id="dniSearch" maxlength="8" placeholder="DNI">
+                            <button type="button" id="btnSearchMigo"
+                                style="padding:10px; background:#e2e8f0; color:var(--primary);"><i
+                                    class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                    <div style="grid-column: span 5;" id="nameContainer">
+                        <label id="nameLabel"
+                            style="display:block; font-size:0.75rem; font-weight:800; margin-bottom:5px;">NOMBRE Y
+                            APELLIDO / PROVEEDOR</label>
+                        <input type="text" id="clientName" placeholder="Ej: Juan Perez" required>
+                    </div>
+
+                    <!-- Fila 2: Conceptos y Detalles (Ancho completo) -->
+                    <div style="grid-column: span 2;">
+                        <label style="display:block; font-size:0.75rem; font-weight:800; margin-bottom:5px;">TIPO DE
+                            CONCEPTO</label>
+                        <select id="conceptSelect" required>
+                            <!-- Options logic injected via JS depending on tab -->
+                        </select>
+                    </div>
+                    <div style="grid-column: span 5;">
+                        <label style="display:block; font-size:0.75rem; font-weight:800; margin-bottom:5px;">DETALLE DE
+                            CONCEPTO (Opcional)</label>
+                        <input type="text" id="conceptDetail"
+                            placeholder="Escriba aquí los detalles adicionales (Ej: Mes de Marzo, Grado...)">
+                    </div>
+
+                    <!-- Fila 3: Montos y Envío -->
+                    <div style="grid-column: span 3;">
+                        <label style="display:block; font-size:0.75rem; font-weight:800; margin-bottom:5px;">TELÉFONO
+                            (WS)</label>
+                        <input type="text" id="phone" placeholder="999888777">
+                    </div>
+                    <div style="grid-column: span 2;">
+                        <label style="display:block; font-size:0.75rem; font-weight:800; margin-bottom:5px;">MONTO
+                            (S/)</label>
+                        <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <!-- 'type' select removed, handled by JS tab state -->
+
+                    <div id="wsContainer"
+                        style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; grid-column: span 1; padding-bottom: 10px;">
+                        <label style="font-size: 0.7rem; font-weight: 800; margin: 0;">¿WS?</label>
+                        <input type="checkbox" id="sendWhatsApp" checked style="width: 20px; height: 20px; margin: 0;">
+                    </div>
+                    <button type="submit" id="submitBtn" class="btn-primary"
+                        style="grid-column: span 1;">REGISTRAR</button>
+                </form>
+            </div>
+
+            <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                <h3>Historial de Movimientos</h3>
+                <div style="overflow-x: auto;">
+                    <table id="historyTable">
+                        <thead>
+                            <tr>
+                                <th>FECHA</th>
+                                <th>CONCEPTO</th>
+                                <th>TIPO</th>
+                                <th>MONTO</th>
+                                <th>ACCIONES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { qrDb } from './firebase-qr-config.js';
+        import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { consultarDNI, enviarWhatsApp, enviarWhatsAppMedia } from './migo.js';
+
+        const PIN_CORRECTO = '202610';
+        const pinInput = document.getElementById('pinInput');
+        const pinError = document.getElementById('pinError');
+        const accessOverlay = document.getElementById('accessOverlay');
+        const mainContent = document.getElementById('mainContent');
+        const tForm = document.getElementById('treasuryForm');
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('Service Worker failed', err));
+            });
+        }
+
+        // Auto-lock Session (5 Minutes Inactivity)
+        let inactivityTimer;
+        const resetTimer = () => {
+            clearTimeout(inactivityTimer);
+            // 300,000 ms = 5 min
+            inactivityTimer = setTimeout(() => {
+                accessOverlay.style.display = 'flex';
+                // mainContent.style.filter = 'blur(5px)'; // Quitamos el blur porque estaba interfiriendo con el z-index
+                mainContent.style.pointerEvents = 'none';
+                pinInput.value = '';
+                pinInput.focus();
+                document.getElementById('pinError').textContent = "Sesión cerrada por inactividad";
+            }, 300000);
+        };
+
+        // Listen for activity to reset the timer
+        window.addEventListener('mousemove', resetTimer);
+        window.addEventListener('keypress', resetTimer);
+        window.addEventListener('click', resetTimer);
+        window.addEventListener('scroll', resetTimer);
+        // Start timer initially just in case they unlock and stare
+        resetTimer();
+
+        // Migo DNI Lookup
+        const dniSearch = document.getElementById('dniSearch');
+        const btnSearchMigo = document.getElementById('btnSearchMigo');
+        const clientNameInput = document.getElementById('clientName');
+        const phoneInput = document.getElementById('phone');
+
+        const performDNILookup = async () => {
+            const dni = dniSearch.value.trim();
+            if (dni.length !== 8) return;
+
+            btnSearchMigo.disabled = true;
+            btnSearchMigo.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            clientNameInput.placeholder = 'Buscando datos...';
+
+            try {
+                const result = await consultarDNI(dni);
+                if (result.success) {
+                    clientNameInput.value = result.nombre;
+
+                    // --- NEW: Search for phone in qrDb (gh20261) ---
+                    try {
+                        const qQr = query(collection(qrDb, "students"), where("id", "==", dni), limit(1));
+                        const snapQr = await getDocs(qQr);
+                        if (!snapQr.empty) {
+                            const studentData = snapQr.docs[0].data();
+                            if (studentData.p) {
+                                phoneInput.value = studentData.p;
+                            }
+                        }
+                    } catch (qrErr) {
+                        console.error("Error fetching phone from qrDb:", qrErr);
+                    }
+
+                    clientNameInput.focus();
+                } else {
+                    alert(result.message || "No se encontró información para este DNI.");
+                }
+            } catch (err) {
+                console.error("DNI Lookup Error:", err);
+                alert("Error crítico al buscar DNI. Revisa la consola.");
+            } finally {
+                btnSearchMigo.disabled = false;
+                btnSearchMigo.innerHTML = '<i class="fas fa-search"></i>';
+                clientNameInput.placeholder = 'Ej: Juan Perez';
+            }
+        };
+
+        btnSearchMigo.addEventListener('click', performDNILookup);
+        dniSearch.addEventListener('keypress', (e) => { if (e.key === 'Enter') { e.preventDefault(); performDNILookup(); } });
+
+        let currentTxType = 'income'; // Estado global del tab
+
+        window.switchTab = (type) => {
+            currentTxType = type;
+            const tabIncome = document.getElementById('tabIncome');
+            const tabExpense = document.getElementById('tabExpense');
+            const formTitle = document.getElementById('formTitle');
+            const nameLabel = document.getElementById('nameLabel');
+            const submitBtn = document.getElementById('submitBtn');
+            const conceptSelect = document.getElementById('conceptSelect');
+            // const dniContainer = document.getElementById('dniContainer'); // El usuario pidió que se mantenga el DNI
+
+            if (type === 'income') {
+                tabIncome.classList.add('active');
+                tabExpense.classList.remove('active');
+                formTitle.textContent = "Nuevo Ingreso";
+                nameLabel.textContent = "NOMBRE Y APELLIDO";
+                submitBtn.className = "btn-primary";
+                submitBtn.textContent = "REGISTRAR INGRESO";
+
+                // Opciones de Ingreso
+                conceptSelect.innerHTML = `
+                    <option value="Certificado de Estudios">Certificado de Estudios</option>
+                    <option value="Solicitud de Traslado">Solicitud de Traslado</option>
+                    <option value="Constancia de Vacante">Constancia de Vacante</option>
+                    <option value="Examen de Recuperación">Examen de Recuperación</option>
+                    <option value="Otros">Otros</option>
+                `;
+            } else {
+                tabExpense.classList.add('active');
+                tabIncome.classList.remove('active');
+                formTitle.textContent = "Nuevo Egreso";
+                nameLabel.textContent = "PROVEEDOR / ENCARGADO";
+                submitBtn.className = "btn-danger";
+                submitBtn.textContent = "REGISTRAR EGRESO";
+
+                // Opciones de Egreso
+                conceptSelect.innerHTML = `
+                    <option value="Pago de Servicios">Pago de Servicios</option>
+                    <option value="Mantenimiento">Mantenimiento</option>
+                    <option value="Compra de Materiales">Compra de Materiales</option>
+                    <option value="Honorarios">Honorarios</option>
+                    <option value="Otros">Otros</option>
+                `;
+            }
+        };
+
+        // Initialize default tab
+        switchTab('income');
+
+        pinInput.addEventListener('keyup', (e) => {
+            if (e.target.value.length === 6) {
+                if (e.target.value === PIN_CORRECTO) {
+                    accessOverlay.style.display = 'none';
+                    mainContent.style.display = 'block';
+                    mainContent.style.filter = 'none';
+                    mainContent.style.pointerEvents = 'all';
+                    resetTimer(); // Reset timer upon login
+                    loadData();
+                } else {
+                    document.getElementById('pinError').textContent = "PIN Incorrecto";
+                    e.target.value = "";
+                }
+            }
+        });
+
+        // Generador de Boleta Digital (HTML5 Canvas)
+        async function generateReceiptBase64(nombre, concepto, monto, fechaStr, isIncome) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 600;
+            canvas.height = 800;
+            const ctx = canvas.getContext('2d');
+
+            // Fondo Blanco
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Borde superior (Azul para Ingreso, Rojo para Egreso)
+            ctx.fillStyle = isIncome ? '#2563eb' : '#dc2626';
+            ctx.fillRect(0, 0, canvas.width, 20);
+
+            // Dibujar Logo
+            const logo = new Image();
+            logo.src = 'images/logo.png';
+            await new Promise((resolve) => {
+                logo.onload = resolve;
+                logo.onerror = resolve; // Continue even if load fails
+            });
+            ctx.drawImage(logo, 260, 35, 80, 80);
+
+            // Título
+            ctx.fillStyle = '#1e293b';
+            ctx.font = 'bold 32px "Courier New", Courier, monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('I.E.E. GENARO HERRERA', 300, 145);
+
+            ctx.font = 'bold 24px "Courier New", Courier, monospace';
+            ctx.fillStyle = '#64748b';
+            const receiptTitle = isIncome ? 'RECIBO DIGITAL DE TESORERÍA' : 'COMPROBANTE DE SALIDA';
+            ctx.fillText(receiptTitle, 300, 180);
+
+            // Línea separadora
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(40, 210);
+            ctx.lineTo(560, 210);
+            ctx.stroke();
+
+            // Monto (Verde para ingreso, Rojo para egreso)
+            ctx.font = 'bold 48px "Courier New", Courier, monospace';
+            ctx.fillStyle = isIncome ? '#10b981' : '#ef4444';
+            ctx.fillText(`S/ ${monto.toFixed(2)}`, 300, 280);
+
+            ctx.font = '18px "Courier New", Courier, monospace';
+            ctx.fillStyle = '#64748b';
+            const amountLabel = isIncome ? 'MONTO PAGADO' : 'MONTO ENTREGADO';
+            ctx.fillText(amountLabel, 300, 310);
+
+            // Caja de detalles
+            ctx.fillStyle = '#f8fafc';
+            ctx.fillRect(40, 350, 520, 280);
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.strokeRect(40, 350, 520, 280);
+
+            ctx.textAlign = 'left';
+
+            // Función auxiliar para texto multilinea
+            function drawDetail(label, value, y) {
+                ctx.font = 'bold 18px "Courier New", Courier, monospace';
+                ctx.fillStyle = '#64748b';
+                ctx.fillText(label, 60, y);
+                ctx.font = '18px "Courier New", Courier, monospace';
+                ctx.fillStyle = '#1e293b';
+                ctx.fillText(value, 200, y);
+            }
+
+            drawDetail('Fecha    :', fechaStr, 400);
+            drawDetail('Cajero   :', 'Admin. Tesorería', 440);
+            drawDetail('Cliente  :', nombre.length > 25 ? nombre.substring(0, 25) + '...' : nombre, 480);
+            drawDetail('Concepto :', concepto.length > 25 ? concepto.substring(0, 25) + '...' : concepto, 520);
+            drawDetail('Estado   :', 'COMPLETADO', 560);
+
+            // Footer
+            ctx.textAlign = 'center';
+            ctx.font = 'italic 16px "Arial", sans-serif';
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillText('Gracias por su compromiso con la educación.', 300, 710);
+            ctx.fillText('Este es un comprobante de uso interno.', 300, 740);
+
+            // Extraer Base64 (sin el prefijo)
+            const dataUrl = canvas.toDataURL('image/png');
+            return dataUrl.split(',')[1];
+        }
+
+        // Database logic
+        tForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const clientName = document.getElementById('clientName').value.trim();
+            const conceptSelect = document.getElementById('conceptSelect').value;
+            const conceptDetail = document.getElementById('conceptDetail').value.trim();
+
+            // Unir el select con el detalle si existe
+            const fullConcept = conceptDetail ? `${conceptSelect} - ${conceptDetail}` : conceptSelect;
+
+            const amountVal = parseFloat(document.getElementById('amount').value);
+            const typeVal = currentTxType; // Use global state instead of select
+            const phoneVal = document.getElementById('phone').value.trim();
+            const shouldSendWS = document.getElementById('sendWhatsApp').checked;
+
+            const data = {
+                clientName: clientName,
+                concept: fullConcept,
+                amount: amountVal,
+                type: typeVal,
+                timestamp: serverTimestamp()
+            };
+
+            const btn = tForm.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerText = 'Cargando...';
+
+            try {
+                await addDoc(collection(db, "treasury"), data);
+
+                // WhatsApp Logic
+                if (shouldSendWS && phoneVal) {
+                    const isIncome = typeVal === 'income';
+                    const fechaNow = new Date().toLocaleString('es-PE');
+
+                    // 1. Generar la imagen en Base64
+                    const base64Image = await generateReceiptBase64(clientName, fullConcept, amountVal, fechaNow, isIncome);
+
+                    // 2. Enviar la imagen
+                    enviarWhatsAppMedia(phoneVal, base64Image, 'image', 'image/png').then(resMedia => {
+                        console.log("WS Media Success:", resMedia);
+
+                        // 3. Enviar el mensaje de texto explicativo estructurado según el tipo
+                        const header = isIncome ? '💰 *RECIBO DIGITAL GH*' : '💸 *COMPROBANTE DE SALIDA GH*';
+                        const textBody = isIncome ? 'Adjunto su comprobante electrónico por' : 'Adjunto el registro de salida de fondos por';
+                        const footer = isIncome ? '_Gracias por su compromiso con la educación._' : '_Documento de control interno de egresos._';
+
+                        const msg = `${header}\n\n${textBody} S/ ${amountVal.toFixed(2)}.\n📝 *Concepto*: ${fullConcept}\n${footer}`;
+
+                        enviarWhatsApp(phoneVal, msg).catch(e => console.error("WS Text Error:", e));
+
+                    }).catch(e => console.error("WS Media Error:", e));
+                }
+
+                tForm.reset();
+                document.getElementById('sendWhatsApp').checked = true; // Mantener activo
+            } catch (err) {
+                alert("Error al registrar: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'REGISTRAR';
+            }
+        });
+
+        function loadData() {
+            // Remove limit from query to calculate total balance correctly
+            const q = query(collection(db, "treasury"), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const historyBody = document.getElementById('historyBody');
+                historyBody.innerHTML = '';
+
+                let income = 0;
+                let expense = 0;
+                let renderCount = 0;
+
+                snapshot.forEach((docSnap) => {
+                    const data = docSnap.data();
+                    const date = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString('es-PE') : '...';
+
+                    // Fallback to concept for older records that didn't have clientName
+                    const displayConcept = data.clientName ? `<b>${data.clientName}</b><br><small>${data.concept}</small>` : data.concept;
+
+                    // Only render the first 5 elements into the table
+                    if (renderCount < 5) {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${date}</td>
+                            <td>${displayConcept}</td>
+                            <td><span class="badge ${data.type === 'income' ? 'bg-income' : 'bg-expense'}">${data.type === 'income' ? 'INGRESO' : 'EGRESO'}</span></td>
+                            <td><strong>S/ ${parseFloat(data.amount).toFixed(2)}</strong></td>
+                            <td>
+                                <button onclick="window.deleteMove('${docSnap.id}')" style="color: #ef4444; background: none; padding: 0;"><i class="fas fa-trash"></i></button>
+                            </td>
+                        `;
+                        historyBody.appendChild(tr);
+                        renderCount++;
+                    }
+
+                    if (data.type === 'income') income += parseFloat(data.amount);
+                    if (data.type === 'expense') expense += parseFloat(data.amount);
+                });
+                document.getElementById('totalIncome').textContent = `S/ ${income.toFixed(2)}`;
+                document.getElementById('totalExpense').textContent = `S/ ${expense.toFixed(2)}`;
+                document.getElementById('currentBalance').textContent = `S/ ${(income - expense).toFixed(2)}`;
+            });
+        }
+
+        window.deleteMove = async (id) => {
+            if (confirm("¿Estás seguro de eliminar este registro?")) {
+                await deleteDoc(doc(db, "treasury", id));
+            }
+        };
+    </script>
+</body>
+
+</html>

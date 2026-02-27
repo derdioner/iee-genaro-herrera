@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner | Genaro Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body {
+            background: #0f172a;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .scanner-container {
+            width: 100%;
+            max-width: 500px;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+        }
+
+        #reader {
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 2px solid #3498db;
+        }
+
+        .scan-result {
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            display: none;
+            animation: slideUp 0.3s ease;
+        }
+
+        .success {
+            background: #059669;
+        }
+
+        .error {
+            background: #dc2626;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .btn-back {
+            margin-top: 30px;
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #334155;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-back:hover {
+            color: white;
+            border-color: #64748b;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="scanner-container">
+        <h1 style="color: #3498db; margin-bottom: 10px;"><i class="fas fa-qrcode"></i> Asistencia QR</h1>
+        <p style="color: #94a3b8; margin-bottom: 30px;">Escanee el carnet del estudiante</p>
+
+        <div id="reader"></div>
+
+        <div id="result" class="scan-result">
+            <h3 id="resName" style="margin: 0;">-</h3>
+            <p id="resStatus" style="margin: 5px 0 0; opacity: 0.9;">-</p>
+        </div>
+
+        <button onclick="window.location.href='index.html'" class="btn-back">
+            <i class="fas fa-home"></i> Volver al Hub
+        </button>
+    </div>
+
+    <!-- Audio for feedback -->
+    <audio id="beep" src="https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"></audio>
+
+    <script type="module">
+        import { qrDb } from './firebase-qr-config.js';
+        import { db } from './firebase-config.js';
+        import { collection, query, where, getDocs, addDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { enviarWhatsApp } from './migo.js';
+
+        let scanning = true;
+        const reader = new Html5Qrcode("reader");
+        const resultDiv = document.getElementById('result');
+        const beep = document.getElementById('beep');
+
+        async function onScanSuccess(decodedText) {
+            if (!scanning) return;
+            scanning = false;
+
+            beep.play();
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'scan-result';
+            document.getElementById('resName').textContent = "Procesando...";
+            document.getElementById('resStatus').textContent = "Buscando estudiante " + decodedText;
+
+            try {
+                // 1. Find Student
+                const q = query(collection(qrDb, "students"), where("id", "==", decodedText), where("status", "==", "active"));
+                const snap = await getDocs(q);
+
+                if (snap.empty) {
+                    resultDiv.classList.add('error');
+                    document.getElementById('resName').textContent = "DNI NO ENCONTRADO";
+                    document.getElementById('resStatus').textContent = "El código " + decodedText + " no está activo o no existe.";
+                } else {
+                    const student = snap.docs[0].data();
+                    resultDiv.classList.add('success');
+                    document.getElementById('resName').textContent = student.n;
+
+                    // 2. Log Attendance
+                    const now = new Date();
+                    const hours = now.getHours();
+                    const status = hours < 8 ? "Puntual" : "Tardanza";
+
+                    const attendanceData = {
+                        dni: decodedText,
+                        name: student.n,
+                        grade: student.g,
+                        section: student.s,
+                        timestamp: now,
+                        displayTime: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        displayDate: now.toLocaleDateString(),
+                        status: status
+                    };
+
+                    await addDoc(collection(qrDb, "attendance"), attendanceData);
+                    document.getElementById('resStatus').textContent = "¡Asistencia registrada: " + status + "!";
+
+                    // 3. Send WhatsApp Notification (Migo API)
+                    if (student.p) { // 'p' is the phone field from gh20261
+                        const msg = `💻 *ASISTENCIA GH*: Su hijo(a) *${student.n}* ha registrado su ingreso correctamente.\n\n⏰ Hora: ${attendanceData.displayTime}\n📌 Estado: *${status}*\n\n_Genaro Hub - Innovando en educación._`;
+                        enviarWhatsApp(student.p, msg).then(res => {
+                            console.log("WhatsApp Result:", res);
+                        }).catch(err => console.error("WhatsApp Error:", err));
+                    }
+                }
+            } catch (err) {
+                resultDiv.classList.add('error');
+                document.getElementById('resName').textContent = "ERROR";
+                document.getElementById('resStatus').textContent = err.message;
+            }
+
+            // Restart scanning after 3 seconds
+            setTimeout(() => {
+                resultDiv.style.display = 'none';
+                scanning = true;
+            }, 3000);
+        }
+
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+        reader.start({ facingMode: "environment" }, config, onScanSuccess);
+
+    </script>
+</body>
+
+</html>

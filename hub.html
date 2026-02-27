@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genaro Hub | IEE Genaro Herrera</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #7c3aed;
+            --accent: #3b82f6;
+            --background: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--background);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient Background Shadows */
+        .ambient {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            filter: blur(150px);
+            opacity: 0.2;
+            z-index: -1;
+            animation: move 20s infinite alternate;
+        }
+
+        .ambient-2 {
+            bottom: -200px;
+            right: -200px;
+            background: var(--accent);
+            animation-delay: -5s;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(-10%, -10%);
+            }
+
+            to {
+                transform: translate(10%, 10%);
+            }
+        }
+
+        .hub-container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 40px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .logo-section {
+            margin-bottom: 50px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .logo-section img {
+            height: 100px;
+            filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.2));
+            margin-bottom: 20px;
+        }
+
+        .logo-section h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-section p {
+            font-size: 1.1rem;
+            color: #94a3b8;
+            margin-top: 10px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            padding: 50px 30px;
+            border-radius: 24px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(12px);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), transparent);
+            pointer-events: none;
+        }
+
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            transition: transform 0.4s ease;
+        }
+
+        .card:hover .card-icon {
+            transform: rotate(-5deg) scale(1.1);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .card p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            max-width: 240px;
+        }
+
+        .card-footer {
+            margin-top: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--accent);
+            opacity: 0.8;
+            transition: gap 0.3s ease;
+        }
+
+        .card:hover .card-footer {
+            gap: 15px;
+            opacity: 1;
+        }
+
+        /* Specific styles for card colors */
+        .color-web .card-icon {
+            background: linear-gradient(135deg, #3b82f6, #60a5fa);
+        }
+
+        .color-qr .card-icon {
+            background: linear-gradient(135deg, #10b981, #34d399);
+        }
+
+        .color-admin .card-icon {
+            background: linear-gradient(135deg, #ef4444, #f87171);
+        }
+
+        .color-academic .card-icon {
+            background: linear-gradient(135deg, #7c3aed, #a78bfa);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .hub-container {
+                padding: 20px;
+            }
+
+            .logo-section h1 {
+                font-size: 2.2rem;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .card {
+                padding: 40px 20px;
+            }
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 30px;
+            font-size: 0.85rem;
+            color: #64748b;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="ambient"></div>
+    <div class="ambient ambient-2"></div>
+
+    <div class="hub-container">
+        <div class="logo-section">
+            <img src="images/logo.png" alt="Logo Colegio">
+            <h1>Genaro Hub</h1>
+            <p>Centro Digital de la I.E.E. Genaro Herrera</p>
+        </div>
+
+        <div class="cards-grid">
+            <!-- PÁGINA WEB -->
+            <a href="https://ieegenaroherrera.com/" class="card color-web">
+                <div class="card-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <h2>Portal Web</h2>
+                <p>Sitio institucional, noticias y avisos académicos para la comunidad.</p>
+                <div class="card-footer">
+                    <span>Ir al Sitio</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <!-- ASISTENCIA QR -->
+            <a href="https://asistencia.ieegenaroherrera.com/" class="card color-qr">
+                <div class="card-icon">
+                    <i class="fas fa-qrcode"></i>
+                </div>
+                <h2>Asistencia QR</h2>
+                <p>Acceso rápido para el escaneo de carnets y control de ingresos.</p>
+                <div class="card-footer">
+                    <span>Abrir Escáner Ext.</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <!-- ADMINISTRACIÓN / TESORERÍA -->
+            <a href="treasury.html" class="card color-admin">
+                <div class="card-icon">
+                    <i class="fas fa-cash-register"></i>
+                </div>
+                <h2>Tesorería</h2>
+                <p>Gestión rápida de ingresos y egresos con acceso seguro por PIN.</p>
+                <div class="card-footer">
+                    <span>Acceso Directo</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <!-- MÓDULO ACADÉMICO -->
+            <a href="academic.html" class="card color-academic">
+                <div class="card-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h2>Académico</h2>
+                <p>Control de alumnos con áreas por recuperar y seguimiento pedagógico.</p>
+                <div class="card-footer">
+                    <span>Gestionar Áreas</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 I.E.E. Genaro Herrera - "Hacia la excelencia educativa"
+    </div>
+
+</body>
+
+</html>

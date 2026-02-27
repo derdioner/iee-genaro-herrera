@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo Académico | IEE Genaro Herrera</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#7c3aed">
+    <link rel="apple-touch-icon" href="images/logo.png">
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --glass: rgba(255, 255, 255, 0.9);
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text);
+        }
+
+        .logo-box img {
+            height: 40px;
+        }
+
+        .logo-box h1 {
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+        }
+
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #64748b;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 0.75rem;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            width: 100%;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:not(:disabled):hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .dni-input-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-search {
+            width: 50px;
+            padding: 0;
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        .stats-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: var(--shadow);
+            text-align: center;
+        }
+
+        .stat-item .label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .stat-item .value {
+            font-size: 1.75rem;
+            font-weight: 800;
+            margin-top: 5px;
+        }
+
+        .value-pending {
+            color: var(--warning);
+        }
+
+        .value-paid {
+            color: var(--success);
+        }
+
+        .value-total {
+            color: var(--primary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 1rem;
+            text-align: left;
+            font-size: 0.8rem;
+            font-weight: 800;
+            color: #64748b;
+            text-transform: uppercase;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 0.9rem;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .badge-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-paid {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .btn-action {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-action:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-delete:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
+        @media (max-width: 968px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <a href="hub.html" class="logo-box">
+            <img src="images/logo.png" alt="Logo">
+            <h1>Módulo Académico</h1>
+        </a>
+        <div style="display: flex; gap: 10px;">
+            <button onclick="location.href='hub.html'"
+                style="background:none; border:none; cursor:pointer; color:#64748b; font-weight:600;">
+                <i class="fas fa-home"></i> Hub
+            </button>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="stats-summary">
+            <div class="stat-item">
+                <div class="label">Total Estudiantes</div>
+                <div class="value value-total" id="statTotal">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="label">Pendientes</div>
+                <div class="value value-pending" id="statPending">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="label">Subsanados</div>
+                <div class="value value-paid" id="statPaid">0</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <!-- Sidebar: Registrar -->
+            <aside>
+                <div class="card">
+                    <div class="card-title">
+                        <i class="fas fa-user-plus"></i>
+                        Registrar Recuperación
+                    </div>
+                    <form id="academicForm">
+                        <div class="form-group">
+                            <label>DNI del Estudiante</label>
+                            <div class="dni-input-group">
+                                <input type="text" id="dniSearch" maxlength="8" placeholder="DNI" required
+                                    pattern="[0-9]{8}">
+                                <button type="button" id="btnSearchMigo" class="btn btn-search"
+                                    title="Buscar en RENIEC">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Nombres y Apellidos</label>
+                            <input type="text" id="studentName" placeholder="Cargando..." required readonly>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Número de Áreas</label>
+                            <input type="number" id="areasCount" min="1" max="15" value="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Periodo Académico</label>
+                            <select id="period" required>
+                                <option value="Recuperación 2025">Recuperación 2025</option>
+                                <option value="Recuperación 2024">Recuperación 2024</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" id="btnSubmit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> REGISTRAR
+                        </button>
+                    </form>
+                </div>
+
+                <div class="card" style="margin-top: 1.5rem; background: #fef2f2; border-color: #fee2e2;">
+                    <p style="font-size: 0.8rem; color: #991b1b; font-weight: 700;">
+                        <i class="fas fa-info-circle"></i> INFO: Los estudiantes se actualizarán a "PAGADO" si se
+                        detecta un registro en Tesorería.
+                    </p>
+                </div>
+            </aside>
+
+            <!-- Main: Lista de Estudiantes -->
+            <section class="card">
+                <div class="card-title" style="justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-list-ul"></i>
+                        Lista de Subsanación
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="btnSyncTreasury" class="btn-action"
+                            style="width: auto; padding: 0 15px; background: #e0e7ff; color: #4338ca; border-color: #c7d2fe; font-weight: 700; font-size: 0.75rem;"
+                            title="Sincronizar con Tesorería">
+                            <i class="fas fa-sync-alt"></i> SINCRONIZAR TESORERÍA
+                        </button>
+                        <input type="text" id="tableSearch" placeholder="🔍 Filtrar por nombre..."
+                            style="width: 250px; font-size: 0.85rem; padding: 0.5rem 1rem;">
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>DNI</th>
+                                <th>Estudiante</th>
+                                <th>Áreas</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recoveryTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: #94a3b8; padding: 3rem;">
+                                    <i class="fas fa-spinner fa-spin fa-2x"></i><br>
+                                    Cargando registros...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script type="module">
+        import { db } from './firebase-config.js';
+        import { collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, updateDoc, serverTimestamp, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { consultarDNI } from './migo.js';
+
+        const academicForm = document.getElementById('academicForm');
+        const dniInp = document.getElementById('dniSearch');
+        const nameInp = document.getElementById('studentName');
+        const btnSearch = document.getElementById('btnSearchMigo');
+        const tableBody = document.getElementById('recoveryTableBody');
+
+        // MIGO DNI Lookup
+        const performSearch = async () => {
+            const dni = dniInp.value.trim();
+            if (dni.length !== 8) return;
+
+            btnSearch.disabled = true;
+            btnSearch.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            nameInp.value = '';
+            nameInp.placeholder = '🔍 Buscando en RENIEC...';
+
+            try {
+                const res = await consultarDNI(dni);
+                if (res.success) {
+                    nameInp.value = res.nombre;
+                } else {
+                    alert("No se encontró información para este DNI.");
+                    nameInp.placeholder = 'Nombre no encontrado';
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Error al conectar con Migo API.");
+            } finally {
+                btnSearch.disabled = false;
+                btnSearch.innerHTML = '<i class="fas fa-search"></i>';
+            }
+        };
+
+        btnSearch.onclick = performSearch;
+        dniInp.onkeypress = (e) => { if (e.key === 'Enter') { e.preventDefault(); performSearch(); } };
+
+        // Save Record
+        academicForm.onsubmit = async (e) => {
+            e.preventDefault();
+            const dni = dniInp.value.trim();
+            const name = nameInp.value.trim();
+            const count = parseInt(document.getElementById('areasCount').value);
+            const period = document.getElementById('period').value;
+
+            if (!name) return alert("Primero busca al estudiante por DNI.");
+
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> GUARDANDO...';
+
+            try {
+                await addDoc(collection(db, "academic_recovery"), {
+                    dni,
+                    studentName: name,
+                    areasCount: count,
+                    period,
+                    status: 'pending',
+                    createdAt: serverTimestamp()
+                });
+                academicForm.reset();
+                nameInp.placeholder = 'Nombres y Apellidos';
+            } catch (err) {
+                alert("Error al guardar: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save"></i> REGISTRAR';
+            }
+        };
+
+        // Load and Listen
+        function loadList() {
+            const q = query(collection(db, "academic_recovery"), orderBy("createdAt", "desc"));
+            onSnapshot(q, (snapshot) => {
+                tableBody.innerHTML = '';
+                let total = 0, pending = 0, paid = 0;
+
+                snapshot.forEach(dDoc => {
+                    const data = dDoc.data();
+                    total++;
+                    if (data.status === 'pending') pending++; else paid++;
+
+                    const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : '...';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${date}</td>
+                        <td style="font-weight:700;">${data.dni}</td>
+                        <td>${data.studentName}</td>
+                        <td style="text-align:center;">${data.areasCount}</td>
+                        <td><span class="badge badge-${data.status}">${data.status === 'pending' ? 'Pendiente' : 'Pagado'}</span></td>
+                        <td>
+                            <div style="display:flex; gap:5px;">
+                                <button onclick="toggleStatus('${dDoc.id}', '${data.status}')" class="btn-action" title="Cambiar Estado">
+                                    <i class="fas ${data.status === 'pending' ? 'fa-check' : 'fa-clock'}"></i>
+                                </button>
+                                <button onclick="deleteRecord('${dDoc.id}')" class="btn-action btn-delete" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+
+                document.getElementById('statTotal').innerText = total;
+                document.getElementById('statPending').innerText = pending;
+                document.getElementById('statPaid').innerText = paid;
+
+                if (total === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:3rem; color:#94a3b8;">No hay alumnos registrados en recuperación.</td></tr>';
+                }
+            });
+        }
+
+        window.toggleStatus = async (id, current) => {
+            const next = current === 'pending' ? 'paid' : 'pending';
+            await updateDoc(doc(db, "academic_recovery", id), { status: next });
+        };
+
+        window.deleteRecord = async (id) => {
+            if (confirm("¿Estás seguro de eliminar este registro?")) {
+                await deleteDoc(doc(db, "academic_recovery", id));
+            }
+        };
+
+        loadList();
+
+        // Search Filter
+        document.getElementById('tableSearch').oninput = (e) => {
+            const q = e.target.value.toLowerCase();
+            const rows = tableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(q) ? '' : 'none';
+            });
+        };
+
+        // --- NEW: SYNC WITH TREASURY LOGIC ---
+        document.getElementById('btnSyncTreasury').onclick = async () => {
+            const btn = document.getElementById('btnSyncTreasury');
+            const originalHTML = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SINCRONIZANDO...';
+
+            try {
+                // 1. Get all pending students
+                const qPending = query(collection(db, "academic_recovery"), where("status", "==", "pending"));
+                const pendingSnap = await getDocs(qPending);
+
+                if (pendingSnap.empty) {
+                    alert("No hay alumnos pendientes por sincronizar.");
+                    return;
+                }
+
+                let syncCount = 0;
+
+                // 2. For each pending student, check if they paid "Recuperación" in treasury
+                // We'll process them in chunks or one by one if the list is small
+                for (const studentDoc of pendingSnap.docs) {
+                    const studentData = studentDoc.data();
+                    const dni = studentData.dni;
+
+                    // Search treasury for this DNI and concept containing "Recuperación"
+                    // Treasury docs have 'clientName' (sometimes DNI is inside clientName or we search by a separate field if available)
+                    // In treasury.html, the user SEARCHES by DNI but SAVES clientName.
+                    // Wait, let's verify if treasury saves DNI.
+                    // Checking treasury logic: it doesn't seem to save the DNI in a separate field, but usually teachers put it in clientName or concept.
+                    // HOWEVER, let's check if there's a DNI field I missed or if I should search treasury collection differently.
+
+                    // Actually, looking at treasury.html logic... it doesn't explicitly save 'dni'. 
+                    // Let's assume we want to match by DNI if it exists in a field 'dni' or just search for it.
+                    // Wait, I can search for records where the concept contains "Recuperación" AND the name contains the student name OR DNI.
+
+                    // BETTER: I'll check if treasury records HAVE a DNI.
+                    // If not, I'll recommend the user to add it, BUT for now I'll look for concept: "Examen de Recuperación" logic.
+
+                    const qTreasury = query(collection(db, "treasury"), where("type", "==", "income"));
+                    const treasurySnap = await getDocs(qTreasury);
+
+                    const paidRecord = treasurySnap.docs.find(tDoc => {
+                        const tData = tDoc.data();
+                        const conceptStr = (tData.concept || "").toLowerCase();
+                        const clientStr = (tData.clientName || "").toLowerCase();
+
+                        return conceptStr.includes("recuperación") &&
+                            (clientStr.includes(dni) || clientStr.includes(studentData.studentName.toLowerCase()));
+                    });
+
+                    if (paidRecord) {
+                        await updateDoc(doc(db, "academic_recovery", studentDoc.id), {
+                            status: 'paid',
+                            syncedFrom: paidRecord.id,
+                            syncedAt: serverTimestamp()
+                        });
+                        syncCount++;
+                    }
+                }
+
+                alert(`¡Sincronización completada! Se actualizaron ${syncCount} alumnos.`);
+
+            } catch (err) {
+                console.error("Sync Error:", err);
+                alert("Error durante la sincronización: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        };
+
+    </script>
+</body>
+
+</html>

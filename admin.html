@@ -14,7 +14,69 @@
             background: #f4f4f4;
             display: none;
             font-family: 'Montserrat', sans-serif;
+            margin: 0;
         }
+
+        /* Login Section Styles */
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            display: none;
+        }
+
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        .login-card h1 {
+            margin-bottom: 25px;
+            color: #1e293b;
+            font-size: 1.8rem;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+
+        .login-card button {
+            width: 100%;
+            padding: 15px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .login-card button:hover {
+            background: #1d4ed8;
+        }
+
+        .login-error {
+            color: #ef4444;
+            margin-top: 15px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
 
         .admin-container {
             max-width: 800px;
@@ -202,34 +264,76 @@
 <body>
     <!-- Script de Seguridad -->
     <script type="module">
-        import { auth } from './firebase-config.js';
-        import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { auth, db } from './firebase-config.js';
+        import { onAuthStateChanged, signOut, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { consultarDNI } from './migo.js';
 
         onAuthStateChanged(auth, (user) => {
+            const loginOverlay = document.getElementById('loginOverlay');
             if (user) {
                 console.log("Usuario autenticado en admin.html:", user.email);
                 if (user.email === '45446130@genaroherrera.edu.pe') {
+                    loginOverlay.style.display = 'none';
                     document.body.style.display = 'block';
                 } else {
-                    showStatus("Acceso denegado. Redirigiendo...", "error");
-                    setTimeout(() => window.location.href = 'index.html', 3000);
+                    document.getElementById('loginErrorMessage').textContent = "Acceso denegado: No tienes permisos de administrador.";
+                    signOut(auth);
                 }
             } else {
-                // No hay usuario (logout o expiró sesión), salir en silencio
-                window.location.href = 'index.html';
+                loginOverlay.style.display = 'flex';
+                document.body.style.display = 'none';
             }
         });
 
+        window.loginAdmin = async () => {
+            const email = document.getElementById('adminEmail').value;
+            const pass = document.getElementById('adminPass').value;
+            const btn = document.getElementById('btnLoginAdmin');
+            const err = document.getElementById('loginErrorMessage');
+
+            if (!email || !pass) { err.textContent = "Complete todos los campos."; return; }
+
+            btn.disabled = true;
+            btn.textContent = "Ingresando...";
+            err.textContent = "";
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (e) {
+                console.error(e);
+                err.textContent = "Credenciales inválidas o error de conexión.";
+                btn.disabled = false;
+                btn.textContent = "INGRESAR AL PANEL";
+            }
+        };
+
         window.logoutAdmin = () => {
-            signOut(auth).then(() => window.location.href = 'index.html');
+            signOut(auth).then(() => {
+                window.location.reload();
+            });
         };
     </script>
+
+    <!-- Login Overlay -->
+    <div id="loginOverlay" class="login-overlay">
+        <div class="login-card">
+            <img src="images/logo.png" alt="Logo" style="height: 60px; margin-bottom: 20px;">
+            <h1>Acceso Administrativo</h1>
+            <input type="email" id="adminEmail" placeholder="Correo electrónico" required>
+            <input type="password" id="adminPass" placeholder="Contraseña" required>
+            <button id="btnLoginAdmin" onclick="loginAdmin()">INGRESAR AL PANEL</button>
+            <div id="loginErrorMessage" class="login-error"></div>
+            <p style="margin-top: 20px; font-size: 0.8rem; color: #64748b;">
+                Genaro Hub - Panel Maestro
+            </p>
+        </div>
+    </div>
 
     <header
         style="background: white; padding: 15px 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center;">
         <div style="display: flex; align-items: center; gap: 15px;">
             <img src="images/logo.png" alt="Logo" style="height: 50px;">
-            <h1 style="font-size: 1.4rem; color: #2c3e50; margin: 0;">Panel Maestro (v2.1 - Entrega QR)</h1>
+            <h1 style="font-size: 1.4rem; color: #2c3e50; margin: 0;">Panel Maestro (v2.2 - Tesorería Hub)</h1>
         </div>
         <button onclick="logoutAdmin()" class="btn btn-secondary" style="padding: 10px 20px;">Cerrar Sesión</button>
     </header>
@@ -244,6 +348,9 @@
             <div class="nav-link" onclick="switchTab('list')">Ver Usuarios</div>
             <div class="nav-link" onclick="switchTab('boletas')">Subir Boletas (SIAGIE)</div>
             <div class="nav-link" onclick="switchTab('qrDelivery')">Entrega de QR</div>
+            <div class="nav-link" onclick="switchTab('treasury')"><i class="fas fa-cash-register"></i> Tesorería</div>
+            <div class="nav-link" onclick="switchTab('attendance')"><i class="fas fa-calendar-check"></i> Asistencia
+            </div>
         </div>
 
         <!-- User Management Section (Registration) -->
@@ -470,7 +577,14 @@
                 <div id="qrDeliveryActions">
                     <div class="form-group">
                         <label>DNI de quien recoge (Padre/Apoderado/Alumno):</label>
-                        <input type="text" id="qrPickerDni" placeholder="DNI de la persona que recibe" maxlength="8">
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="qrPickerDni" placeholder="DNI de la persona que recibe"
+                                maxlength="8">
+                            <button type="button" id="btnLookupPicker" onclick="lookupPickerDNI()" class="btn"
+                                style="background: #e67e22; color: white; padding: 10px; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
                     </div>
                     <button id="btnConfirmDelivery" class="btn"
                         style="background: #27ae60; color: white; width: 100%; padding: 15px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;">
@@ -521,7 +635,164 @@
             </div>
         </div>
 
+        <!-- Treasury Module -->
+        <div id="treasurySection" style="display: none;">
+            <div
+                style="background: #e3f2fd; padding: 25px; border-radius: 12px; border-left: 6px solid #1a73e8; margin-bottom: 30px;">
+                <h3 style="margin: 0 0 10px 0; color: #1565c0; text-align: left;"><i class="fas fa-money-check-alt"></i>
+                    Módulo de Tesorería</h3>
+                <p style="color: #555; font-size: 0.95rem;">Registro de pagos por certificados, traslados, recuperación
+                    y otros conceptos.</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                    <div class="form-group">
+                        <label>Buscar Alumno (Nombre o DNI):</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="text" id="tStudentSearch" placeholder="Ej: 45446130">
+                            <button id="btnSearchTreasury" class="btn"
+                                style="background: #1a73e8; color: white; padding: 0 15px; border: none; border-radius: 5px;"><i
+                                    class="fas fa-search"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Concepto de Pago:</label>
+                        <select id="tConcept">
+                            <option value="">Seleccione...</option>
+                            <option value="Certificado de Estudios">Certificado de Estudios</option>
+                            <option value="Traslado de Matrícula">Traslado de Matrícula</option>
+                            <option value="Programa de Recuperación (PRP)">Programa de Recuperación (PRP)</option>
+                            <option value="Derecho de Examen">Derecho de Examen</option>
+                            <option value="Otros">Otros (Especificar en notas)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="tStudentInfo"
+                    style="display: none; background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #cce5ff;">
+                    <strong id="tStudentNameDisplay">Cargando...</strong><br>
+                    <small id="tStudentDetailsDisplay">Grado: - | Sección: -</small>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div class="form-group">
+                        <label>Monto (S/):</label>
+                        <input type="number" id="tAmount" placeholder="0.00" step="0.10">
+                    </div>
+                    <div class="form-group">
+                        <label>Número de Recibo / Operación:</label>
+                        <input type="text" id="tReceiptNumber" placeholder="Ej: 001-000456">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Notas adicionales:</label>
+                    <textarea id="tNotes" rows="2" placeholder="Observaciones adicionales..."></textarea>
+                </div>
+
+                <button id="btnRegisterPayment" class="btn btn-full"
+                    style="background: #27ae60; color: white; padding: 15px; border: none; font-weight: bold; font-size: 1.1rem; border-radius: 8px;">
+                    <i class="fas fa-save"></i> REGISTRAR PAGO Y GENERAR COMPROBANTE
+                </button>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h4 style="margin-bottom: 15px;"><i class="fas fa-history"></i> Últimos Pagos Registrados</h4>
+                <div style="overflow-x: auto;">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Estudiante</th>
+                                <th>Concepto</th>
+                                <th>Monto</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="treasuryTableBody">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 20px; color: #666;">No hay pagos
+                                    registrados hoy.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Scanner Access -->
+        <div id="attendanceSection" style="display: none;">
+            <div
+                style="text-align: center; padding: 40px; background: #fff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <i class="fas fa-qrcode" style="font-size: 4rem; color: #3498db; margin-bottom: 20px;"></i>
+                <h2>Control de Asistencia QR</h2>
+                <p style="color: #666; max-width: 500px; margin: 0 auto 30px;">
+                    Utilice esta sección para abrir el escáner de asistencia y registrar el ingreso/salida de los
+                    estudiantes.
+                </p>
+
+                <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                    <button onclick="window.location.href='https://asistencia.ieegenaroherrera.com/'" class="btn"
+                        style="background: #3498db; color: white; padding: 15px 30px; font-weight: bold; border: none; border-radius: 8px; font-size: 1rem;">
+                        <i class="fas fa-camera"></i> ABRIR ESCÁNER EXTERNO
+                    </button>
+                    <button onclick="switchTab('qrDelivery')" class="btn"
+                        style="background: #9b59b6; color: white; padding: 15px 30px; font-weight: bold; border: none; border-radius: 8px; font-size: 1rem;">
+                        <i class="fas fa-id-card"></i> MÓDULO ENTREGA CARNETS
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-top: 40px;">
+                <h4 style="margin-bottom: 15px;"><i class="fas fa-clock"></i> Escaneos Recientes de Hoy</h4>
+                <div style="overflow-x: auto;">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Alumno</th>
+                                <th>Grado</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceLiveTable">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 20px; color: #666;">Esperando
+                                    escaneos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
+
+    <!-- Security PIN Modal for Treasury -->
+    <div id="pinModal"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center;">
+        <div
+            style="background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.3);">
+            <i class="fas fa-lock" style="font-size: 3rem; color: #e74c3c; margin-bottom: 20px;"></i>
+            <h2 style="margin: 0 0 10px 0;">Área Protegida</h2>
+            <p style="color: #666; margin-bottom: 20px;">Ingrese el PIN de seguridad para acceder a Tesorería.</p>
+
+            <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 25px;">
+                <input type="password" id="pinInput" maxlength="6"
+                    style="width: 150px; text-align: center; font-size: 2rem; letter-spacing: 5px; padding: 10px; border: 2px solid #ddd; border-radius: 8px;"
+                    autofocus>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button onclick="document.getElementById('pinModal').style.display='none'; switchTab('register')"
+                    class="btn"
+                    style="flex: 1; padding: 12px; border: none; background: #eee; color: #666; font-weight: bold; border-radius: 8px;">CANCELAR</button>
+                <button id="btnVerifyPin" class="btn"
+                    style="flex: 1; padding: 12px; border: none; background: #27ae60; color: white; font-weight: bold; border-radius: 8px;">ACCEDER</button>
+            </div>
+            <p id="pinError" style="color: #e74c3c; margin-top: 15px; display: none; font-weight: bold;"></p>
+        </div>
+    </div>
+
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -904,32 +1175,53 @@
         let allUsers = [];
 
         window.switchTab = (tab) => {
-            const regSection = document.getElementById('registrationSection');
-            const listSection = document.getElementById('userListSection');
-            const boletasSection = document.getElementById('boletasSection');
-            const qrSection = document.getElementById('qrDeliverySection');
+            console.log("Switching to tab:", tab);
+            const sections = {
+                register: document.getElementById('registrationSection'),
+                list: document.getElementById('userListSection'),
+                boletas: document.getElementById('boletasSection'),
+                qrDelivery: document.getElementById('qrDeliverySection'),
+                treasury: document.getElementById('treasurySection'),
+                attendance: document.getElementById('attendanceSection')
+            };
             const tabs = document.querySelectorAll('.nav-link');
 
+            // Security check for Treasury
+            if (tab === 'treasury' && !window.treasuryUnlocked) {
+                console.log("Treasury locked, showing PIN modal");
+                const pModal = document.getElementById('pinModal');
+                if (pModal) {
+                    pModal.style.display = 'flex';
+                    const pInput = document.getElementById('pinInput');
+                    if (pInput) {
+                        pInput.value = '';
+                        pInput.focus();
+                    }
+                }
+                return;
+            }
+
             // Hide all
-            regSection.style.display = 'none';
-            listSection.style.display = 'none';
-            boletasSection.style.display = 'none';
-            qrSection.style.display = 'none';
+            Object.values(sections).forEach(s => { if (s) s.style.display = 'none'; });
             tabs.forEach(t => t.classList.remove('active'));
 
-            if (tab === 'register') {
-                regSection.style.display = 'block';
-                tabs[0].classList.add('active');
-            } else if (tab === 'list') {
-                listSection.style.display = 'block';
-                tabs[1].classList.add('active');
-                fetchUsers();
-            } else if (tab === 'boletas') {
-                boletasSection.style.display = 'block';
-                tabs[2].classList.add('active');
-            } else if (tab === 'qrDelivery') {
-                qrSection.style.display = 'block';
-                tabs[3].classList.add('active');
+            // Show selected
+            if (sections[tab]) {
+                sections[tab].style.display = 'block';
+                // Active tab class logic (robust)
+                tabs.forEach(t => {
+                    if (t.innerText.toLowerCase().includes(tab.replace('qrDelivery', 'qr').toLowerCase()) ||
+                        (tab === 'register' && t.innerText.includes('Registrar')) ||
+                        (tab === 'list' && t.innerText.includes('Ver Usuarios'))) {
+                        t.classList.add('active');
+                    }
+                });
+
+                if (tab === 'list') fetchUsers();
+                if (tab === 'treasury') fetchTreasuryToday();
+                if (tab === 'attendance') fetchAttendanceToday();
+            } else {
+                console.error("Section not found:", tab);
             }
         };
 
@@ -1162,6 +1454,31 @@
             });
         }
 
+        // Migo lookup for the picker DNI (Entrega QR)
+        window.lookupPickerDNI = async () => {
+            const dni = inpPickerDni.value.trim();
+            if (dni.length !== 8) return;
+
+            const btn = document.getElementById('btnLookupPicker');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+            try {
+                const result = await consultarDNI(dni);
+                if (result.success) {
+                    showStatus("Identidad confirmada: " + result.nombre, "success");
+                } else {
+                    showStatus(result.message || "No se encontró el DNI", "error");
+                }
+            } catch (err) {
+                console.error("DNI Lookup Error:", err);
+                showStatus("Error de conexión al buscar DNI", "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-search"></i>';
+            }
+        };
+
         if (btnSearchQr) {
             btnSearchQr.onclick = async () => {
                 const dni = inpSearchQr.value.trim();
@@ -1277,6 +1594,145 @@
                 }
             };
         }
+
+        // --- TREASURY & SECURITY LOGIC ---
+        const TREASURY_PIN = "2026";
+        window.treasuryUnlocked = false;
+
+        const pModal = document.getElementById('pinModal');
+        const pInput = document.getElementById('pinInput');
+        const pErr = document.getElementById('pinError');
+        const vPin = document.getElementById('btnVerifyPin');
+
+        if (vPin) {
+            vPin.onclick = () => {
+                if (pInput.value === TREASURY_PIN) {
+                    window.treasuryUnlocked = true;
+                    pModal.style.display = 'none';
+                    showStatus("Acceso concedido a Tesorería.", "success");
+                    switchTab('treasury');
+                } else {
+                    pErr.textContent = "PIN Incorrecto. Intente de nuevo.";
+                    pErr.style.display = 'block';
+                    pInput.value = '';
+                    pInput.focus();
+                }
+            };
+        }
+
+        if (pInput) {
+            pInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') vPin.click();
+            });
+        }
+
+        // Search Student for Treasury
+        const btnTSearch = document.getElementById('btnSearchTreasury');
+        const inpTSearch = document.getElementById('tStudentSearch');
+        const tStudentInfo = document.getElementById('tStudentInfo');
+        let currentTreasuryStudent = null;
+
+        if (btnTSearch) {
+            btnTSearch.onclick = async () => {
+                const queryVal = inpTSearch.value.trim();
+                if (!queryVal) return;
+                btnTSearch.disabled = true;
+                tStudentInfo.style.display = 'none';
+                try {
+                    let q = query(collection(db, "students"), where("studentDni", "==", queryVal), limit(1));
+                    let snap = await getDocs(q);
+                    if (snap.empty) {
+                        q = query(collection(db, "students"), where("name", ">=", queryVal.toUpperCase()), where("name", "<=", queryVal.toUpperCase() + "\uf8ff"), limit(5));
+                        snap = await getDocs(q);
+                    }
+                    if (snap.empty) {
+                        showStatus("No se encontró al estudiante.", "info");
+                    } else {
+                        const student = snap.docs[0].data();
+                        currentTreasuryStudent = { id: snap.docs[0].id, ...student };
+                        tStudentInfo.style.display = 'block';
+                        document.getElementById('tStudentNameDisplay').textContent = student.name;
+                        document.getElementById('tStudentDetailsDisplay').textContent = `${student.level} | ${student.grade}° "${student.section}" | DNI: ${student.studentDni || student.dni}`;
+                    }
+                } catch (err) { console.error(err); }
+                finally { btnTSearch.disabled = false; }
+            };
+        }
+
+        // Register Payment
+        const btnPay = document.getElementById('btnRegisterPayment');
+        if (btnPay) {
+            btnPay.onclick = async () => {
+                if (!currentTreasuryStudent) { showStatus("Seleccione un alumno.", "info"); return; }
+                const concept = document.getElementById('tConcept').value;
+                const amount = document.getElementById('tAmount').value;
+                const receipt = document.getElementById('tReceiptNumber').value;
+                const notes = document.getElementById('tNotes').value;
+                if (!concept || !amount || !receipt) { showStatus("Faltan datos obligatorios.", "info"); return; }
+                btnPay.disabled = true;
+                btnPay.innerText = "Registrando...";
+                try {
+                    await addDoc(collection(db, "payments"), {
+                        studentId: currentTreasuryStudent.id,
+                        studentName: currentTreasuryStudent.name,
+                        concept,
+                        amount: parseFloat(amount),
+                        receipt,
+                        notes,
+                        date: new Date().toLocaleDateString(),
+                        timestamp: new Date(),
+                        recordedBy: auth.currentUser?.email || 'admin'
+                    });
+                    showStatus("¡Pago registrado!", "success");
+                    document.getElementById('tAmount').value = '';
+                    document.getElementById('tReceiptNumber').value = '';
+                    tStudentInfo.style.display = 'none';
+                    currentTreasuryStudent = null;
+                    inpTSearch.value = '';
+                    fetchTreasuryToday();
+                } catch (err) { showStatus("Error: " + err.message, "error"); }
+                finally { btnPay.disabled = false; btnPay.innerText = "REGISTRAR PAGO Y GENERAR COMPROBANTE"; }
+            };
+        }
+
+        window.fetchTreasuryToday = async () => {
+            const tbody = document.getElementById('treasuryTableBody');
+            try {
+                const q = query(collection(db, "payments"), orderBy("timestamp", "desc"), limit(10));
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 20px;">No hay pagos hoy.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = '';
+                snap.forEach(doc => {
+                    const p = doc.data();
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${p.timestamp?.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td><td>${p.studentName}</td><td>${p.concept}</td><td>S/ ${p.amount.toFixed(2)}</td><td><span style="color: green;">PAGADO</span></td>`;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) { console.warn(e); }
+        };
+
+        window.fetchAttendanceToday = async () => {
+            const tbody = document.getElementById('attendanceLiveTable');
+            try {
+                const q = query(collection(qrDb, "attendance"), orderBy("timestamp", "desc"), limit(10));
+                const snap = await getDocs(q);
+                if (snap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 20px;">Sin escaneos.</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = '';
+                snap.forEach(doc => {
+                    const a = doc.data();
+                    const tr = document.createElement('tr');
+                    const color = a.status === 'Puntual' ? 'green' : (a.status === 'Tardanza' ? 'red' : 'gray');
+                    tr.innerHTML = `<td>${a.displayTime || '--'}</td><td>${a.name || 'Estud.'}</td><td>${a.grade || '?'}° "${a.section || '?'}"</td><td><span style="color: ${color};">${a.status || 'Reg.'}</span></td>`;
+                    tbody.appendChild(tr);
+                });
+            } catch (e) { console.warn(e); }
+        };
 
     </script>
 </body>
