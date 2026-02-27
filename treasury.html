@@ -477,8 +477,10 @@
             <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
                 <i class="fas fa-graduation-cap"></i> Áreas a Recuperar
             </h2>
-            <p id="academicModalStudent"
-                style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem; font-weight: 600;"></p>
+            <div id="academicModalStudent" style="margin-bottom: 1rem;">
+                <div id="modalStudentName" style="font-size: 1rem; color: #1e293b; font-weight: 800;"></div>
+                <div id="modalStudentGrade" style="font-size: 0.8rem; color: #64748b; font-weight: 700;"></div>
+            </div>
 
             <div id="academicModalLoader" style="text-align:center; padding: 2rem; display:none;">
                 <i class="fas fa-spinner fa-spin fa-2x" style="color: var(--primary);"></i>
@@ -626,7 +628,8 @@
 
                 // Open and Load
                 academicModal.classList.add('active');
-                document.getElementById('academicModalStudent').innerText = clientNameInput.value || "Buscando...";
+                document.getElementById('modalStudentName').innerText = clientNameInput.value || "Buscando...";
+                document.getElementById('modalStudentGrade').innerText = "";
                 document.getElementById('academicModalLoader').style.display = 'block';
                 document.getElementById('academicModalContent').style.display = 'none';
                 document.getElementById('academicModalEmpty').style.display = 'none';
@@ -647,6 +650,9 @@
                     // Show subjects
                     const subjectsList = document.getElementById('academicSubjectsList');
                     subjectsList.innerHTML = '';
+
+                    document.getElementById('modalStudentName').innerText = currentAcademicRecord.studentName;
+                    document.getElementById('modalStudentGrade').innerText = `${currentAcademicRecord.grade || '-'} | Sección "${currentAcademicRecord.section || '-'}"`;
 
                     const paid = currentAcademicRecord.paidAreas || [];
                     const selected = currentAcademicRecord.selectedAreas || [];
