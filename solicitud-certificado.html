@@ -481,12 +481,13 @@
                 </div>
 
                 <div class="doc-fecha-area">
-                    Requena, <span id="docFechaActual">...</span>
+                    Contamana, <span id="docFechaActual">...</span>
                 </div>
 
                 <div class="doc-firma-area">
                     <div class="doc-firma-linea">
                         FIRMA DEL(LA) SOLICITANTE<br>
+                        <span id="docFirmaNombres" style="font-weight: bold;"></span><br>
                         DNI: <span id="docFirmaDNI">__________</span>
                     </div>
                 </div>
@@ -522,6 +523,7 @@
         const docAnioFin = document.getElementById('docAnioFin');
         const docNivel = document.getElementById('docNivel');
         const docFechaActual = document.getElementById('docFechaActual');
+        const docFirmaNombres = document.getElementById('docFirmaNombres');
         const docFirmaDNI = document.getElementById('docFirmaDNI');
 
         // Inicializar Combos de Años
@@ -571,6 +573,7 @@
         function updateDocument() {
             docNombres.innerHTML = inputNombres.value ? inputNombres.value : '<span class="val-empty">[NOMBRES Y APELLIDOS DEL SOLICITANTE]</span>';
             docDNI.innerHTML = inputDNI.value ? inputDNI.value : '<span class="val-empty">[DNI]</span>';
+            docFirmaNombres.textContent = inputNombres.value ? inputNombres.value : '______________________________';
             docFirmaDNI.textContent = inputDNI.value ? inputDNI.value : '__________';
             docCelular.innerHTML = inputCelular.value ? inputCelular.value : '<span class="val-empty">[CELULAR]</span>';
             docAnioInicio.innerHTML = inputAnioInicio.value ? inputAnioInicio.value : '<span class="val-empty">[AÑO]</span>';
