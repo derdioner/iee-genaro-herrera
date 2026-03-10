@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Certificado | Genaro Hub</title>
+    <link rel="icon" type="image/png" href="images/logo.png">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Times+New+Roman&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #7c3aed;
+            --accent: #3b82f6;
+            --background: #0f172a;
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background: var(--background);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Ambiente Gráfico Web */
+        .ambient {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            filter: blur(150px);
+            opacity: 0.2;
+            z-index: -1;
+            animation: move 20s infinite alternate;
+            top: -10%;
+            left: -10%;
+        }
+
+        .ambient-2 {
+            bottom: -10%;
+            right: -10%;
+            top: auto;
+            left: auto;
+            background: var(--accent);
+            animation-delay: -5s;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(-10%, -10%);
+            }
+
+            to {
+                transform: translate(10%, 10%);
+            }
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 1400px;
+            height: 90vh;
+        }
+
+        /* Panel Izquierdo: Controles (NO IMPRIMIBLE) */
+        .controls-panel {
+            flex: 1;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(12px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+            max-width: 450px;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 10px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 20px;
+        }
+
+        .header-controls img {
+            width: 50px;
+            height: auto;
+        }
+
+        .header-controls h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            align-self: flex-start;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            font-weight: 600;
+        }
+
+        .input-with-btn {
+            display: flex;
+            gap: 10px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--accent);
+        }
+
+        button {
+            padding: 12px 20px;
+            border-radius: 10px;
+            border: none;
+            font-family: inherit;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-print {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            margin-top: auto;
+            padding: 15px;
+            font-size: 1.1rem;
+        }
+
+        .btn-search {
+            background: var(--accent);
+            color: white;
+            padding: 12px;
+        }
+
+        /* Mensajes de feedback */
+        #statusMessage {
+            font-size: 0.9rem;
+            margin-top: -10px;
+            min-height: 20px;
+        }
+
+        .text-error {
+            color: #f87171;
+        }
+
+        .text-success {
+            color: #34d399;
+        }
+
+        .text-info {
+            color: #60a5fa;
+        }
+
+        /* Panel Derecho: Vista Previa del Documento (HOJA A4) */
+        .preview-panel {
+            flex: 2;
+            background: #cbd5e1;
+            /* Fondo gris oscuro para la mesa */
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* LA HOJA A4 */
+        .a4-sheet {
+            background: white;
+            color: black;
+            width: 210mm;
+            min-height: 297mm;
+            padding: 25mm !important;
+            /* Márgenes formales */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            font-family: 'Times New Roman', Times, serif !important;
+            font-size: 12pt;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        /* Estilos del Documento Formal (FUT) */
+        .doc-sumilla {
+            text-align: right;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .doc-destinatario {
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .doc-cuerpo {
+            text-align: justify;
+            margin-bottom: 30px;
+        }
+
+        .doc-cuerpo p {
+            margin-bottom: 15px;
+            text-indent: 0;
+            /* Sin sangría inicial */
+        }
+
+        .doc-firma-area {
+            margin-top: 80px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .doc-firma-linea {
+            width: 250px;
+            border-top: 1px solid black;
+            text-align: center;
+            padding-top: 5px;
+        }
+
+        .doc-fecha-area {
+            text-align: right;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        /* Variables inyectadas en el texto */
+        .val {
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .val-empty {
+            color: #999;
+            font-style: italic;
+            font-weight: normal;
+        }
+
+        /* ESTILOS DE IMPRESIÓN */
+        @media print {
+            @page {
+                size: A4;
+                margin: 0;
+                /* Controlamos márgenes en .a4-sheet */
+            }
+
+            body {
+                background: white;
+                padding: 0;
+                display: block;
+            }
+
+            .ambient,
+            .ambient-2,
+            .controls-panel {
+                display: none !important;
+            }
+
+            .container {
+                display: block;
+                height: auto;
+                max-width: none;
+            }
+
+            .preview-panel {
+                background: none;
+                padding: 0;
+                display: block;
+                overflow: visible;
+                border: none;
+                border-radius: 0;
+            }
+
+            .a4-sheet {
+                box-shadow: none;
+                margin: 0;
+                width: 100%;
+                min-height: 100vh;
+                padding: 25mm;
+            }
+        }
+
+        /* Responsivo Web */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .controls-panel {
+                max-width: 100%;
+            }
+
+            .a4-sheet {
+                transform: scale(0.8);
+                transform-origin: top center;
+                margin-bottom: -20%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .a4-sheet {
+                transform: scale(0.6);
+                margin-bottom: -50%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="ambient"></div>
+    <div class="ambient ambient-2"></div>
+
+    <div class="container">
+        <!-- NO IMPRIMIBLE: CONTROLES -->
+        <div class="controls-panel">
+            <a href="hub.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i> Volver al Hub
+            </a>
+
+            <div class="header-controls">
+                <img src="images/logo.png" alt="Logo">
+                <h1>Generador de Solicitudes</h1>
+            </div>
+            <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 10px;">
+                Complete los datos formales para generar la solicitud de certificado de estudios lista para imprimir.
+            </p>
+
+            <div class="form-group">
+                <label for="inputDNI">1. Ingrese DNI (API Migo)</label>
+                <div class="input-with-btn">
+                    <input type="text" id="inputDNI" placeholder="Ej. 76543210" maxlength="8">
+                    <button type="button" class="btn-search" id="btnSearchDNI" title="Buscar en RENIEC">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div id="statusMessage"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="inputNombres">Nombres y Apellidos Completos</label>
+                <input type="text" id="inputNombres" placeholder="Se autocompletará...">
+            </div>
+
+            <div class="form-group">
+                <label for="inputCelular">Teléfono / Celular</label>
+                <input type="text" id="inputCelular" placeholder="Ej. 987654321" maxlength="9">
+            </div>
+
+            <div class="form-group">
+                <label for="inputAnioInicio">Año de Inicio de Estudios</label>
+                <select id="inputAnioInicio"></select>
+            </div>
+
+            <div class="form-group">
+                <label for="inputAnioFin">Año de Fin de Estudios</label>
+                <select id="inputAnioFin"></select>
+            </div>
+
+            <div class="form-group">
+                <label for="inputNivel">Nivel Educativo</label>
+                <select id="inputNivel">
+                    <option value="Primaria">Educación Primaria</option>
+                    <option value="Secundaria">Educación Secundaria</option>
+                    <option value="Primaria y Secundaria">Educación Primaria y Secundaria</option>
+                </select>
+            </div>
+
+            <button type="button" class="btn-print" id="btnPrint">
+                <i class="fas fa-print"></i> Generar e Imprimir Documento
+            </button>
+        </div>
+
+        <!-- IMPRIMIBLE: VISTA DEL DOCUMENTO -->
+        <div class="preview-panel">
+            <div class="a4-sheet" id="documentSheet">
+                <div class="doc-sumilla">
+                    SUMILLA: SOLICITO CERTIFICADO DE ESTUDIOS
+                </div>
+
+                <div class="doc-destinatario">
+                    SEÑOR DIRECTOR DE LA INSTITUCIÓN EDUCATIVA EMBLEMÁTICA "GENARO HERRERA"
+                </div>
+
+                <div class="doc-cuerpo">
+                    <p>Yo, <span class="val" id="docNombres"><span class="val-empty">[NOMBRES Y APELLIDOS DEL
+                                SOLICITANTE]</span></span>, identificado(a) con D.N.I. N° <span class="val"
+                            id="docDNI"><span class="val-empty">[DNI]</span></span>, con domicilio actual y número de
+                        celular <span class="val" id="docCelular"><span class="val-empty">[CELULAR]</span></span>; ante
+                        Ud. con el debido respeto me presento y expongo:</p>
+
+                    <p>Que, convenir a mis intereses personales y/o profesionales, solicito a su Despacho, se sirva
+                        disponer a quien corresponda se me expida mi <strong>CERTIFICADO DE ESTUDIOS</strong>
+                        correspondiente al nivel de <strong><span class="val" id="docNivel"><span
+                                    class="val-empty">[NIVEL EDUCATIVO]</span></span></strong>, cursados en su
+                        prestigiosa Institución Educativa desde el año <span class="val" id="docAnioInicio"><span
+                                class="val-empty">[AÑO]</span></span> hasta el año <span class="val"
+                            id="docAnioFin"><span class="val-empty">[AÑO]</span></span>.</p>
+
+                    <p>POR LO EXPUESTO:</p>
+                    <p>Ruego a Ud. señor Director, acceder a mi solicitud por ser de justicia que espero alcanzar.</p>
+                </div>
+
+                <div class="doc-fecha-area">
+                    Requena, <span id="docFechaActual">...</span>
+                </div>
+
+                <div class="doc-firma-area">
+                    <div class="doc-firma-linea">
+                        FIRMA DEL(LA) SOLICITANTE<br>
+                        DNI: <span id="docFirmaDNI">__________</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="js/firebase-config.js"></script>
+
+    <!-- Script de Lógica -->
+    <script type="module">
+        import { consultarDNI } from './migo.js';
+
+        // Elementos UI Controles
+        const inputDNI = document.getElementById('inputDNI');
+        const btnSearchDNI = document.getElementById('btnSearchDNI');
+        const inputNombres = document.getElementById('inputNombres');
+        const inputCelular = document.getElementById('inputCelular');
+        const inputAnioInicio = document.getElementById('inputAnioInicio');
+        const inputAnioFin = document.getElementById('inputAnioFin');
+        const inputNivel = document.getElementById('inputNivel');
+        const btnPrint = document.getElementById('btnPrint');
+        const statusMessage = document.getElementById('statusMessage');
+
+        // Elementos UI Documento
+        const docNombres = document.getElementById('docNombres');
+        const docDNI = document.getElementById('docDNI');
+        const docCelular = document.getElementById('docCelular');
+        const docAnioInicio = document.getElementById('docAnioInicio');
+        const docAnioFin = document.getElementById('docAnioFin');
+        const docNivel = document.getElementById('docNivel');
+        const docFechaActual = document.getElementById('docFechaActual');
+        const docFirmaDNI = document.getElementById('docFirmaDNI');
+
+        // Inicializar Combos de Años
+        const currentYear = new Date().getFullYear();
+        for (let i = currentYear; i >= 1950; i--) {
+            inputAnioInicio.add(new Option(i, i));
+            inputAnioFin.add(new Option(i, i));
+        }
+
+        // Establecer fecha actual en el documento
+        const meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        const fecha = new Date();
+        const textoFecha = `${fecha.getDate()} de ${meses[fecha.getMonth()]} de ${fecha.getFullYear()}`;
+        docFechaActual.textContent = textoFecha;
+
+        // Función para mostrar mensajes de estado
+        function showMessage(msg, type) {
+            statusMessage.textContent = msg;
+            statusMessage.className = `text-${type}`;
+        }
+
+        // Buscar DNI con Migo API
+        btnSearchDNI.addEventListener('click', async () => {
+            const dni = inputDNI.value.trim();
+            if (dni.length !== 8) {
+                showMessage('El DNI debe tener 8 dígitos.', 'error');
+                return;
+            }
+
+            showMessage('Consultando Reniec...', 'info');
+            btnSearchDNI.disabled = true;
+
+            const res = await consultarDNI(dni);
+
+            btnSearchDNI.disabled = false;
+
+            if (res.success) {
+                inputNombres.value = res.nombre;
+                showMessage('Datos obtenidos correctamente.', 'success');
+                updateDocument(); // Actualizar vista automáticamente
+            } else {
+                showMessage(res.message || 'No se pudo obtener el DNI.', 'error');
+            }
+        });
+
+        // Actualizar el documento en tiempo real
+        function updateDocument() {
+            docNombres.innerHTML = inputNombres.value ? inputNombres.value : '<span class="val-empty">[NOMBRES Y APELLIDOS DEL SOLICITANTE]</span>';
+            docDNI.innerHTML = inputDNI.value ? inputDNI.value : '<span class="val-empty">[DNI]</span>';
+            docFirmaDNI.textContent = inputDNI.value ? inputDNI.value : '__________';
+            docCelular.innerHTML = inputCelular.value ? inputCelular.value : '<span class="val-empty">[CELULAR]</span>';
+            docAnioInicio.innerHTML = inputAnioInicio.value ? inputAnioInicio.value : '<span class="val-empty">[AÑO]</span>';
+            docAnioFin.innerHTML = inputAnioFin.value ? inputAnioFin.value : '<span class="val-empty">[AÑO]</span>';
+            docNivel.innerHTML = inputNivel.value ? inputNivel.options[inputNivel.selectedIndex].text : '<span class="val-empty">[NIVEL EDUCATIVO]</span>';
+        }
+
+        // Escuchar cambios en los inputs para actualizar el documento visualmente
+        inputNombres.addEventListener('input', updateDocument);
+        inputDNI.addEventListener('input', updateDocument);
+        inputCelular.addEventListener('input', updateDocument);
+        inputAnioInicio.addEventListener('change', updateDocument);
+        inputAnioFin.addEventListener('change', updateDocument);
+        inputNivel.addEventListener('change', updateDocument);
+
+        // Imprimir
+        btnPrint.addEventListener('click', () => {
+            if (!inputNombres.value || !inputDNI.value) {
+                alert("Por favor, al menos complete el DNI y los Nombres antes de imprimir.");
+                return;
+            }
+            window.print();
+        });
+
+        // Forzar actualización inicial para los selects por defecto
+        updateDocument();
+    </script>
+</body>
+
+</html>
